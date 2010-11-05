@@ -1,5 +1,5 @@
 <?php
-/* Класс placeholder
+/* Placeholder instance class.
   
  */
 class xEplaceholder {

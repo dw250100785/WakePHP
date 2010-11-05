@@ -1,6 +1,6 @@
 <?php
 
-/* Класс описывающий запрос.
+/* Request class.
 
  */
 class xErequest extends HTTPRequest {
@@ -17,9 +17,9 @@ class xErequest extends HTTPRequest {
 	public function init() {
 	
 		$this->startTime = microtime(true);
-		$this->appInstance->statistics->registerRequest($this); // Отправляем текущий запрос на обработку модулю стастики
+		$this->appInstance->statistics->registerRequest($this);
 		
-		$this->dispatch(); // Вычленяем из урла язык и название странички.
+		$this->dispatch();
 		
 		$this->html = $this->templateFetch('index.html');
 		
@@ -46,9 +46,10 @@ class xErequest extends HTTPRequest {
 		echo $this->html;
 		
 	}
-	//public function 
-	
-	/* Вычленяем из урла язык и название странички. */
+	/**
+	 * URI parser.
+	 * @return void.
+	 */
 	public function dispatch() {
 		
 		$e = explode('/',$_SERVER['DOCUMENT_URI'],3);

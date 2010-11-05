@@ -1,5 +1,5 @@
 <?php
-/* Класс отвечающий за статистку.
+/* Statistics class
 
    db.pagehits.ensureIndex({url: 1, ts: 1});
    db.pagehits.ensureIndex({uid: 1});
@@ -15,7 +15,7 @@ class xEstatistics {
 		$this->pagehits = $appInstance->db->{$appInstance->dbname.'.pagehits'};
 	}
 	
-	/* Регистрирует запрос в базе данных
+	/* Register request in DB
 	*/
 	public function registerRequest($req) {
 	

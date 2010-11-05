@@ -1,5 +1,5 @@
 <?php
-/* Класс отвечающий за редактируемые блоки
+/* Placeholders.
 
    db.placeholders.ensureIndex({name:1},{unique:true});
   
