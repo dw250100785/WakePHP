@@ -1,18 +1,9 @@
 <?php
-class ModPagetook extends Module implements NoticeableModule {
-
-	public function checkDependencies() {
-		if (sizeof($this->placeholder->req->placeholders) == 1) {
-			$this->html = '<div>Page took: '.round(microtime(true) - $this->placeholder->req->startTime,6).'</div>';
-			$this->ready();
-		}
-	}
-	
-	public function onReadyAnotherPlaceholder($name) {
-		$this->checkDependencies();
-	}
+class ModPagetook extends Module {
 
 	public function execute() {
-		$this->checkDependencies();
+
+			$this->html = sprintf($this->html,round(microtime(true) - $this->req->startTime,6));
+			$this->ready();
 	}
 }

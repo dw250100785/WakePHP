@@ -8,23 +8,26 @@ class xEngineRequest extends HTTPRequest {
 	public $lang;
 	public $path;
 	public $html;
+	public $inner = array();
+	public $startTime;
+	public $req;
 	public $jobTotal = 0;
 	public $jobDone = 0;
-	public $jobCounter = 0;
-	public $placeholders = array();
-	public $noticeablePlaceholders = array();
-	public $startTime;
 	
 	public function init() {
 	
+		$this->req = $this;
+		
 		$this->startTime = microtime(true);
 		
 		$this->dispatch();
 		
 		$this->html = $this->templateFetch('index.html');
-		
 		$this->appInstance->placeholders->parse($this);
-		
+		Daemon::log('init '.$this->html);
+	}
+	public function onReadyBlock($obj) {
+		$this->html = str_replace($obj->tag,$obj->html,$this->html);
 	}
 	public function templateFetch($path) {
 	
@@ -38,11 +41,10 @@ class xEngineRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		
-		if ($this->jobTotal > $this->jobDone) {
+
+		if (($this->jobTotal > $this->jobDone) || (sizeof($this->inner) > 0)) {
 			$this->sleep(5);
 		}
-		
 		echo $this->html;
 		
 	}

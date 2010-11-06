@@ -17,6 +17,7 @@ class xEngine extends AppInstance
   $appInstance->quicky = new Quicky;
   $appInstance->quicky->template_dir = $this->config->templatedir->value;
   $appInstance->quicky->compile_dir = '/tmp/templates_c/';
+  $appInstance->quicky->force_compile = true;
   $appInstance->placeholders = new Placeholders($this);
  }
  protected function getConfigDefaults()

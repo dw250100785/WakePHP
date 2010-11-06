@@ -33,6 +33,20 @@ class Placeholders {
 		++$req->jobTotal;
 		$this->placeholders->find(function($cursor) use ($req, $placeholders) {
 			
+			/* hardcoded for testing purposes */
+			$cursor->items = array(
+				array('name' => 'trololo', 'inner' => array(
+					array('mod' => 'Text', 'inner' => array('Hello world'))
+				)),
+				array('name' => 'footerStat', 'inner' => array(
+					array('mod' => 'Pagetook', 'inner' => array('Page took %s'))
+				)),
+				array('name' => 'JSload', 'inner' => array(
+					array('mod' => 'JSload')
+				)),
+			);
+			
+			
 			static $dbprops = array();
 			foreach ($cursor->items as $k => $ph) {
 
@@ -53,7 +67,7 @@ class Placeholders {
 						$ph = array_merge($ph,$dbprops[$ph['name']]);
 					}
 					
-					new Placeholder($req,$ph);					
+					new Placeholder($ph,$req);
 				}				
 				
 				++$req->jobDone;

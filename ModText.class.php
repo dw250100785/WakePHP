@@ -3,7 +3,10 @@ class ModText extends Module {
 
 	public function execute() {
 
-		$this->html = '<p>'.htmlspecialchars($this->text).'</p>';
+		foreach ($this->inner as $block) {
+			$this->html .= $block;
+		}
+		
 		$this->ready();
 		
 	}
