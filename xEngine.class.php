@@ -2,7 +2,7 @@
   
  /* Main class of application (Quicky, MongoClient, ...)
  */
-class xE extends AppInstance
+class xEngine extends AppInstance
 {
  public $quicky;
  public $statistics;
@@ -17,8 +17,7 @@ class xE extends AppInstance
   $appInstance->quicky = new Quicky;
   $appInstance->quicky->template_dir = $this->config->templatedir->value;
   $appInstance->quicky->compile_dir = '/tmp/templates_c/';
-  $appInstance->statistics = new xEstatistics($this);
-  $appInstance->placeholders = new xEplaceholders($this);
+  $appInstance->placeholders = new Placeholders($this);
  }
  protected function getConfigDefaults()
  {
@@ -33,7 +32,7 @@ class xE extends AppInstance
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new xErequest($this, $upstream, $req);
+		return new xEngineRequest($this, $upstream, $req);
 	}
 }
 

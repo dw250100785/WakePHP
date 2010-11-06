@@ -5,19 +5,11 @@
    db.pagehits.ensureIndex({uid: 1});
   
  */
-class xEstatistics {
+class ModStatistics extends Module {
 
-	public $appInstance;
-	public $pagehits;
-	
-	public function __construct($appInstance) {
-		$this->appInstance = $appInstance;
-		$this->pagehits = $appInstance->db->{$appInstance->dbname.'.pagehits'};
-	}
-	
-	/* Register request in DB
-	*/
-	public function registerRequest($req) {
+	public function execute() {
+
+		/* Register request in DB	*/
 	
 		$this->pagehits->insert(array(
 			'url' => $req->attrs->server['DOCUMENT_URI'],

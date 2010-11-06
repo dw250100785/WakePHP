@@ -2,7 +2,7 @@
 /* Placeholder instance class.
   
  */
-class xEplaceholder {
+class Placeholder {
 
 	public $req;
 	public $name;
@@ -11,6 +11,8 @@ class xEplaceholder {
 	public $numBlocks = 0;
 	public $html = '';
 	public $_nid;
+	public $nowrap = false;
+	public $noticable = false;
 	public function __construct($req,$ph) {
 		
 		$this->req = $req;
@@ -20,10 +22,14 @@ class xEplaceholder {
 		foreach ($ph as $key => $value) {
 			if ($key === 'blocks') {
 				foreach ($value as $block) {
-					if (!class_exists($class = 'xEmod'.$block['mod'])) {
-						$class = 'xEmodText';
+					if (!class_exists($class = 'Mod'.$block['mod'])) {
+						$class = 'ModText';
 					}
 					$obj = new $class($this,$block);
+					if (!$this->noticable && $obj instanceof NoticableModule) {
+						$this->noticable = true;
+						$this->req->noticeablePlaceholders[$this->_nid] = true;
+					}
 					++$this->numBlocks;
 				}
 				continue;
@@ -31,6 +37,13 @@ class xEplaceholder {
 			$this->{$key} = $value;
 		}
 		
+	}
+	public function onReadyAnotherPlaceholder($name) {
+		foreach ($this->blocks as $block) {
+			if ($block instanceof NoticableModule) {
+				$block->onReadyAnotherPlaceholder($name);
+			}
+		}
 	}
 	public function onReadyBlock($id) {
 		++$this->readyBlocks;
@@ -49,7 +62,19 @@ class xEplaceholder {
 	}
 	public function __destruct() {
 		
-		$attrs = ' class=".'.htmlspecialchars($this->name,ENT_QUOTES).(isset($this->classes)?' '.$this->classes:'').'"';
+		if ($this->noticable) {
+			unset($this->req->noticeablePlaceholders[$this->_nid]);
+		}
+		foreach ($this->req->noticeablePlaceholders as $nid) {
+			$this->req->placeholders[$nid]->onReadyAnotherPlaceholder($this->name);
+		}
+		
+		if ($this->nowrap) {
+			$this->req->html = str_replace($this->tag,$this->html,$this->req->html);
+			return;
+		}
+		
+		$attrs = ' class="placeholder '.htmlspecialchars($this->name,ENT_QUOTES).(isset($this->classes)?' '.$this->classes:'').'"';
 		if (isset($this->id)) {
 			$attrs .= ' id="'.htmlspecialchars($this->id,ENT_QUOTES).'"';
 		}

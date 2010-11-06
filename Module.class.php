@@ -1,8 +1,8 @@
 <?php
-class xEmod {
+class Module {
 
 	public $placeholder;
-	public $html;
+	public $html = '';
 	public $ready = false;
 		
 	public function __construct($placeholder, $attrs) {

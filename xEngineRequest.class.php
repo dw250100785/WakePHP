@@ -3,7 +3,7 @@
 /* Request class.
 
  */
-class xErequest extends HTTPRequest {
+class xEngineRequest extends HTTPRequest {
 
 	public $lang;
 	public $path;
@@ -12,12 +12,12 @@ class xErequest extends HTTPRequest {
 	public $jobDone = 0;
 	public $jobCounter = 0;
 	public $placeholders = array();
+	public $noticeablePlaceholders = array();
 	public $startTime;
 	
 	public function init() {
 	
 		$this->startTime = microtime(true);
-		$this->appInstance->statistics->registerRequest($this);
 		
 		$this->dispatch();
 		

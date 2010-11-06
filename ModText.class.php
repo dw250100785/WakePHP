@@ -1,5 +1,5 @@
 <?php
-class xEmodText extends xEmod {
+class ModText extends Module {
 
 	public function execute() {
 

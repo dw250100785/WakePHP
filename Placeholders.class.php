@@ -4,7 +4,7 @@
    db.placeholders.ensureIndex({name:1},{unique:true});
   
  */
-class xEplaceholders {
+class Placeholders {
 
 
 	public function __construct($appInstance) {
@@ -53,7 +53,7 @@ class xEplaceholders {
 						$ph = array_merge($ph,$dbprops[$ph['name']]);
 					}
 					
-					new xEplaceholder($req,$ph);					
+					new Placeholder($req,$ph);					
 				}				
 				
 				++$req->jobDone;
