@@ -1,5 +1,7 @@
 <?php
-/* Statistics class
+
+/**
+ * Statistics class
  * db.pagehits.ensureIndex({url: 1, ts: 1});
  * db.pagehits.ensureIndex({uid: 1});
  */

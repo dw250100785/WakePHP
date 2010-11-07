@@ -1,4 +1,5 @@
 <?php
+
 class ModJSload extends Module {
 
 	public $libs = array(

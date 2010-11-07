@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Placeholders.
  * db.placeholders.ensureIndex({name:1},{unique:true});	

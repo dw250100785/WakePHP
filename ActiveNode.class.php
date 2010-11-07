@@ -1,7 +1,8 @@
 <?php
-/* ActiveNode instance class.
-		
-	*/
+
+/**
+ * ActiveNode instance class.	
+ */
 class ActiveNode {
 
 	public $html = '';
@@ -107,4 +108,5 @@ class ActiveNode {
 		$this->parentNode->onReadyBlock($this);
 		unset($this->parentNode->inner[$this->_nid]);
 	}
+
 }

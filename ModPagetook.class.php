@@ -1,4 +1,5 @@
 <?php
+
 class ModPagetook extends Module {
 
 	public function execute() {
