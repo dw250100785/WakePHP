@@ -1,7 +1,7 @@
 <?php
 /* ActiveNode instance class.
-  
- */
+		
+	*/
 class ActiveNode {
 
 	public $html = '';
@@ -32,7 +32,8 @@ class ActiveNode {
 		end($this->parentNode->inner);
 		$this->_nid = key($this->parentNode->inner);
 		
-//Daemon::log(get_class($this).' - '.Debug::dump($attrs));
+		//Daemon::log(get_class($this).' - '.Debug::dump($attrs));
+
 		foreach ($attrs as $key => $value) {
 			if ($key == 'inner') {
 				
@@ -43,17 +44,21 @@ class ActiveNode {
 				foreach ($value as $block) {
 					if (is_scalar($block)) {
 						$block = array(
-						 'mod' => 'Text',
-						 'html' => $block,
+							'mod' => 'Text',
+							'html' => $block,
 						);
 					}
+
 					if (!class_exists($class = 'Mod'.$block['mod'])) {
 						$class = 'ModText';
 					}
+
 					new $class($block, $this);
 				}
+
 				continue;
 			}
+
 			$this->{$key} = $value;
 		}
 		
@@ -65,32 +70,37 @@ class ActiveNode {
 		$this->ready();
 	}
 	
-	public function onReadyBlock($obj) {
-			
+	public function onReadyBlock($obj) {			
 		if ($this->readyBlocks < $this->numBlocks) {
 			return;
 		}
 		
 		foreach ($this->inner as $k => $block) {
-			
 			$this->html .= $block->html;
 			unset($this->inner[$k]);
 			
 		}
+
 		$this->execute();
 	}
+
 	public function ready() {
 		if ($this->ready) {
 			return;
 		}
+
 		$this->ready = true;
 		
 		if (!$this->nowrap) {
-			$attrs = ' class="placeholder '.htmlspecialchars($this->name,ENT_QUOTES).(isset($this->classes)?' '.$this->classes:'').'"';
+			$attrs = ' class="placeholder ' . 
+				htmlspecialchars($this->name, ENT_QUOTES) . 
+				(isset($this->classes)?' ' . $this->classes : '') . '"';
+
 			if (isset($this->id)) {
-				$attrs .= ' id="'.htmlspecialchars($this->id,ENT_QUOTES).'"';
+				$attrs .= ' id="' . htmlspecialchars($this->id,ENT_QUOTES) . '"';
 			}
-			$this->html = '<div'.$attrs.'>'.$this->html.'</div>';
+
+			$this->html = '<div' . $attrs . '>' . $this->html . '</div>';
 		}
 		
 		++$this->parentNode->readyBlocks;

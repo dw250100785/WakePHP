@@ -1,8 +1,7 @@
 <?php
-/* Placeholder instance class.
-  
+/**
+ * Placeholder instance class.		
  */
 class Placeholder extends ActiveNode {
-
 
 }
