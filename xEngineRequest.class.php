@@ -13,17 +13,20 @@ class xEngineRequest extends HTTPRequest {
 	public $req;
 	public $jobTotal = 0;
 	public $jobDone = 0;
+	public $tpl;
 	
 	public function init() {
 		$this->req = $this;
 		
 		$this->startTime = microtime(true);
 		
-		$this->dispatch();
+		$this->tpl = new Quicky;
+		$this->tpl->template_dir = $this->appInstance->config->templatedir->value;
+		$this->tpl->compile_dir = '/tmp/templates_c/';
+		$this->tpl->force_compile = true;
+		$this->tpl->assign('req',$this);
 		
-		$this->html = $this->templateFetch('index.html');
-		$this->appInstance->placeholders->parse($this);
-		Daemon::log('init '.$this->html);
+		$this->dispatch();
 	}
 
 	public function onReadyBlock($obj) {
@@ -31,8 +34,8 @@ class xEngineRequest extends HTTPRequest {
 	}
 
 	public function templateFetch($path) {
-		$appInstance->quicky->lang = $this->lang;
-		return $this->appInstance->quicky->fetch($path);
+		$this->quicky->lang = $this->lang;
+		return $this->tpl->fetch($path);
 	}
 	
 	/**
@@ -43,7 +46,9 @@ class xEngineRequest extends HTTPRequest {
 		if (($this->jobTotal > $this->jobDone) || (sizeof($this->inner) > 0)) {
 			$this->sleep(5);
 		}
-
+		
+		unset($this->tpl);
+		
 		echo $this->html;
 	}
 
@@ -54,14 +59,53 @@ class xEngineRequest extends HTTPRequest {
 	public function dispatch() {	
 		$e = explode('/', $_SERVER['DOCUMENT_URI'], 3);
 
-		if (in_array($e[1], $this->appInstance->languages)) {
-			$this->lang = $e[1];
-		} else {
-			$this->lang = $this->appInstance->languages[0];
+		if (!isset($e[2])) {
+			$this->lang = $this->appInstance->config->defaultlang->value;
+			$this->path = '/'.$e[1];
 		}
-
-		$this->path = isset($e[2]) ? rtrim($e[2], '/') : '';
+		else {
+			list ($this->lang, $this->path) = $e;
+			$this->path = 	rtrim($e[2], '/');
+		}
+		
+		++$this->jobTotal;
+		$this->appInstance->pages->getPage($this->lang,$this->path,array($this,'loadPage'));
 	}
 	
+	public function loadPage($page) {
+		
+		++$this->jobDone;
+		
+		if (!$page)	{
+			++$this->jobTotal;
+			$this->appInstance->pages->getPage($this->lang,'/404',array($this,'loadErrorPage'));
+			return;
+		}
+		
+		$this->tpl->assign('page',	$page);
+		
+		$this->html = $this->templateFetch($page['template']);
+		$this->appInstance->placeholders->parse($this);
+	
+	}
+	public function loadErrorPage($page) {
+		
+		++$this->jobDone;
+		
+		if (!$page) {
+			$this->html = 'Unable to load error-page.';
+			$this->wakeup();
+			return;
+		}
+		
+		$this->tpl->assign('page',	$page);
+
+		$this->html = $this->templateFetch($page['template']);
+		$this->appInstance->placeholders->parse($this);
+	
+	}
+	public function onDestruct() {
+	 Daemon::log('destruct');
+	}
 }
 

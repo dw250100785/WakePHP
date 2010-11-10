@@ -1,0 +1,32 @@
+#!/usr/bin/php -q
+<?php
+$mongo = new Mongo();
+$db = $mongo->xE;
+$placeholders = $db->selectCollection('placeholders');
+$placeholders->remove();
+$placeholders->ensureIndex(array('name' => 1),array('unique' => true));
+$placeholders->insert(
+			array('name' => 'trololo', 'inner' => array(
+						array('_id' => new MongoId(), 'mod' => 'Text', 'inner' => array('Hello world'))
+			))
+);
+$placeholders->insert(
+					array('name' => 'footerStat', 'inner' => array(
+						array('_id' => new MongoId(),'mod' => 'Pagetook', 'inner' => array('Page took %s'))
+					))
+);
+$placeholders->insert(
+					array('name' => 'JSload', 'inner' => array(
+						array('_id' => new MongoId(), 'mod' => 'JSload')
+					))
+);
+
+$pages = $db->selectCollection('pages');
+$pages->remove();
+$placeholders->ensureIndex(array('lang' => 1, 'path' => 1),array('unique' => true));
+$pages->insert(array(
+				'lang' => 'en',
+				'path' => '/',
+				'title' => 'Main page',
+				'template' => 'index.tpl'
+));

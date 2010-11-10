@@ -5,10 +5,8 @@
  */
 class xEngine extends AppInstance {
 
-	public $quicky;
 	public $statistics;
 	public $db;
-	public $languages = array('ru', 'en');
 	public $dbname = 'xE';
 
 	public function init() {
@@ -16,11 +14,8 @@ class xEngine extends AppInstance {
 		ini_set('display_errors','On');
 		$appInstance = $this;
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
-		$appInstance->quicky = new Quicky;
-		$appInstance->quicky->template_dir = $this->config->templatedir->value;
-		$appInstance->quicky->compile_dir = '/tmp/templates_c/';
-		$appInstance->quicky->force_compile = true;
 		$appInstance->placeholders = new Placeholders($this);
+		$appInstance->pages = new Pages($this);
 	}
 
 	protected function getConfigDefaults() {

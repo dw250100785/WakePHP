@@ -100,6 +100,9 @@ class ActiveNode {
 			if (isset($this->id)) {
 				$attrs .= ' id="' . htmlspecialchars($this->id,ENT_QUOTES) . '"';
 			}
+			elseif (isset($this->_id)) {
+				$attrs .= ' id="' . htmlspecialchars($this->_id,ENT_QUOTES) . '"';
+			}
 
 			$this->html = '<div' . $attrs . '>' . $this->html . '</div>';
 		}
