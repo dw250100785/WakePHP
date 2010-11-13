@@ -22,8 +22,9 @@ $(function() {
 	$(".blockEditable").contextMenu({
 
 		menu: 'myMenu'
-	}, function(action, el, pos) {
-			if (action == 'edit') {
+	},
+	function(action, el, pos) {
+		if (action == 'edit') {
 
 				$(el).tinymce({
 			// Location of TinyMCE script
@@ -39,17 +40,37 @@ $(function() {
 				$.ajax({
 					type: "POST",
 					url: "/q/ACP/saveBlock",
+					dataType: 'json',
 					data: {
 						"id": blockId,
 						"template": template
 					},
-					success: function(msg){
+					success: function(data){
+						var ed = $('#'+data.id).tinymce();
 						ed.setProgressState(0); // Hide progress
-						alert( "Data Saved: " + msg );
 					}
 				});
 				
 				return true;
+			},
+			setup : function(ed) {
+				ed.onInit.add(function(ed) {
+          $(el).tinymce().setProgressState(1); // Show progress while the source is loading
+				
+					$.ajax({
+						type: "POST",
+						url: "/q/ACP/getBlockSource",
+						data: {
+							"id": $(el).attr('id')
+						},
+						dataType: "json",
+						success: function(data){
+							var ed = $('#'+data._id).tinymce();
+							ed.setContent(data.template);
+							ed.setProgressState(0); // Hide progress
+						}
+					});
+				});
 			},
 			plugins : "safari,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template",
 
@@ -77,10 +98,8 @@ $(function() {
 				username : "Some User",
 				staffid : "991234"
 			}
-		});
-	
-	
-			}
+				});
+		}
 
 	});
 });

@@ -28,6 +28,7 @@ class xEngineRequest extends HTTPRequest {
 	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag,$obj->html,$this->html);
 		unset($this->inner[$obj->_nid]);
+		$this->req->wakeup();
 	}
 
 	public function templateFetch($template) {
@@ -51,9 +52,23 @@ class xEngineRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		if (($this->jobTotal > $this->jobDone) || (sizeof($this->inner) > 0)) {
-			$this->sleep(5);
+		
+		if ($this->path !== NULL) {
+			goto waiting;
+		}		
+		
+		init:
+		
+		$this->dispatch();
+		
+		waiting:
+		
+		if (($this->jobDone >= $this->jobTotal) && (sizeof($this->inner) == 0)) {
+			goto ready;
 		}
+		$this->sleep(5);
+		
+		ready:
 		
 		unset($this->tpl);
 		
@@ -73,9 +88,9 @@ class xEngineRequest extends HTTPRequest {
 		}
 		else {
 			list ($this->lang, $this->path) = $e;
-			if ($this->path === '') {
-				$this->path = '/';
-			}
+			$ee = explode('/',$this->path);
+			$this->path = '/'.$ee[0];
+			$this->subPath = '/'.$ee[1];
 		}
 		
 		++$this->jobTotal;
