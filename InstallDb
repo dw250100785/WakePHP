@@ -2,31 +2,76 @@
 <?php
 $mongo = new Mongo();
 $db = $mongo->xE;
-$placeholders = $db->selectCollection('placeholders');
-$placeholders->remove();
-$placeholders->ensureIndex(array('name' => 1),array('unique' => true));
-$placeholders->insert(
-			array('name' => 'trololo', 'inner' => array(
-						array('_id' => new MongoId(), 'mod' => 'Text', 'inner' => array('Hello world'))
-			))
-);
-$placeholders->insert(
-					array('name' => 'footerStat', 'inner' => array(
-						array('_id' => new MongoId(),'mod' => 'Pagetook', 'inner' => array('Page took %s'))
-					))
-);
-$placeholders->insert(
-					array('name' => 'JSload', 'inner' => array(
-						array('_id' => new MongoId(), 'mod' => 'JSload')
-					))
-);
 
-$pages = $db->selectCollection('pages');
-$pages->remove();
-$placeholders->ensureIndex(array('lang' => 1, 'path' => 1),array('unique' => true));
-$pages->insert(array(
+$name = 'test';
+$pidfile = '/var/run/phpd.pid';
+$mastersocket = '/tmp/phpDaemon-master-%x.sock';
+
+class xEngine{
+	public $name;
+	public function __construct($path,$name) {
+		$this->name = $name;
+		$this->sock = stream_socket_client($path, $errno, $errstr);
+		if (!$this->sock) {
+			$e = new CouldntConnect;
+			$e->path = $path;
+			throw $e;
+		}
+	}
+	public function sendPacket($p) {
+		fwrite($this->sock,json_encode($p)."\n");
+	}
+	public function __call($m,$a) {
+		$this->sendPacket(array(
+					'op' => 'singleCall',
+					'appfullname' => 'xEngine-'.$this->name,
+					'method' => 'saveBlock',
+					'args' => $a
+		));
+	}
+}
+class CouldntConnect extends Exception {}
+
+
+try {
+	$app = new xEngine('unix://'.sprintf($mastersocket, crc32($pidfile)),$name);
+}
+catch (CouldntConnect $e) {
+	exit('Connection failed to '.$e->path.'.');
+}
+
+/* blocks */ 
+$blocks = $db->selectCollection('blocks');
+$blocks->remove();
+$blocks->ensureIndex(array('name' => 1));
+$blocks->ensureIndex(array('lang' => 1, 'path' => 1));
+$app->saveBlock(array(
+				'name' => 'trololo',
+				'template' =>	'Hello world!'
+));
+$app->saveBlock(array(
 				'lang' => 'en',
 				'path' => '/',
 				'title' => 'Main page',
-				'template' => 'index.tpl'
-));
+				'template' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<title>xEngine test page</title> 
+<link href="css/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" /> 
+<link href="css/main.css" rel="stylesheet" type="text/css" /> 
+<link href="favicon.ico" rel="icon" type="image/x-icon" /> 
+<link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
+<meta name="description" content="phpDaemon" /> 
+<meta name="keywords" content="phpDaemon, php" /> 
+<block mod="JSload" />
+</head> 
+<body>
+
+<block name="trololo" />
+
+<block mod="pagetook" />
+
+</body> 
+</html>'));
+

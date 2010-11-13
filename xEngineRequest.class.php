@@ -20,12 +20,8 @@ class xEngineRequest extends HTTPRequest {
 		
 		$this->startTime = microtime(true);
 		
-		$this->tpl = new Quicky;
-		$this->tpl->template_dir = $this->appInstance->config->templatedir->value;
-		$this->tpl->compile_dir = '/tmp/templates_c/';
-		$this->tpl->force_compile = true;
+		$this->tpl = $this->appInstance->getQuickyInstance();
 		$this->tpl->assign('req',$this);
-		
 		$this->dispatch();
 	}
 
@@ -33,9 +29,20 @@ class xEngineRequest extends HTTPRequest {
 		$this->html = str_replace($obj->tag,$obj->html,$this->html);
 	}
 
-	public function templateFetch($path) {
-		$this->quicky->lang = $this->lang;
-		return $this->tpl->fetch($path);
+	public function templateFetch($template) {
+			$template = eval('return function($tpl) {
+			$var = &$tpl->_tpl_vars;
+  $config = &$tpl->_tpl_config;
+  $capture = &$tpl->_block_props[\'capture\'];
+  $foreach = &$tpl->_block_props[\'foreach\'];
+  $section = &$tpl->_block_props[\'section\'];
+  ?>'.$template.'
+		<?php };');
+		ob_start();
+		$this->tpl->_eval($template);
+		$html = ob_get_contents();
+		ob_end_clean();
+		return $html;
 	}
 	
 	/**
@@ -69,7 +76,7 @@ class xEngineRequest extends HTTPRequest {
 		}
 		
 		++$this->jobTotal;
-		$this->appInstance->pages->getPage($this->lang,$this->path,array($this,'loadPage'));
+		$this->appInstance->blocks->getPage($this->lang,$this->path,array($this,'loadPage'));
 	}
 	
 	public function loadPage($page) {
@@ -78,14 +85,12 @@ class xEngineRequest extends HTTPRequest {
 		
 		if (!$page)	{
 			++$this->jobTotal;
-			$this->appInstance->pages->getPage($this->lang,'/404',array($this,'loadErrorPage'));
+			$this->appInstance->blocks->getPage($this->lang,'/404',array($this,'loadErrorPage'));
 			return;
 		}
-		
-		$this->tpl->assign('page',	$page);
-		
+		$this->tpl->assign('page',	$page);		
 		$this->html = $this->templateFetch($page['template']);
-		$this->appInstance->placeholders->parse($this);
+		$this->appInstance->blocks->parse($this);
 	
 	}
 	public function loadErrorPage($page) {
@@ -101,7 +106,7 @@ class xEngineRequest extends HTTPRequest {
 		$this->tpl->assign('page',	$page);
 
 		$this->html = $this->templateFetch($page['template']);
-		$this->appInstance->placeholders->parse($this);
+		$this->appInstance->blocks->parse($this);
 	
 	}
 	public function onDestruct() {

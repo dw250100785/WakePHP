@@ -1,12 +1,8 @@
 <?php
 
-class ModText extends Module {
+class ModText extends Block {
 
 	public function execute() {
-		foreach ($this->inner as $block) {
-			$this->html .= $block;
-		}
-		
 		$this->ready();
 	}
 

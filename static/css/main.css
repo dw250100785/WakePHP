@@ -28,6 +28,12 @@ img {
 	padding: 1em;
 }
 
+.placeholderControls {
+
+	position: absolute;
+	display: block;
+}
+
 .ui-resizable-helper
 {
 	border: 2px dotted #00F;

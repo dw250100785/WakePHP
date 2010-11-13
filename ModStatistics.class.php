@@ -5,7 +5,7 @@
  * db.pagehits.ensureIndex({url: 1, ts: 1});
  * db.pagehits.ensureIndex({uid: 1});
  */
-class ModStatistics extends Module {
+class ModStatistics extends Block {
 
 	/**
 	 * Request request in DB

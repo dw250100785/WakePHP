@@ -1,9 +1,9 @@
 <?php
 
 /**
- * ActiveNode instance class.	
+ * Block instance class.	
  */
-class ActiveNode {
+class Block {
 
 	public $html = '';
 	
@@ -36,32 +36,15 @@ class ActiveNode {
 		//Daemon::log(get_class($this).' - '.Debug::dump($attrs));
 
 		foreach ($attrs as $key => $value) {
-			if ($key == 'inner') {
-				
-				if (is_scalar($value)) {
-					$value = array($value);
-				}
-				
-				foreach ($value as $block) {
-					if (is_scalar($block)) {
-						$block = array(
-							'mod' => 'Text',
-							'html' => $block,
-						);
-					}
-
-					if (!class_exists($class = 'Mod'.$block['mod'])) {
-						$class = 'ModText';
-					}
-
-					new $class($block, $this);
-				}
-
-				continue;
-			}
-
 			$this->{$key} = $value;
 		}
+				
+		$this->req->tpl->assign('block',	$this);
+		if (isset($this->template)) {
+			$this->html = $this->req->templateFetch($this->template);
+		}
+		$this->req->appInstance->blocks->parse($this);
+		
 		
 		if ($this->readyBlocks >= $this->numBlocks) {
 			$this->execute();

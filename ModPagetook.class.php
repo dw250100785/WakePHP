@@ -1,9 +1,10 @@
 <?php
 
-class ModPagetook extends Module {
+class ModPagetook extends Block {
 
 	public function execute() {
-		$this->html = sprintf($this->html, round(microtime(true) - $this->req->startTime, 6));
+		$this->html = round(microtime(true) - $this->req->startTime, 6);
+			Daemon::log($this->html);
 		$this->ready();
 	}
 

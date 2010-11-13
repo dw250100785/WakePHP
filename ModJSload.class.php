@@ -1,6 +1,6 @@
 <?php
 
-class ModJSload extends Module {
+class ModJSload extends Block {
 
 	public $libs = array(
 		'jquery/1.4.3/jquery',
