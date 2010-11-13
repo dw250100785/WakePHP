@@ -28,13 +28,12 @@ class Block {
 		$this->req = $this->parentNode->req;
 		
 		$this->parentNode->inner[] = $this;	
-		++$this->parentNode->numBlocks;
 		
 		end($this->parentNode->inner);
 		$this->_nid = key($this->parentNode->inner);
 		
-		Daemon::log(get_class($this).' - '.Debug::dump($attrs));
-
+		Daemon::log(__METHOD__);
+		
 		foreach ($attrs as $key => $value) {
 			$this->{$key} = $value;
 		}
@@ -44,8 +43,6 @@ class Block {
 			$this->html = $this->req->templateFetch($this->template);
 			$this->req->appInstance->blocks->parse($this);
 		}
-		
-		
 		if ($this->readyBlocks >= $this->numBlocks) {
 			$this->execute();
 		}
@@ -54,17 +51,15 @@ class Block {
 		$this->ready();
 	}
 	
-	public function onReadyBlock($obj) {			
+	public function onReadyBlock($obj) {
 		if ($this->readyBlocks < $this->numBlocks) {
 			return;
 		}
-		
-		foreach ($this->inner as $k => $block) {
-			$this->html .= $block->html;
-			unset($this->inner[$k]);
-			
+		Daemon::log(sizeof($this->inner));
+		foreach ($this->inner as $k => $obj) {
+			$this->html = str_replace($obj->tag,$obj->html,$this->html);
+			unset($this->inner[$k]);	
 		}
-
 		$this->execute();
 	}
 
@@ -76,7 +71,7 @@ class Block {
 		$this->ready = true;
 		
 		if (!$this->nowrap) {
-			$attrs = ' class="placeholder ' . 
+			$attrs = ' class="block ' . 
 				htmlspecialchars($this->name, ENT_QUOTES) . 
 				(isset($this->classes)?' ' . $this->classes : '') . '"';
 
@@ -89,10 +84,8 @@ class Block {
 
 			$this->html = '<div' . $attrs . '>' . $this->html . '</div>';
 		}
-		
 		++$this->parentNode->readyBlocks;
 		$this->parentNode->onReadyBlock($this);
-		unset($this->parentNode->inner[$this->_nid]);
 	}
 
 }

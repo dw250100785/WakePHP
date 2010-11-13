@@ -17,6 +17,13 @@ class Blocks {
 				),
 		));
 	}
+	public function getBlockByName($name, $cb) {
+		$this->blocks->findOne($cb,array(
+				'where' => array(
+										'name' => $name,
+				),
+		));
+	}
 	public function saveBlock($page) {
 		$page['templatePHP'] =	$this->appInstance->getQuickyInstance()->_compile_string($page['template'],$page['name']);
 		$page['mtime'] = microtime(true);
@@ -39,12 +46,14 @@ class Blocks {
 			function ($parser, $tag, $attr) use (&$blocks, &$names, $node) {
 				if (strtoupper($tag) === 'BLOCK') {
 					$attr['tag'] = substr($node->html, $sp = strrpos($node->html, '<', ($ep = xml_get_current_byte_index($parser)+2) - strlen($node->html)), $ep - $sp);
-				$blocks[] = $attr;
-				if (isset($attr['name'])) {
-					$names[] = $attr['name'];
+					$blocks[] = $attr;
+					++$node->numBlocks;
+					if (isset($attr['name'])) {
+						$names[] = $attr['name'];
+					}
 				}
 			}
-		}, null);
+		, null);
 		$parse = xml_parse($parser,$node->html);
 		xml_parser_free($parser);
 		

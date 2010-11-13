@@ -50,6 +50,12 @@ $app->saveBlock(array(
 				'template' =>	'Hello world!'
 ));
 $app->saveBlock(array(
+				'name' => 'ACP',
+				'mod' => 'ACP',
+				'template' =>	'ACP.',
+				'path' => '/ACP'
+));
+$app->saveBlock(array(
 				'lang' => 'en',
 				'path' => '/',
 				'title' => 'Main page',
@@ -58,8 +64,9 @@ $app->saveBlock(array(
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
 <title>xEngine test page</title> 
-<link href="css/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" /> 
-<link href="css/main.css" rel="stylesheet" type="text/css" /> 
+<link href="/css/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" /> 
+<link href="/css/jquery.contextMenu.css" rel="stylesheet" type="text/css" /> 
+<link href="/css/main.css" rel="stylesheet" type="text/css" /> 
 <link href="favicon.ico" rel="icon" type="image/x-icon" /> 
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
 <meta name="description" content="phpDaemon" /> 

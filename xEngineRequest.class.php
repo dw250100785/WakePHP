@@ -27,6 +27,7 @@ class xEngineRequest extends HTTPRequest {
 
 	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag,$obj->html,$this->html);
+		unset($this->inner[$obj->_nid]);
 	}
 
 	public function templateFetch($template) {
@@ -64,19 +65,33 @@ class xEngineRequest extends HTTPRequest {
 	 * @return void.
 	 */
 	public function dispatch() {	
-		$e = explode('/', $_SERVER['DOCUMENT_URI'], 3);
+		$e = explode('/', ltrim($_SERVER['DOCUMENT_URI'],'/'), 2);
 
-		if (!isset($e[2])) {
+		if (!isset($e[1])) {
 			$this->lang = $this->appInstance->config->defaultlang->value;
-			$this->path = '/'.$e[1];
+			$this->path = '/'.$e[0];
 		}
 		else {
 			list ($this->lang, $this->path) = $e;
-			$this->path = 	rtrim($e[2], '/');
+			if ($this->path === '') {
+				$this->path = '/';
+			}
 		}
 		
 		++$this->jobTotal;
 		$this->appInstance->blocks->getPage($this->lang,$this->path,array($this,'loadPage'));
+	}
+	
+	public function addBlock($block) {
+		static $c = 0;
+		if ((!isset($block['mod'])) || (!class_exists($class = 'Mod'.$block['mod']))) {
+			$class = 'Block';
+		}
+		++$c;
+		$block['tag'] = '<'.$c.'>';
+		$block['nowrap'] = true;
+		$this->html .= $block['tag'];
+		new $class($block,$this);
 	}
 	
 	public function loadPage($page) {
@@ -88,10 +103,7 @@ class xEngineRequest extends HTTPRequest {
 			$this->appInstance->blocks->getPage($this->lang,'/404',array($this,'loadErrorPage'));
 			return;
 		}
-		$this->tpl->assign('page',	$page);		
-		$this->html = $this->templateFetch($page['template']);
-		$this->appInstance->blocks->parse($this);
-	
+		$this->addBlock($page);	
 	}
 	public function loadErrorPage($page) {
 		
@@ -103,10 +115,7 @@ class xEngineRequest extends HTTPRequest {
 			return;
 		}
 		
-		$this->tpl->assign('page',	$page);
-
-		$this->html = $this->templateFetch($page['template']);
-		$this->appInstance->blocks->parse($this);
+		$this->addBlock($page);
 	
 	}
 	public function onDestruct() {

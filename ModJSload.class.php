@@ -18,7 +18,8 @@ class ModJSload extends Block {
 
 		$this->html .= '<script src="/js/CP.js" type="text/javascript"></script>' . "\n";
 		$this->html .= '<script src="/js/jquery.keyboard.js" type="text/javascript"></script>' . "\n";
-		$this->html .= '<script src="/js/jquery.wysiwyg.js" type="text/javascript"></script>' . "\n";
+		$this->html .= '<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>' . "\n";
+		$this->html .= '<script src="/js/jquery.contextMenu.js" type="text/javascript"></script>' . "\n";
 
 		$this->ready();
 	}
