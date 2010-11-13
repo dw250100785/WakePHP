@@ -56,9 +56,9 @@ class Blocks {
 		
 				static $dbprops = array();
 	
-				foreach ($cursor->items as $k => $ph) {
-					if (isset($ph['name'])) {
-						$dbprops[$ph['name']] = $ph;
+				foreach ($cursor->items as $k => $block) {
+					if (isset($block['name'])) {
+						$dbprops[$block['name']] = $block;
 					}
 					unset($cursor->items[$k]);
 				}
@@ -68,12 +68,14 @@ class Blocks {
 				}	else {
 					$cursor->destroy();
 				
-					foreach ($blocks as $ph) {
-						if (isset($ph['name']) && isset($dbprops[$ph['name']])) {
-							$ph = array_merge($ph,$dbprops[$ph['name']]);
+					foreach ($blocks as $block) {
+						if (isset($block['name']) && isset($dbprops[$block['name']])) {
+							$block = array_merge($block,$dbprops[$block['name']]);
 						}
-					
-						new Block($ph,$node);
+						if ((!isset($block['mod'])) || (!class_exists($class = 'Mod'.$block['mod']))) {
+							$class = 'Block';
+						}
+						new $class($block,$node);
 					}				
 				
 					++$node->req->jobDone;

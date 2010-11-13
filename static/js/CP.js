@@ -47,7 +47,7 @@ $(function() {
 		});
 	};
 	
-	$( ".placeholderEditableBordered").draggable({
+	/*$( ".placeholderEditableBordered").draggable({
 		helper: "ui-resizable-helper",
 		stop: function(event, ui) {
 		}
@@ -59,7 +59,7 @@ $(function() {
 		drop: function(event, ui) {
 			alert(o.id);
 		}
-	});
+	});*/
 	$( ".placeholderControls").live("mouseenter mouseleave",function(event){
 	
 		$(this).parent().clearQueue();

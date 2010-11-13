@@ -70,7 +70,7 @@ $app->saveBlock(array(
 
 <block name="trololo" />
 
-<block mod="pagetook" />
+<block mod="Pagetook" />
 
 </body> 
 </html>'));

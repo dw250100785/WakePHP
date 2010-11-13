@@ -33,7 +33,7 @@ class Block {
 		end($this->parentNode->inner);
 		$this->_nid = key($this->parentNode->inner);
 		
-		//Daemon::log(get_class($this).' - '.Debug::dump($attrs));
+		Daemon::log(get_class($this).' - '.Debug::dump($attrs));
 
 		foreach ($attrs as $key => $value) {
 			$this->{$key} = $value;
@@ -42,8 +42,8 @@ class Block {
 		$this->req->tpl->assign('block',	$this);
 		if (isset($this->template)) {
 			$this->html = $this->req->templateFetch($this->template);
+			$this->req->appInstance->blocks->parse($this);
 		}
-		$this->req->appInstance->blocks->parse($this);
 		
 		
 		if ($this->readyBlocks >= $this->numBlocks) {
