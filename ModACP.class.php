@@ -23,11 +23,19 @@ class ModACP extends Block {
 		elseif ($this->req->subPath === '/getBlockSource') {
 		
 				$req = $this;
-				$this->req->appInstance->blocks->getBlockById(Request::getString($_REQUEST['id']),function ($block) use ($req) {
+				$this->req->appInstance->blocks->getBlockById($id = Request::getString($_REQUEST['id']),function ($block) use ($req, $id) {
 					
-					unset($block['templatePHP']);
-					unset($block['templateBC']);
-					$block['_id'] = (string) $block['_id'];
+					if (!$block) {
+						$block = array(
+								'_id' => $id,
+								'error' => 'Block not found.'
+						);
+					}
+					else {
+						unset($block['templatePHP']);
+						unset($block['templateBC']);
+						$block['_id'] = (string) $block['_id'];
+					}
 					$req->html = json_encode($block);
 					$req->ready();
 					

@@ -2,7 +2,6 @@
 
 /**
  * Blocks.
- * db.blocks.ensureIndex({name:1},{unique:true});	
  */
 class Blocks {
 
@@ -32,7 +31,16 @@ class Blocks {
 		));
 	}
 	public function saveBlock($block) {
-		$block['templatePHP'] =	$this->appInstance->getQuickyInstance()->_compile_string($block['template'],$block['name']);
+		$tpl = $this->appInstance->getQuickyInstance();
+		$tpl->register_function('getblock',function($args) {});
+			
+		if (isset($block['name'])) {
+			$tplName = $block['name'];
+		}
+		else {
+			$tplName = $block['lang'].'/'.$block['path'];
+		}
+		$block['templatePHP'] =	$tpl->_compile_string($block['template'],$tplName);
 		$block['mtime'] = microtime(true);
 		if (!isset($block['lang'])) {$block['lang'] = null;}
 		if (isset($block['_id'])) {

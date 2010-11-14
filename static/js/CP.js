@@ -1,6 +1,7 @@
 
 $(function() {
 		
+	$('body').addClass('blockEditable');
 	$('.block').addClass('blockEditable');
 	
 	$.keyboard('ctrl',{strict: true, event: 'keydown'},function() {
@@ -14,7 +15,8 @@ $(function() {
 		
 	});	
 	
-	$("body").append('<ul id="myMenu" class="contextMenu"> \
+	$("body")
+	.append('<ul id="myMenu" class="contextMenu"> \
 			<li class="edit"><a href="#edit">Edit</a></li> \
 			<li class="quit separator"><a href="#quit">Quit</a></li> \
 		</ul>');
@@ -48,6 +50,7 @@ $(function() {
 					success: function(data){
 						var ed = $('#'+data.id).tinymce();
 						ed.setProgressState(0); // Hide progress
+						ed.hide();
 					}
 				});
 				
@@ -92,6 +95,13 @@ $(function() {
 			external_link_list_url : "lists/link_list.js",
 			external_image_list_url : "lists/image_list.js",
 			media_external_list_url : "lists/media_list.js",
+			
+			forced_root_block : false,
+			force_p_newlines : false,
+			remove_linebreaks : false,
+			force_br_newlines : true,
+			remove_trailing_nbsp : false,   
+			verify_html : false,
 
 			// Replace values for the template plugin
 			template_replace_values : {

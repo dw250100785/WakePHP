@@ -40,6 +40,27 @@ catch (CouldntConnect $e) {
 	exit('Connection failed to '.$e->path.'.');
 }
 
+/* accounts */ 
+$accounts = $db->selectCollection('accounts');
+$accounts->remove();
+$accounts->ensureIndex(array('username' => 1),array('unique' => true));
+$accounts->ensureIndex(array('email' => 1),array('unique' => true));
+$app->saveAccount(array(
+				'username' => 'admin',
+				'password' => 'passphrase',
+				'aclgroups' => array('Superusers'),
+				'acl' => array(),
+));
+
+/* aclgroups */ 
+$aclgroups = $db->selectCollection('aclgroups');
+$aclgroups->remove();
+$aclgroups->ensureIndex(array('name' => 1),array('unique' => true));
+$app->saveACLgroup(array(
+				'name' => 'Superusers',
+				'acl' => array('global' => array('all','grant')),
+));
+
 /* blocks */ 
 $blocks = $db->selectCollection('blocks');
 $blocks->remove();
@@ -56,10 +77,9 @@ $app->saveBlock(array(
 				'path' => '/ACP'
 ));
 $app->saveBlock(array(
-				'lang' => 'en',
-				'path' => '/',
-				'title' => 'Main page',
-				'template' => '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+				'name' => 'PageStart',
+				'mod' => 'PageStart',
+				'template' =>	'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml"> 
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
@@ -71,14 +91,32 @@ $app->saveBlock(array(
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
 <meta name="description" content="phpDaemon" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
-<block mod="JSload" />
+{?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqver = "1.4.3"}{?$jqmin = false}
+<script src="{$libs}jquery/{$jqver}/jquery{$jqmin?".min":""}.js"></script>
+<script src="{$libs}jqueryui/{$jqver}/jquery-ui{$jqmin?".min":""}.js"></script>
+<script src="/js/CP.js" type="text/javascript"></script>
+<script src="/js/jquery.keyboard.js" type="text/javascript"></script>
+<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
+<script src="/js/jquery.contextMenu.js" type="text/javascript"></script>
 </head> 
-<body>
+<body><div class="block" id="{$block->parentNode->_id}">',
+));
+$app->saveBlock(array(
+				'name' => 'PageEnd',
+				'mod' => 'PageEnd',
+				'template' =>	'</div></body></html>',
+));
+$app->saveBlock(array(
+				'lang' => 'en',
+				'path' => '/',
+				'title' => 'Main page',
+				'template' => '{getBlock name="PageStart"}
 
-<block name="trololo" />
+{getBlock name="trololo"}
 
-<block mod="Pagetook" />
+{getBlock mod="Pagetook"}
+ 
+text in body
 
-</body> 
-</html>'));
+{getBlock name="PageEnd"}'));
 

@@ -6,6 +6,8 @@
 class xEngine extends AppInstance {
 
 	public $statistics;
+	public $blocks;
+	public $accounts;
 	public $db;
 	public $dbname = 'xE';
 
@@ -15,6 +17,7 @@ class xEngine extends AppInstance {
 		$appInstance = $this;
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 		$appInstance->blocks = new Blocks($this);
+		$appInstance->accounts = new Accounts($this);
 	}
 	public function getQuickyInstance() {
 		$tpl = new Quicky;
@@ -39,6 +42,12 @@ class xEngine extends AppInstance {
 	public function RPCall($method, $args) {
 		if ($method === 'saveBlock') {
 			call_user_func_array(array($this->blocks,'saveBlock'), $args);
+		}
+		elseif ($method === 'saveAccount') {
+			call_user_func_array(array($this->accounts,'saveAccount'), $args);
+		}
+		elseif ($method === 'saveACLgroup') {
+			call_user_func_array(array($this->accounts,'saveACLgroup'), $args);
 		}
 	}
 

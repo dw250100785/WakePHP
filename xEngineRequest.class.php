@@ -90,7 +90,7 @@ class xEngineRequest extends HTTPRequest {
 			list ($this->lang, $this->path) = $e;
 			$ee = explode('/',$this->path);
 			$this->path = '/'.$ee[0];
-			$this->subPath = '/'.$ee[1];
+			$this->subPath = '/'.(isset($ee[1])?$ee[1]:'');
 		}
 		
 		++$this->jobTotal;
