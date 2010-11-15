@@ -24,8 +24,8 @@ class DeferredEvent {
 		$this->onRun = $cb;
 	}
 	
-	public function setResult($result) {
-		$this->result = $this;
+	public function setResult($result = NULL) {
+		$this->result = $result;
 		$this->state = self::STATE_DONE;
 		while ($cb = array_pop($this->listeners)) {
 			$cb($this->result);

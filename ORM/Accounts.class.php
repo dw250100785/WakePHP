@@ -5,9 +5,6 @@
  */
 class Accounts extends ORM {
 
-	public $accounts;
-	public $aclgroups;
-
 	public function init() {
 		$this->accounts = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
@@ -37,4 +34,5 @@ class Accounts extends ORM {
 	public function saveACLgroup($group) {
 		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));
 	}
+		
 }

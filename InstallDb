@@ -46,6 +46,12 @@ $accounts->remove();
 $accounts->ensureIndex(array('username' => 1),array('unique' => true));
 $accounts->ensureIndex(array('email' => 1),array('unique' => true));
 $app->saveAccount(array(
+				'username' => 'Guest',
+				'password' => '',
+				'aclgroups' => array('Guests'),
+				'acl' => array(),
+));
+$app->saveAccount(array(
 				'username' => 'admin',
 				'password' => 'passphrase',
 				'aclgroups' => array('Superusers'),
@@ -91,9 +97,9 @@ $app->saveBlock(array(
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
 <meta name="description" content="phpDaemon" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
-{?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqver = "1.4.3"}{?$jqmin = false}
-<script src="{$libs}jquery/{$jqver}/jquery{$jqmin?".min":""}.js"></script>
-<script src="{$libs}jqueryui/{$jqver}/jquery-ui{$jqmin?".min":""}.js"></script>
+{?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}
+<script src="{$libs}jquery/1.4.3/jquery{$jqmin?".min":""}.js"></script>
+<script src="{$libs}jqueryui/1.8.6/jquery-ui{$jqmin?".min":""}.js"></script>
 <script src="/js/CP.js" type="text/javascript"></script>
 <script src="/js/jquery.keyboard.js" type="text/javascript"></script>
 <script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>

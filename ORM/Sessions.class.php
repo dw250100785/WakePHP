@@ -10,14 +10,16 @@ class Sessions extends ORM {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};
 	}
 	public function getSessionById($id,$cb) {
-		$this->getAccount(array('username' => $username), $cb);
+		$this->sessions->findOne($cb,array(
+				'where' =>	array('_id' => new MongoId($id))
+		));
 	}
 	public function saveSession($session) {
-		$this->accounts->upsert(array('_id' => $session['_id']),array('$set' => $session));
+		$this->sessions->upsert(array('_id' => new MongoId($session['_id'])),array('$set' => $session));
 	}
 	public function startSession() {
 		$doc = array(
-			'_id'		=> MongoId(),
+			'_id'		=> new MongoId(),
 			'ctime'	=> time(),
 		);
 		$this->sessions->insert($doc);
