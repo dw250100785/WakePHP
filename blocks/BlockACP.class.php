@@ -1,6 +1,6 @@
 <?php
 
-class ModACP extends Block {
+class BlockACP extends Block {
 
 	public function init() {
 		if ($this->req->subPath === '/saveBlock') {

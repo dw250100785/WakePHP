@@ -52,12 +52,11 @@ class Block implements ArrayAccess {
 		}
 
 		$this->init();
-		
-		if ($this->readyBlocks >= $this->numBlocks) {
-			$this->execute();
-		}
 	}
 	public function init() {
+		$this->runTemplate();
+	}
+	public function runTemplate() {
 		if (isset($this->template)) {
 			$this->req->tpl->assign('block',	$this);
 			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
@@ -86,7 +85,7 @@ class Block implements ArrayAccess {
 							if (isset($block['name']) && isset($dbprops[$block['name']])) {
 								$block = array_merge($block,$dbprops[$block['name']]);
 							}
-							if ((!isset($block['mod'])) || (!class_exists($class = 'Mod'.$block['mod']))) {
+							if ((!isset($block['type'])) || (!class_exists($class = 'Block'.$block['type']))) {
 								$class = 'Block';
 							}
 							new $class($block,$node);
@@ -101,6 +100,9 @@ class Block implements ArrayAccess {
 				)
 			);
 			unset($this->addedBlocksNames);
+		}
+		if ($this->readyBlocks >= $this->numBlocks) {
+			$this->execute();
 		}
 	}
 	public function getBlock($block) {

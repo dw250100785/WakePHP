@@ -1,11 +1,8 @@
 <?php
 
-class ModPageEnd extends Block {
+class BlockText extends Block {
 
-	public $nowrap = true;
-	
 	public function execute() {
-	
 		$this->ready();
 	}
 

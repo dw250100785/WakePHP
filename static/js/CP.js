@@ -1,7 +1,6 @@
 
 $(function() {
 		
-	$('body').addClass('blockEditable');
 	$('.block').addClass('blockEditable');
 	
 	$.keyboard('ctrl',{strict: true, event: 'keydown'},function() {

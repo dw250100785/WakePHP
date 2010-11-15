@@ -1,6 +1,6 @@
 <?php
 
-class ModPagetook extends Block {
+class BlockPagetook extends Block {
 
 	public $nowrap = true;
 	public function execute() {

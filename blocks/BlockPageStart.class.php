@@ -1,6 +1,6 @@
 <?php
 
-class ModPageStart extends Block {
+class BlockPageStart extends Block {
 
 	public $nowrap = true;
 	

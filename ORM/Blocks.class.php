@@ -3,10 +3,11 @@
 /**
  * Blocks.
  */
-class Blocks {
+class Blocks extends ORM {
 
-	public function __construct($appInstance) {
-		$this->appInstance = $appInstance;
+	public $blocks;
+
+	public function init() {
 		$this->blocks = $this->appInstance->db->{$this->appInstance->dbname . '.blocks'};
 	}
 	public function getPage($lang,$path,$cb) {
@@ -37,8 +38,12 @@ class Blocks {
 		if (isset($block['name'])) {
 			$tplName = $block['name'];
 		}
-		else {
+		elseif (isset($block['path'])) {
 			$tplName = $block['lang'].'/'.$block['path'];
+		}
+		else
+		{
+		 return;
 		}
 		$block['templatePHP'] =	$tpl->_compile_string($block['template'],$tplName);
 		$block['mtime'] = microtime(true);

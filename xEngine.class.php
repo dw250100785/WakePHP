@@ -8,6 +8,7 @@ class xEngine extends AppInstance {
 	public $statistics;
 	public $blocks;
 	public $accounts;
+	public $sessions;
 	public $db;
 	public $dbname = 'xE';
 
@@ -18,6 +19,7 @@ class xEngine extends AppInstance {
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 		$appInstance->blocks = new Blocks($this);
 		$appInstance->accounts = new Accounts($this);
+		$appInstance->sessions = new Sessions($this);
 	}
 	public function getQuickyInstance() {
 		$tpl = new Quicky;

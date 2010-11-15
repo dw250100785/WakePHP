@@ -14,9 +14,12 @@ class xEngineRequest extends HTTPRequest {
 	public $jobTotal = 0;
 	public $jobDone = 0;
 	public $tpl;
+	public $components;
 	
 	public function init() {
 		$this->req = $this;
+		
+		$this->components = new Components($this);
 		
 		$this->startTime = microtime(true);
 		
@@ -98,12 +101,10 @@ class xEngineRequest extends HTTPRequest {
 	}
 	
 	public function addBlock($block) {
-		static $c = 0;
-		if ((!isset($block['mod'])) || (!class_exists($class = 'Mod'.$block['mod']))) {
+		if ((!isset($block['type'])) || (!class_exists($class = 'Block'.$block['type']))) {
 			$class = 'Block';
 		}
-		++$c;
-		$block['tag'] = '<'.$c.'>';
+		$block['tag'] = new MongoId();
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
 		new $class($block,$this);
