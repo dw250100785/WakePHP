@@ -15,14 +15,14 @@ class Sessions extends ORM {
 		));
 	}
 	public function saveSession($session) {
-		$this->sessions->upsert(array('_id' => new MongoId($session['_id'])),array('$set' => $session));
+		$this->sessions->upsert(array('_id' => new MongoId($session['_id'])), $session);
 	}
 	public function startSession() {
 		$doc = array(
 			'_id'		=> new MongoId(),
 			'ctime'	=> time(),
 		);
-		$this->sessions->insert($doc);
+		$this->saveSession($doc);
 		return $doc;
 	}
 	public function removeSessions($find) {

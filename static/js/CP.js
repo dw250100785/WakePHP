@@ -1,4 +1,15 @@
-
+jQuery.queryController = function(method, data, success, dataType) {
+	if (dataType == null) {
+		dataType = 'json';
+	}
+	$.ajax({
+		type: "POST",
+		url: "/component/"+method+"/"+dataType,
+		dataType: dataType,
+		data: data,
+		success: success
+	});
+}
 $(function() {
 		
 	$('.block').addClass('blockEditable');
@@ -38,19 +49,13 @@ $(function() {
 				var blockId = ed.id;
 				var template = ed.getBody().innerHTML;
 				
-				$.ajax({
-					type: "POST",
-					url: "/q/ACP/saveBlock",
-					dataType: 'json',
-					data: {
+				$.queryController('Blocks/saveBlock',{
 						"id": blockId,
 						"template": template
-					},
-					success: function(data){
-						var ed = $('#'+data.id).tinymce();
-						ed.setProgressState(0); // Hide progress
-						ed.hide();
-					}
+					},function(data) {
+							var ed = $('#'+data.id).tinymce();
+							ed.setProgressState(0); // Hide progress
+							ed.hide();
 				});
 				
 				return true;
@@ -59,18 +64,12 @@ $(function() {
 				ed.onInit.add(function(ed) {
           $(el).tinymce().setProgressState(1); // Show progress while the source is loading
 				
-					$.ajax({
-						type: "POST",
-						url: "/q/ACP/getBlockSource",
-						data: {
+					$.queryController('Blocks/getBlockSource',{
 							"id": $(el).attr('id')
-						},
-						dataType: "json",
-						success: function(data){
-							var ed = $('#'+data._id).tinymce();
-							ed.setContent(data.template);
-							ed.setProgressState(0); // Hide progress
-						}
+						},function(data) {
+								var ed = $('#'+data._id).tinymce();
+								ed.setContent(data.template);
+								ed.setProgressState(0); // Hide progress
 					});
 				});
 			},

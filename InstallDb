@@ -40,6 +40,11 @@ catch (CouldntConnect $e) {
 	exit('Connection failed to '.$e->path.'.');
 }
 
+/* sessions */ 
+$sessions = $db->selectCollection('sessions');
+$sessions->remove();
+$sessions->ensureIndex(array('accountId' => 1));
+
 /* accounts */ 
 $accounts = $db->selectCollection('accounts');
 $accounts->remove();
@@ -113,18 +118,30 @@ $app->saveBlock(array(
 				'template' =>	'</div></body></html>',
 ));
 $app->saveBlock(array(
+				'name' => 'UserMiniPanel',
+				'type' => 'UserMiniPanel',
+				'template' =>	'...',
+));
+$app->saveBlock(array(
+				'name' => 'Footer',
+				'type' => 'Footer',
+				'template' =>	'<address<s>©</s> Z-IT 2010</address><br />Page took (real time): {getBlock type="Pagetook"}',
+));
+$app->saveBlock(array(
 				'lang' => 'en',
 				'path' => '/',
 				'title' => 'Main page',
 				'template' => '{getBlock name="PageStart"}
 
+{getBlock name="UserMiniPanel"}
+
 {getBlock name="trololo"}
 
-{getBlock type="UserMiniPanel"}
-
-{getBlock type="Pagetook"}
- 
+<br /><br />
 text in body
 
-{getBlock name="PageEnd"}'));
+{getBlock name="Footer"}
+
+{getBlock name="PageEnd"}
+'));
 

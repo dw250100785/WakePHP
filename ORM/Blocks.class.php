@@ -32,20 +32,6 @@ class Blocks extends ORM {
 		));
 	}
 	public function saveBlock($block) {
-		$tpl = $this->appInstance->getQuickyInstance();
-		$tpl->register_function('getblock',function($args) {});
-			
-		if (isset($block['name'])) {
-			$tplName = $block['name'];
-		}
-		elseif (isset($block['path'])) {
-			$tplName = $block['lang'].'/'.$block['path'];
-		}
-		else
-		{
-		 return;
-		}
-		$block['templatePHP'] =	$tpl->_compile_string($block['template'],$tplName);
 		$block['mtime'] = microtime(true);
 		if (!isset($block['lang'])) {$block['lang'] = null;}
 		if (isset($block['_id'])) {
@@ -58,6 +44,12 @@ class Blocks extends ORM {
 			$find = array('name' => $block['name']);
 		}
 		unset($block['_id']);
+		if (isset($block['template'])) {
+		
+			$tpl = $this->appInstance->getQuickyInstance();
+			$tpl->register_function('getblock',function($args) {});
+			$block['templatePHP'] =	$tpl->_compile_string($block['template'],implode(':',$find));
+		}
 		$this->blocks->upsert($find,array('$set' => $block));
 	}
 }
