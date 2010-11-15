@@ -15,6 +15,7 @@ class xEngineRequest extends HTTPRequest {
 	public $jobDone = 0;
 	public $tpl;
 	public $components;
+	public $dispatched = false;
 	
 	public function init() {
 		$this->req = $this;
@@ -56,7 +57,7 @@ class xEngineRequest extends HTTPRequest {
 	 */
 	public function run() {
 		
-		if ($this->path !== NULL) {
+		if ($this->dispatched) {
 			goto waiting;
 		}		
 		
@@ -83,7 +84,26 @@ class xEngineRequest extends HTTPRequest {
 	 * @return void.
 	 */
 	public function dispatch() {	
+		$this->dispatched = true;
 		$e = explode('/', ltrim($_SERVER['DOCUMENT_URI'],'/'), 2);
+		if (($e[0] === 'component') && isset($e[1])) {
+		
+			$e = explode('/', ltrim($_SERVER['DOCUMENT_URI'],'/'), 4);
+			++$this->jobTotal;
+			$this->cmpName = $e[1];
+			$this->controller = isset($e[2])?$e[2]:'';
+			$this->dataType = isset($e[3])?$e[3]:'json';
+			if ($this->components->{$this->cmpName}) {
+				$method = $this->controller.'Controller';
+				if (method_exists($this->components->{$this->cmpName},$method)) {
+					$this->components->{$this->cmpName}->$method();
+				}
+				else {
+					$this->setResult(array('errmsg' => 'Undefined controller.'));
+				}
+			}
+			return;
+		}
 
 		if (!isset($e[1])) {
 			$this->lang = $this->appInstance->config->defaultlang->value;
@@ -98,6 +118,26 @@ class xEngineRequest extends HTTPRequest {
 		
 		++$this->jobTotal;
 		$this->appInstance->blocks->getPage($this->lang,$this->path,array($this,'loadPage'));
+	}
+	
+	public function setResult($result) {
+		if ($this->dataType === 'json') {
+			//$this->header('Content-Type: text/json');
+			$this->html = json_encode($result);
+		}
+		elseif ($this->dataType === 'xml') {
+			$converter = new Array2XML();
+			$this->header('Content-Type: text/xml');
+			$this->html = $converter->convert($result);
+		}
+		else {
+			$this->html = json_encode(array(
+				'errmsg' => 'Unsupported data-type.'
+			));
+		}
+		Daemon::log($result);
+		++$this->jobDone;
+		$this->wakeup();
 	}
 	
 	public function addBlock($block) {

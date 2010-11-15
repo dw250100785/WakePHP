@@ -10,7 +10,14 @@ class Accounts extends ORM {
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
 	}
 	public function getAccountByName($username, $cb) {
-		$this->getAccount(array('username' => $username), $cb);
+		$this->accounts->findOne($cb,array(
+				'where' =>	array('username' => $username),
+		));
+	}
+	public function getAccountById($id, $cb) {
+		$this->accounts->findOne($cb,array(
+				'where' =>	array('_id' => $id),
+		));
 	}
 	public function getAccount($find) {
 		$this->accounts->findOne($cb,array(

@@ -11,6 +11,9 @@ class Components {
 	}
 	public function __get($name) {
 		$class = 'Cmp'.$name;
+		if (!class_exists($class)) {
+			return false;
+		}
 		return $this->{$name} = new $class($this->req);
 	}
 }

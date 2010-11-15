@@ -10,23 +10,41 @@ class CmpAccount extends Component {
 		
 		return function($authEvent) {
 			$authEvent->component->onSessionReady(function($sessionEvent) use ($authEvent) {
-				$authEvent->setResult();
+				$cb = function ($account) use ($authEvent) {
+								$authEvent->component->req->account = $account;
+								$authEvent->setResult();
+							};
+				if (isset($authEvent->component->req->attrs->session['accountId'])) {
+					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'],$cb);
+				}
+				else {
+					$authEvent->component->appInstance->accounts->getAccountByName('Guest',$cb);
+				}
 			});
 		};
+	}
+	public function startSession() {
+		$session = $this->appInstance->sessions->startSession();
+		$this->req->attrs->session = $session;
+		$this->req->setcookie('SESSID', (string) $session['_id']);
 	}
 	public function onSessionReadyEvent() {
 		
 		return function($sessionEvent) {
 			$sid = Request::getString($sessionEvent->component->req->attrs->cookie['SESSID']);
 			if ($sid === '') {
-				$session = $sessionEvent->component->appInstance->sessions->startSession();
-				$sessionEvent->component->req->attrs->session = $session;
-				$sessionEvent->component->req->setcookie('SESSID',(string) $session['_id']);
+				$sessionEvent->component->startSession();
 				$sessionEvent->setResult();
 				return;
 			}
 			$sessionEvent->component->appInstance->sessions->getSessionById($sid,function($session) use ($sessionEvent) {
-				$sessionEvent->component->req->attrs->session = $session;
+				
+				if (!$session) {
+					$sessionEvent->component->startSession();
+				}
+				else {
+					$sessionEvent->component->req->attrs->session = $session;
+				}
 				$sessionEvent->setResult();
 			});
 		};
