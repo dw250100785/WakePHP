@@ -23,6 +23,26 @@ class CmpAccount extends Component {
 			});
 		};
 	}
+	
+	public function	AuthenticationController() {
+		
+		$req = $this->req;
+		$this->req->appInstance->accounts->getAccount(array('$or' => array(
+					array('username' => Request::getString($this->req->attrs->request['username'])),
+					array('email' => Request::getString($this->req->attrs->request['username']))
+		))
+		,function ($account) use ($req, $id) {
+
+			if ($req->appInstance->accounts->checkPassword($account, Request::getString($this->req->attrs->request['password']))) {
+				$req->attrs->session['accountId'] = $account['_id'];
+				$req->updatedSession = true;
+				
+			}
+			$req->setResult(array(''));
+		});
+	}
+	
+	
 	public function startSession() {
 		$session = $this->appInstance->sessions->startSession();
 		$this->req->attrs->session = $session;

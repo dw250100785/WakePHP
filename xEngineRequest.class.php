@@ -16,8 +16,11 @@ class xEngineRequest extends HTTPRequest {
 	public $tpl;
 	public $components;
 	public $dispatched = false;
+	public $updatedSession = false;
 	
 	public function init() {
+		$this->header('Content-Type: text/html');
+		
 		$this->req = $this;
 		
 		$this->components = new Components($this);
@@ -26,7 +29,6 @@ class xEngineRequest extends HTTPRequest {
 		
 		$this->tpl = $this->appInstance->getQuickyInstance();
 		$this->tpl->assign('req',$this);
-		$this->dispatch();
 	}
 
 	public function onReadyBlock($obj) {
@@ -122,7 +124,7 @@ class xEngineRequest extends HTTPRequest {
 	
 	public function setResult($result) {
 		if ($this->dataType === 'json') {
-			//$this->header('Content-Type: text/json');
+			$this->header('Content-Type: text/json');
 			$this->html = json_encode($result);
 		}
 		elseif ($this->dataType === 'xml') {
@@ -173,6 +175,11 @@ class xEngineRequest extends HTTPRequest {
 		
 		$this->addBlock($page);
 	
+	}
+	public function sessionCommit() {
+		if ($this->updatedSession) {
+			$this->appInstance->accounts->saveSession($this->attrs->session);
+		}
 	}
 	public function onDestruct() {
 	 Daemon::log('destruct');

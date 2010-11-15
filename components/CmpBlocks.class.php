@@ -8,7 +8,7 @@ class CmpBlocks extends Component {
 	public function saveBlockController() {
 	
 		$this->req->appInstance->blocks->saveBlock(array(
-				'_id' => new MongoId($id = Request::getString($_REQUEST['id'])),
+				'_id' => new MongoId($id = Request::getString($this->req->attrs->request['id'])),
 				'template' => Request::getString($_REQUEST['template']),
 		));
 		$this->req->setResult(array(
@@ -19,7 +19,7 @@ class CmpBlocks extends Component {
 	public function getBlockSourceController() {
 		
 		$req = $this->req;
-		$this->req->appInstance->blocks->getBlockById($id = Request::getString($_REQUEST['id']),function ($block) use ($req, $id) {
+		$this->req->appInstance->blocks->getBlockById($id = Request::getString($this->req->attrs->request['id']),function ($block) use ($req, $id) {
 
 			if (!$block) {
 				$block = array(
