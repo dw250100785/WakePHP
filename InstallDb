@@ -94,7 +94,7 @@ $app->saveBlock(array(
 <html xmlns="http://www.w3.org/1999/xhtml"> 
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
-<title>xEngine test page</title> 
+<title>{$block->parentNode->title} - xEngine demo</title> 
 <link href="/css/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" /> 
 <link href="/css/jquery.contextMenu.css" rel="stylesheet" type="text/css" /> 
 <link href="/css/main.css" rel="stylesheet" type="text/css" /> 
@@ -120,7 +120,7 @@ $app->saveBlock(array(
 $app->saveBlock(array(
 				'name' => 'UserMiniPanel',
 				'type' => 'UserMiniPanel',
-				'template' =>	'...',
+				'template' =>	'{if $req->account.logged}Hello, <a href="#"><strong>{$req->account.username|escape}</strong></a>!{else}<a href="#">Login</a> or <a href="#">register</a>{/if}',
 ));
 $app->saveBlock(array(
 				'name' => 'Footer',

@@ -11,6 +11,9 @@ class CmpAccount extends Component {
 		return function($authEvent) {
 			$authEvent->component->onSessionReady(function($sessionEvent) use ($authEvent) {
 				$cb = function ($account) use ($authEvent) {
+					if ($account) {
+						$account['logged'] = $account['username'] !== 'Guest';
+					}
 					$authEvent->component->req->account = $account;
 					$authEvent->setResult();
 				};
