@@ -39,7 +39,7 @@ class CmpAccount extends Component {
 			,function ($account) use ($req) {
 				if (!$account) {
 					$req->setResult(array('success' => false, 'errors' => array(
-						'username' => 'unrecognizedUsername'
+						'username' => 'Unrecognized username.'
 					)));
 				}
 				elseif ($req->appInstance->accounts->checkPassword($account, Request::getString($req->attrs->request['password']))) {

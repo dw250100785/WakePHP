@@ -100,7 +100,7 @@ $app->saveBlock(array(
 <link href="/css/main.css" rel="stylesheet" type="text/css" /> 
 <link href="favicon.ico" rel="icon" type="image/x-icon" /> 
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
-<link href="/lang/{$req->lang}/main.json" lang="{$req->lang}" rel="gettext"/>
+<link href="/locale/{$req->lang}/Account.json" lang="{$req->lang}" rel="gettext"/>
 <meta name="description" content="phpDaemon" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
 {?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}

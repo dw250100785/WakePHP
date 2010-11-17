@@ -8,5 +8,8 @@ msgstr ""
 msgid "Invalid password."
 msgstr "Неверный пароль"
 
+msgid "Unrecognized username."
+msgstr "Неверный пароль"
+
 
 
