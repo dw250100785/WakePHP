@@ -21,5 +21,13 @@ $(document).ready(function() {
 				
 		}
 	}});
+	
+	$('.logoutButton').click(function() {
+		$.queryController('Account/Logout',function (result, statusText, xhr, $form) {
+			if (result.success) {
+				location.reload();
+			}
+		});
+	});
 
 });

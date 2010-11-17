@@ -27,10 +27,18 @@ class CmpAccount extends Component {
 		};
 	}
 	
+	public function LogoutController() {
+		$req = $this->req;
+		$this->onSessionRead(function($sessionEvent) use ($req) {
+			unset($req->attrs->session['accountId']);
+			$req->updatedSession = true;
+			$req->setResult(array('success' => true));
+		});
+	}
+	
 	public function	AuthenticationController() {
 		
 		$req = $this->req;
-		Daemon::log($this->req->attrs->cookie);
 		$this->onSessionStart(function($sessionEvent) use ($req) {
 			$req->appInstance->accounts->getAccount(array('$or' => array(
 				array('username' => Request::getString($req->attrs->request['username'])),
@@ -39,11 +47,10 @@ class CmpAccount extends Component {
 			,function ($account) use ($req) {
 				if (!$account) {
 					$req->setResult(array('success' => false, 'errors' => array(
-						'username' => 'unrecognizedUsername'
+						'username' => 'Unrecognized username.'
 					)));
 				}
 				elseif ($req->appInstance->accounts->checkPassword($account, Request::getString($req->attrs->request['password']))) {
-							Daemon::log($req->attrs->session);
 					$req->attrs->session['accountId'] = $account['_id'];
 					$req->updatedSession = true;
 					$req->setResult(array('success' => true));

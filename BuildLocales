@@ -10,7 +10,7 @@ foreach (glob($lcPath.'/*/LC_MESSAGES/*.po') as $poFile) {
 	$domain = pathinfo($poFile, PATHINFO_FILENAME);
 	
 	$moFile = dirname($poFile).'/'.$domain.'.mo';
-	$jsFile = $jsPath.'/'.$locale.'/'.$domain.'.js';
+	$jsFile = $jsPath.'/'.$locale.'/'.$domain.'.json';
 	shell_exec('mkdir -p '.escapeshellarg($jsPath.'/'.$locale));
 	shell_exec('msgfmt -o '.escapeshellarg($moFile).' '.escapeshellarg($poFile));
 	$cmd = 'gettext2json '.escapeshellarg($domain).' '.escapeshellarg($lcPath ).' '.escapeshellarg($locale).' > '.escapeshellarg($jsFile);

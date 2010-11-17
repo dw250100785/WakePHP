@@ -60,10 +60,14 @@
 				var lang = this.lang;
 				$.get(this.href, function(data){
 					$.gt.messages[lang] = $.gt.messages[lang] || {};
-					try {
-						var messages = eval('(' + data + ')');
-					} catch(e) {
-						return;
+					if (typeof(data) == 'object') {
+						var messages = data;
+					}	else {
+						try {
+							var messages = eval('(' + data + ')');
+						} catch(e) {
+							return;
+						}
 					}
 
 					$.extend($.gt.messages[lang], messages);
