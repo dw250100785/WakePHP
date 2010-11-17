@@ -44,8 +44,7 @@ class xEngineRequest extends HTTPRequest {
   $capture = &$tpl->_block_props[\'capture\'];
   $foreach = &$tpl->_block_props[\'foreach\'];
   $section = &$tpl->_block_props[\'section\'];
-  ?>'.$template.'
-		<?php };');
+  ?>'.$template.'<?php };');
 		ob_start();
 		$this->tpl->_eval($template);
 		$html = ob_get_contents();
@@ -112,10 +111,8 @@ class xEngineRequest extends HTTPRequest {
 			$this->path = '/'.$e[0];
 		}
 		else {
-			list ($this->lang, $this->path) = $e;
-			$ee = explode('/',$this->path);
-			$this->path = '/'.$ee[0];
-			$this->subPath = '/'.(isset($ee[1])?$ee[1]:'');
+			$this->lang = $e[0];
+			$this->path = '/'.$e[1];
 		}
 		
 		++$this->jobTotal;
@@ -137,7 +134,6 @@ class xEngineRequest extends HTTPRequest {
 				'errmsg' => 'Unsupported data-type.'
 			));
 		}
-		Daemon::log($result);
 		++$this->jobDone;
 		$this->wakeup();
 	}
@@ -178,7 +174,7 @@ class xEngineRequest extends HTTPRequest {
 	}
 	public function sessionCommit() {
 		if ($this->updatedSession) {
-			$this->appInstance->accounts->saveSession($this->attrs->session);
+			$this->appInstance->sessions->saveSession($this->attrs->session);
 		}
 	}
 	public function onDestruct() {

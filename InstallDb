@@ -52,13 +52,13 @@ $accounts->ensureIndex(array('username' => 1),array('unique' => true));
 $accounts->ensureIndex(array('email' => 1),array('unique' => true));
 $app->saveAccount(array(
 				'username' => 'Guest',
-				'password' => '',
 				'aclgroups' => array('Guests'),
 				'acl' => array(),
 ));
 $app->saveAccount(array(
 				'username' => 'admin',
 				'password' => 'passphrase',
+				'email' => 'admin@admin.tld',
 				'aclgroups' => array('Superusers'),
 				'acl' => array(),
 ));
@@ -90,8 +90,8 @@ $app->saveBlock(array(
 $app->saveBlock(array(
 				'name' => 'PageStart',
 				'type' => 'PageStart',
-				'template' =>	'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml"> 
+				'template' =>	'<!DOCTYPE html> 
+<html lang="{$req->lang}"> 
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
 <title>{$block->parentNode->title} - xEngine demo</title> 
@@ -100,32 +100,53 @@ $app->saveBlock(array(
 <link href="/css/main.css" rel="stylesheet" type="text/css" /> 
 <link href="favicon.ico" rel="icon" type="image/x-icon" /> 
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
+<link href="/lang/{$req->lang}/main.json" lang="{$req->lang}" rel="gettext"/>
 <meta name="description" content="phpDaemon" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
 {?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}
 <script src="{$libs}jquery/1.4.3/jquery{$jqmin?".min":""}.js"></script>
 <script src="{$libs}jqueryui/1.8.6/jquery-ui{$jqmin?".min":""}.js"></script>
-<script src="/js/CP.js" type="text/javascript"></script>
 <script src="/js/jquery.keyboard.js" type="text/javascript"></script>
-<script type="text/javascript" src="/js/tiny_mce/jquery.tinymce.js"></script>
+<script src="/js/tiny_mce/jquery.tinymce.js" type="text/javascript"></script>
 <script src="/js/jquery.contextMenu.js" type="text/javascript"></script>
+<script src="/js/jquery.form.js" type="text/javascript"></script>
+<script src="/js/jquery.gettext.js" type="text/javascript"></script>
+<script src="/js/core.js" type="text/javascript"></script>
+<script src="/js/CP.js" type="text/javascript"></script>
 </head> 
-<body><div class="block" id="{$block->parentNode->_id}">',
+<body><div class="block" id="{$block->parentNode->_id}">
+{getBlock name="UserMiniPanel"}
+<div class="pageContent">
+',
 ));
 $app->saveBlock(array(
 				'name' => 'PageEnd',
 				'type' => 'PageEnd',
-				'template' =>	'</div></body></html>',
+				'template' =>	'</div>{getBlock name="Footer"}
+</div></body></html>',
 ));
 $app->saveBlock(array(
 				'name' => 'UserMiniPanel',
-				'type' => 'UserMiniPanel',
-				'template' =>	'{if $req->account.logged}Hello, <a href="#"><strong>{$req->account.username|escape}</strong></a>!{else}<a href="#">Login</a> or <a href="#">register</a>{/if}',
+				'type' => 'GenericAuthDep',
+				'template' =>	'<span class="{$block.name}Left"><h2>xEngine demo site</h2></span><span class="{$block.name}Right">{if $req->account.logged}Hello, <a href="#"><strong>{$req->account.username|escape}</strong></a>!{else}<a href="/{$req->lang}/account/login">Login</a> or <a href="/{$req->lang}/account/signup">signup</a>{/if}</span>',
+));
+$app->saveBlock(array(
+				'name' => 'AccountLoginForm',
+				'type' => 'GenericAuthDep',
+				'template' =>	'<script src="/js/Account.js" type="text/javascript"></script>
+<form action="Account/Authentication" method="post">
+{if $req->account.logged}You\'re logged as <strong>{$req->account.username|escape}</strong>.<br /><br />{/if}
+Username:<br />
+<input type="text" name="username" size="25" /><br />
+Password:<br />
+<input type="password" name="password" size="25" /><br />
+<br /><button type="submit">Log in</button>
+</form>',
 ));
 $app->saveBlock(array(
 				'name' => 'Footer',
 				'type' => 'Footer',
-				'template' =>	'<address<s>©</s> Z-IT 2010</address><br />Page took (real time): {getBlock type="Pagetook"}',
+				'template' =>	'<address<s>©</s> Z-IT 2010</address><br />Page took (real time, not processor time): {getBlock type="Pagetook"}',
 ));
 $app->saveBlock(array(
 				'lang' => 'en',
@@ -133,15 +154,22 @@ $app->saveBlock(array(
 				'title' => 'Main page',
 				'template' => '{getBlock name="PageStart"}
 
-{getBlock name="UserMiniPanel"}
-
 {getBlock name="trololo"}
 
 <br /><br />
 text in body
 
-{getBlock name="Footer"}
-
 {getBlock name="PageEnd"}
 '));
 
+
+$app->saveBlock(array(
+				'lang' => 'en',
+				'path' => '/account/login',
+				'title' => 'Login ',
+				'template' => '{getBlock name="PageStart"}
+
+{getBlock name="AccountLoginForm"}
+
+{getBlock name="PageEnd"}
+'));

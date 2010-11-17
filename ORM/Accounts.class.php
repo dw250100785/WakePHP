@@ -19,7 +19,7 @@ class Accounts extends ORM {
 				'where' =>	array('_id' => $id),
 		));
 	}
-	public function getAccount($find) {
+	public function getAccount($find,	$cb) {
 		$this->accounts->findOne($cb,array(
 				'where' =>	$find,
 		));
@@ -30,13 +30,16 @@ class Accounts extends ORM {
 		));
 	}
 	public function checkPassword($account,$password) {
+		if ($account && !isset($account['password'])) {
+			return true;
+		}
 		return crypt($password,$account['password']) === $account['password'];
 	}
 	public function saveAccount($account) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'],$this->appInstance->config->cryptsalt->value);
 		}
-		$this->accounts->upsert(array('username' => $account['username']),array('$set' => $account));
+		$this->accounts->upsert(array('username' => $account['username']),$account);
 	}
 	public function saveACLgroup($group) {
 		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));

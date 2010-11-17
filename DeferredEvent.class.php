@@ -51,12 +51,13 @@ class DeferredEvent {
 				$this->args[] = func_get_arg($i);
 				++$i;
 			}
+			$this->state = self::STATE_RUNNING;
 			call_user_func($this->onRun,$this);
 		}
 	}
 	
-	public function __invoke($cb) {
-		$this->addListener($cb);
+	public function __invoke($cb, $params = array()) {
+		$this->addListener($cb, $params);
 	}
 }
 

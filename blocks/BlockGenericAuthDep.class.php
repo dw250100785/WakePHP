@@ -1,5 +1,5 @@
 <?php
-class BlockUserMiniPanel extends Block {
+class BlockGenericAuthDep extends Block {
 
 	public function init() {
 		

@@ -11,10 +11,29 @@ body {
 	font-family: Verdana,Helvetica,sans-serif;
 	font-size: 0.7em;
 	line-height: 1.5em;
+	margin-top: 12px;
+	padding-top: 12px;
+	padding-left: 2.5em;
+	border-top: 1px solid gray;
 }
 .Footer address {
 	color: gray;
 	font-style: italic;
+}
+
+form .errorMessage {
+	color: red;
+}
+
+.pageContent {
+	padding-left: 1.5em;
+}
+.AccountLoginForm form {
+
+}
+.AccountLoginForm form button {
+	font-size: 20px;
+	padding: 5px;
 }
 .UserMiniPanel {
 	background-color: #2A2B2F;
@@ -27,12 +46,18 @@ body {
 	color: white;
 	line-height: 25px;
 	border-bottom: 1px solid grey;
+	margin-bottom: 10px;
 }
 .UserMiniPanel a {
 	color: white;
 }
+.UserMiniPanel .UserMiniPanelRight {
+	padding-right: 2.5em;
+	float: right;
+} 
 .UserMiniPanel .UserMiniPanelLeft {
-	padding-left: 1.5em;
+	padding-left: 2.5em;
+	float: left;
 } 
 
 
