@@ -21,6 +21,7 @@ $(document).ready(function() {
 				
 		}
 	}});
+	$('.AccountLoginForm form').find('button[disabled]').removeAttr('disabled');
 	
 	$('.logoutButton').click(function() {
 		$.queryController('Account/Logout',function (result, statusText, xhr, $form) {

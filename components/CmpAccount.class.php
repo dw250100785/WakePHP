@@ -69,7 +69,6 @@ class CmpAccount extends Component {
 		$session = $this->appInstance->sessions->startSession();
 		$this->req->attrs->session = $session;
 		$sid = (string) $session['_id'];
-		Daemon::log('send cookie - '.$sid);
 		$this->req->setcookie('SESSID', $sid, time() + 60*60*24*365, '/');
 	}
 	public function onSessionStartEvent() {
@@ -103,9 +102,7 @@ class CmpAccount extends Component {
 				$sessionEvent->setResult();
 				return;
 			}
-			Daemon::log(Debug::dump($sid));
 			$sessionEvent->component->appInstance->sessions->getSessionById($sid, function($session) use ($sessionEvent) {
-				Daemon::log(Debug::dump($session));
 				if ($session) {
 					$sessionEvent->component->req->attrs->session = $session;
 				}

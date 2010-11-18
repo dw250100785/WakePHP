@@ -9,7 +9,10 @@ msgid "Invalid password."
 msgstr "Неверный пароль"
 
 msgid "Unrecognized username."
-msgstr "Неверный пароль"
+msgstr "ИМя пользователя не опознано."
+
+msgid "Hello, %s!"
+msgstr "Здравствуйте, %s!"
 
 
 

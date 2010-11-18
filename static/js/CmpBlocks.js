@@ -14,14 +14,14 @@ $(function() {
 	});	
 	
 	$("body")
-	.append('<ul id="myMenu" class="contextMenu"> \
-			<li class="edit"><a href="#edit">Edit</a></li> \
+	.append('<ul id="blockContextMenu" class="contextMenu"> \
+			<li class="edit"><a href="#edit">Edit (WYSIWYG)</a></li> \
 			<li class="quit separator"><a href="#quit">Quit</a></li> \
 		</ul>');
 
 	$(".blockEditable").contextMenu({
 
-		menu: 'myMenu'
+		menu: 'blockContextMenu'
 	},
 	function(action, el, pos) {
 		if (action == 'edit') {

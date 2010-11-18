@@ -52,6 +52,7 @@
 	$.extend($.gt, {
 		messages: {},
 		lang: 'C',
+		loadedLinks: 0,
 		setLang: function(code) { $.gt.lang = typeof code == 'string' && code != ' ' ? code : 'C'; },
 		pl_re: /^Plural-Forms:\s*nplurals\s*=\s*(\d+);\s*plural\s*=\s*([^a-zA-Z0-9\$]*([a-zA-Z0-9\$]+).+)$/m,
 		plural: function(n) {return n != 1;},
@@ -83,6 +84,10 @@
 							return;
 						}
 						$.gt.plural = fn;
+					}
+					++$.gt.loadedLinks;
+					if ($.gt.loadedLinks >= $('link[rel=gettext]').size()) {
+						$('body').trigger('onreadygettext');
 					}
 				});
 			});
