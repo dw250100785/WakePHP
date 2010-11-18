@@ -9,10 +9,40 @@ msgid "Invalid password."
 msgstr "Неверный пароль"
 
 msgid "Unrecognized username."
-msgstr "ИМя пользователя не опознано."
+msgstr "Имя пользователя не опознано."
 
 msgid "Hello, %s!"
 msgstr "Здравствуйте, %s!"
 
+msgid "Edit (WYSIWYG)"
+msgstr "Ред. (WYSIWYG)"
 
+msgid "Quit"
+msgstr "Выйти"
 
+msgid "Logout"
+msgstr "Выйти"
+
+msgid "Log in"
+msgstr "Войти"
+
+msgid "signup"
+msgstr "зарегистрироваться"
+
+msgid "or"
+msgstr "или"
+
+msgid "Username"
+msgstr "Имя пользователя"
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "Page took (real time, not processor time):"
+msgstr "Страница потребовала (реального времени, не процессорного):"
+
+msgid "xEngine demo site"
+msgstr "Демо-сайт xEngine"
+
+msgid "You're logged as %s."
+msgstr "Вы авторизованы как %s."

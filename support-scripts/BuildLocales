@@ -1,6 +1,7 @@
 #!/usr/bin/php -q
 <?php
-chdir(__DIR__);
+chdir(__DIR__.'/..');
+
 $lcPath = './locale';
 $jsPath = './static/locale';
 

@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(function() {
 
 	$('.AccountLoginForm form').ajaxFormController({
 		success: function (result, statusText, xhr, $form) {

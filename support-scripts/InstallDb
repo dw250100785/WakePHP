@@ -117,8 +117,8 @@ $app->saveBlock(array(
 <script src="/js/xE.js" type="text/javascript"></script>
 <script src="/js/CmpAccount.js" type="text/javascript"></script>
 {if $req->account.logged}
-<script src="/js/CmpBlocks.js" type="text/javascript"></script>
 <script src="/js/CmpI18n.js" type="text/javascript"></script>
+<script src="/js/CmpBlocks.js" type="text/javascript"></script>
 {/if}
 </head> 
 <body><div class="block" id="{$block->parentNode->_id}">
@@ -136,20 +136,20 @@ $app->saveBlock(array(
 $app->saveBlock(array(
 				'name' => 'UserMiniPanel',
 				'type' => 'GenericAuthDep',
-				'template' =>	'<span class="{$block.name}Left"><h2>xEngine demo site</h2></span>
+				'template' =>	'<span class="{$block.name}Left"><h2 class="i18n">xEngine demo site</h2></span>
 <span class="{$block.name}Right">
-{if $req->account.logged}<span class="i18n">Hello, <a class="i18nArg" href="#"><strong>{$req->account.username|escape}</strong></a>!</span> <a href="#" class="logoutButton" class="i18n">Logout</a>
-{else}<a href="/{$req->lang}/account/login">Login</a> or <a href="/{$req->lang}/account/signup">signup</a>
+{if $req->account.logged}<span class="i18n">Hello, <a class="i18nArg" href="#"><strong>{$req->account.username|escape}</strong></a>!</span> <a href="#" class="logoutButton i18n">Logout</a>
+{else}<a href="/{$req->lang}/account/login" class="i18n">Log in</a> <span class="i18n">or</span> <a href="/{$req->lang}/account/signup" class="i18n">signup</a>
 {/if}</span>',
 ));
 $app->saveBlock(array(
 				'name' => 'AccountLoginForm',
 				'type' => 'GenericAuthDep',
 				'template' =>	'<form action="Account/Authentication" method="post">
-{if $req->account.logged}You\'re logged as <strong>{$req->account.username|escape}</strong>.<br /><br />{/if}
-Username:<br />
-<input type="text" name="username" size="25" /><br />
-Password:<br />
+{if $req->account.logged}<div class="i18n">You\'re logged as <strong class="i18nArg">{$req->account.username|escape}</strong>.</div><br />{/if}
+<div><span class="i18n">Username</span>:</div>
+<input type="text" name="username" size="25" /><br /><br />
+<div><span class="i18n">Password</span>:</div>
 <input type="password" name="password" size="25" /><br />
 <br /><button type="submit" class="i18n" disabled="disabled">Log in</button>
 </form>',
@@ -157,7 +157,7 @@ Password:<br />
 $app->saveBlock(array(
 				'name' => 'Footer',
 				'type' => 'Footer',
-				'template' =>	'<address<s>©</s> Z-IT 2010</address><br />Page took (real time, not processor time): {getBlock type="Pagetook"}',
+				'template' =>	'<address<s>©</s> Z-IT 2010</address><br /><span class="i18n">Page took (real time, not processor time):</span> {getBlock type="Pagetook"}',
 ));
 $app->saveBlock(array(
 				'lang' => 'en',
@@ -184,3 +184,6 @@ $app->saveBlock(array(
 
 {getBlock name="PageEnd"}
 '));
+
+
+shell_exec(dirname(__FILE__).'/BuildLocales');

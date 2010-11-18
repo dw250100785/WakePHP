@@ -28,6 +28,7 @@ $.fn.i18n = function() {
 		
 		$(this).html($.vsprintf(_(clone.html()),argValues));
 	});
+	return this;
 }
 $.ongt = function(cb) {$('body').bind('onreadygettext',cb);};
 $.fn.outerHTML = function() {return $('<div></div>').append( this.clone() ).html();}

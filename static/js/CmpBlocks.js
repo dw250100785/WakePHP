@@ -1,4 +1,4 @@
-$(function() {
+$(function() {$.ongt(function() {
 		
 	$('.block').addClass('blockEditable');
 	
@@ -12,18 +12,18 @@ $(function() {
 		$('.blockEditable').removeClass('blockEditableBordered');
 		
 	});	
-	
 	$("body")
-	.append('<ul id="blockContextMenu" class="contextMenu"> \
-			<li class="edit"><a href="#edit">Edit (WYSIWYG)</a></li> \
-			<li class="quit separator"><a href="#quit">Quit</a></li> \
-		</ul>');
+	.append($('<ul id="blockContextMenu" class="contextMenu">').html(
+				'<li class="edit"><a href="#edit" class="i18n">Edit (WYSIWYG)</a></li>'
+			+ '<li class="quit separator"><a href="#quit" class="i18n">Quit</a></li>'
+			+ '</ul>').i18n());
 
 	$(".blockEditable").contextMenu({
 
 		menu: 'blockContextMenu'
 	},
 	function(action, el, pos) {
+	
 		if (action == 'edit') {
 
 				$(el).tinymce({
@@ -98,4 +98,4 @@ $(function() {
 		}
 
 	});
-});
+});});
