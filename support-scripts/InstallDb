@@ -1,13 +1,15 @@
 #!/usr/bin/php -q
 <?php
+chdir(__DIR__.'/..');
 $mongo = new Mongo();
 $db = $mongo->xE;
 
 $name = 'test';
 $pidfile = '/var/run/phpd.pid';
 $mastersocket = '/tmp/phpDaemon-master-%x.sock';
+$theme = 'simple';
 
-class xEngine{
+class WakePHP {
 	public $name;
 	public function __construct($path,$name) {
 		$this->name = $name;
@@ -21,10 +23,11 @@ class xEngine{
 	public function sendPacket($p) {
 		fwrite($this->sock,json_encode($p)."\n");
 	}
+	//public function saveBlock($block) {file_put_contents('./PackagedThemes/simple/blocks/'.$block['name'],json_encode($block));}
 	public function __call($m,$a) {
 		$this->sendPacket(array(
 					'op' => 'singleCall',
-					'appfullname' => 'xEngine-'.$this->name,
+					'appfullname' => get_class($this).'-'.$this->name,
 					'method' => $m,
 					'args' => $a
 		));
@@ -34,7 +37,7 @@ class CouldntConnect extends Exception {}
 
 
 try {
-	$app = new xEngine('unix://'.sprintf($mastersocket, crc32($pidfile)),$name);
+	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($pidfile)),$name);
 }
 catch (CouldntConnect $e) {
 	exit('Connection failed to '.$e->path.'.');
@@ -77,134 +80,9 @@ $blocks = $db->selectCollection('blocks');
 $blocks->remove();
 $blocks->ensureIndex(array('name' => 1));
 $blocks->ensureIndex(array('lang' => 1, 'path' => 1));
-$app->saveBlock(array(
-				'name' => 'trololo',
-				'template' =>	'Hello world!'
-));
-$app->saveBlock(array(
-				'name' => 'ACP',
-				'type' => 'ACP',
-				'template' =>	'ACP.',
-				'path' => '/ACP'
-));
-$app->saveBlock(array(
-				'name' => 'PageStart',
-				'type' => 'GenericAuthDep',
-				'nowrap' => true,
-				'template' =>	'<!DOCTYPE html> 
-<html lang="{$req->lang}"> 
-<head> 
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
-<title>{$block->parentNode->title} - xEngine demo</title> 
-<link href="/css/jquery-ui-1.8.6.custom.css" rel="stylesheet" type="text/css" /> 
-<link href="/css/jquery.contextMenu.css" rel="stylesheet" type="text/css" /> 
-<link href="/css/main.css" rel="stylesheet" type="text/css" /> 
-<link href="favicon.ico" rel="icon" type="image/x-icon" /> 
-<link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
-<link href="/locale/{$req->lang}/Account.json" lang="{$req->lang}" rel="gettext"/>
-<meta name="description" content="phpDaemon" /> 
-<meta name="keywords" content="phpDaemon, php" /> 
-{?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}
-<script src="{$libs}jquery/1.4.3/jquery{$jqmin?".min":""}.js"></script>
-<script src="{$libs}jqueryui/1.8.6/jquery-ui{$jqmin?".min":""}.js"></script>
-<script src="/js/jquery.keyboard.js" type="text/javascript"></script>
-<script src="/js/tiny_mce/jquery.tinymce.js" type="text/javascript"></script>
-<script src="/js/jquery.contextMenu.js" type="text/javascript"></script>
-<script src="/js/jquery.form.js" type="text/javascript"></script>
-<script src="/js/jquery.i18n.js" type="text/javascript"></script>
-<script src="/js/jquery.gettext.js" type="text/javascript"></script>
-<script src="/js/jquery.sprintf.js" type="text/javascript"></script>
-<script src="/js/xE.js" type="text/javascript"></script>
-<script src="/js/config.js" type="text/javascript"></script>
-<script src="/js/CmpAccount.js" type="text/javascript"></script>
-<script src="/js/CmpCAPTCHA.js" type="text/javascript"></script>
-{if $req->account.logged}
-<script src="/js/CmpI18n.js" type="text/javascript"></script>
-<script src="/js/CmpBlocks.js" type="text/javascript"></script>
-{/if}
-</head> 
-<body><div class="block" id="{$block->parentNode->_id}">
-{getBlock name="UserMiniPanel"}
-<div class="pageContent">
-',
-));
-$app->saveBlock(array(
-				'name' => 'PageEnd',
-				'type' => 'PageEnd',
-				'nowrap' => true,
-				'template' =>	'</div>{getBlock name="Footer"}
-</div></body></html>',
-));
-$app->saveBlock(array(
-				'name' => 'UserMiniPanel',
-				'type' => 'GenericAuthDep',
-				'template' =>	'<span class="{$block.name}Left"><h2 class="i18n">xEngine demo site</h2></span>
-<span class="{$block.name}Right">
-{if $req->account.logged}<span class="i18n">Hello, <a class="i18nArg" href="#"><strong>{$req->account.username|escape}</strong></a>!</span> <a href="#" class="logoutButton i18n">Logout</a>
-{else}<a href="/{$req->lang}/account/login" class="i18n">Log in</a> <span class="i18n">or</span> <a href="/{$req->lang}/account/signup" class="i18n">signup</a>
-{/if}</span>',
-));
-$app->saveBlock(array(
-				'name' => 'AccountLoginForm',
-				'type' => 'GenericAuthDep',
-				'template' =>	'<form action="Account/Authentication" method="post">
-{if $req->account.logged}<div class="i18n">You\'re logged as <strong class="i18nArg">{$req->account.username|escape}</strong>.</div><br />{/if}
-<div><span class="i18n">Username</span>:</div>
-<input type="text" name="username" size="25" /><br /><br />
-<div><span class="i18n">Password</span>:</div>
-<input type="password" name="password" size="25" /><br />
-<br /><button type="submit" class="i18n" disabled="disabled">Log in</button>
-</form>',
-));
-$app->saveBlock(array(
-				'name' => 'Footer',
-				'type' => 'Footer',
-				'template' =>	'<address<s>©</s> Z-IT 2010</address><br /><span class="i18n">Page took (real time, not processor time):</span> {getBlock type="Pagetook"}',
-));
-$app->saveBlock(array(
-				'lang' => 'en',
-				'path' => '/',
-				'title' => 'Main page',
-				'template' => '{getBlock name="PageStart"}
 
-{getBlock name="trololo"}
-
-<br /><br />
-text in body
-
-{getBlock name="PageEnd"}
-'));
-
-
-$app->saveBlock(array(
-				'lang' => 'en',
-				'path' => '/account/login',
-				'title' => 'Login',
-				'template' => '{getBlock name="PageStart"}
-
-{getBlock name="AccountLoginForm"}
-
-{getBlock name="PageEnd"}
-'));
-
-
-$app->saveBlock(array(
-				'lang' => 'en',
-				'path' => '/account/signup',
-				'title' => 'Sign up',
-				'template' => '{getBlock name="PageStart"}
-
-<form action="Account/Signup" class="AccountSignupForm" method="post">
-<div><span class="i18n">Username</span>:</div>
-<input type="text" name="username" size="25" /><br /><br />
-<div><span class="i18n">Password</span>:</div>
-<input type="password" name="password" size="25" /><br /><br />
-<div class="CAPTCHA"><span class="i18n">Loading CAPTCHA...</span></div>
-<br /><button type="submit" class="i18n" disabled="disabled">Log in</button>
-</form>
-
-{getBlock name="PageEnd"}
-'));
-
+foreach (glob('./PackagedThemes/'.$theme.'/blocks/*') as $file) {
+	$app->saveBlock(json_decode(file_get_contents($file),true));
+}
 
 shell_exec(dirname(__FILE__).'/BuildLocales');

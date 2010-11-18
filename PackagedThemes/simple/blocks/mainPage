@@ -1,0 +1,1 @@
+{"name":"mainPage","lang":"en","path":"\/","title":"Main page","template":"{getBlock name=\"PageStart\"}\n\n{getBlock name=\"trololo\"}\n\n<br \/><br \/>\ntext in body\n\n{getBlock name=\"PageEnd\"}\n"}

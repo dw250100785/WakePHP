@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: xEngine 0.1-alpha \n"
+"Project-Id-Version: WakePHP 0.1-alpha \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -13,12 +13,6 @@ msgstr "Имя пользователя не опознано."
 
 msgid "Hello, %s!"
 msgstr "Здравствуйте, %s!"
-
-msgid "Edit (WYSIWYG)"
-msgstr "Ред. (WYSIWYG)"
-
-msgid "Quit"
-msgstr "Выйти"
 
 msgid "Logout"
 msgstr "Выйти"
@@ -40,9 +34,6 @@ msgstr "Пароль"
 
 msgid "Page took (real time, not processor time):"
 msgstr "Страница потребовала (реального времени, не процессорного):"
-
-msgid "xEngine demo site"
-msgstr "Демо-сайт xEngine"
 
 msgid "Loading CAPTCHA..."
 msgstr "Загружается CAPTCHA..."

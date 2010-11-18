@@ -3,7 +3,7 @@
 /**
  * Main class of application (Quicky, MongoClient, ...)
  */
-class xEngine extends AppInstance {
+class WakePHP extends AppInstance {
 
 	public $statistics;
 	public $blocks;
@@ -60,7 +60,7 @@ class xEngine extends AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new xEngineRequest($this, $upstream, $req);
+		return new WakePHPRequest($this, $upstream, $req);
 	}
 
 }

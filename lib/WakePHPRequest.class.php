@@ -3,7 +3,7 @@
 /**
  * Request class.
  */
-class xEngineRequest extends HTTPRequest {
+class WakePHPRequest extends HTTPRequest {
 
 	public $lang;
 	public $path;
