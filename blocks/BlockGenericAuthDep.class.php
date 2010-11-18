@@ -8,9 +8,5 @@ class BlockGenericAuthDep extends Block {
 			$block->runTemplate();
 		});
 	}
-	
-	public function execute() {
-		$this->ready();
-	}
 
 }

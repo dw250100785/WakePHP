@@ -27,6 +27,17 @@ class CmpAccount extends Component {
 		};
 	}
 	
+	public function SignupController() {
+		$req = $this->req;
+		$this->onSessionStart(function($sessionEvent) use ($req) {
+			$req->components->CAPTCHA->validate(function($result) {
+			 
+			});
+			$req->setResult(array('success' => true));
+		});
+	}
+	
+	
 	public function LogoutController() {
 		$req = $this->req;
 		$this->onSessionRead(function($sessionEvent) use ($req) {

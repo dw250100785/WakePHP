@@ -25,7 +25,6 @@ $.fn.i18n = function() {
 			argValues.push($(this).outerHTML());
 			$(this).replaceWith('%s');
 		});
-		
 		$(this).html($.vsprintf(_(clone.html()),argValues));
 	});
 	return this;

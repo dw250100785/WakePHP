@@ -30,10 +30,11 @@ form .errorMessage {
 .AccountLoginForm form {
 
 }
-.AccountLoginForm form button {
+form button {
 	font-size: 20px;
 	padding: 5px;
 }
+
 .UserMiniPanel {
 	background-color: #2A2B2F;
 	border-bottom: 1px solid grey;

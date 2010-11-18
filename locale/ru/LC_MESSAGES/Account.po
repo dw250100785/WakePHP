@@ -44,5 +44,9 @@ msgstr "Страница потребовала (реального времен
 msgid "xEngine demo site"
 msgstr "Демо-сайт xEngine"
 
+msgid "Loading CAPTCHA..."
+msgstr "Загружается CAPTCHA..."
+
 msgid "You're logged as %s."
-msgstr "Вы авторизованы как %s."
+msgstr "Вы вошли как %s."
+
