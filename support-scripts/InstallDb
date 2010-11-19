@@ -79,7 +79,7 @@ $app->saveACLgroup(array(
 $blocks = $db->selectCollection('blocks');
 $blocks->remove();
 $blocks->ensureIndex(array('name' => 1));
-$blocks->ensureIndex(array('lang' => 1, 'path' => 1));
+$blocks->ensureIndex(array('locale' => 1, 'path' => 1));
 
 foreach (glob('./PackagedThemes/'.$theme.'/blocks/*') as $file) {
 	$app->saveBlock(json_decode(file_get_contents($file),true));

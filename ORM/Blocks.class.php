@@ -10,7 +10,7 @@ class Blocks extends ORM {
 	public function init() {
 		$this->blocks = $this->appInstance->db->{$this->appInstance->dbname . '.blocks'};
 	}
-	public function getPage($lang,$path,$cb) {
+	public function getPage($locale,$path,$cb) {
 		$this->blocks->findOne($cb,array(
 				'where' => array(
 										'path' => $path,
@@ -33,12 +33,12 @@ class Blocks extends ORM {
 	}
 	public function saveBlock($block) {
 		$block['mtime'] = microtime(true);
-		if (!isset($block['lang'])) {$block['lang'] = null;}
+		if (!isset($block['locale'])) {$block['locale'] = null;}
 		if (isset($block['_id'])) {
 			$find = array('_id' => $block['_id']);
 		}
 		elseif (isset($block['path'])) {
-			$find = array('lang' => $block['lang'], 'path' => $block['path']);
+			$find = array('locale' => $block['locale'], 'path' => $block['path']);
 		}
 		else {
 			$find = array('name' => $block['name']);

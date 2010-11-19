@@ -5,7 +5,7 @@
  */
 class WakePHPRequest extends HTTPRequest {
 
-	public $lang;
+	public $locale;
 	public $path;
 	public $html;
 	public $inner = array();
@@ -107,16 +107,16 @@ class WakePHPRequest extends HTTPRequest {
 		}
 
 		if (!isset($e[1])) {
-			$this->lang = $this->appInstance->config->defaultlang->value;
+			$this->locale = $this->appInstance->config->defaultlocale->value;
 			$this->path = '/'.$e[0];
 		}
 		else {
-			$this->lang = $e[0];
+			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
 		}
 		
 		++$this->jobTotal;
-		$this->appInstance->blocks->getPage($this->lang,$this->path,array($this,'loadPage'));
+		$this->appInstance->blocks->getPage($this->locale,$this->path,array($this,'loadPage'));
 	}
 	
 	public function setResult($result) {
@@ -154,7 +154,7 @@ class WakePHPRequest extends HTTPRequest {
 		
 		if (!$page)	{
 			++$this->jobTotal;
-			$this->appInstance->blocks->getPage($this->lang,'/404',array($this,'loadErrorPage'));
+			$this->appInstance->blocks->getPage($this->locale,'/404',array($this,'loadErrorPage'));
 			return;
 		}
 		$this->addBlock($page);	
