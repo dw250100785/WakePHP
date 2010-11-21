@@ -18,15 +18,17 @@
  */
 ;(function($) {
 $.fn.i18n = function() {
-	$(this).find('.i18n').each(function(index) {
-		var clone = $(this).clone();
+	var process = function(el) {
+		var clone = el.clone();
 		var argValues = [];
 		clone.find('.i18nArg').each(function() {
 			argValues.push($(this).outerHTML());
 			$(this).replaceWith('%s');
 		});
-		$(this).html($.vsprintf(_(clone.html()),argValues));
-	});
+		el.html($.vsprintf(_(clone.html()),argValues));
+	};
+	if ($(this).hasClass('.i18n')) {process($(this));}
+	$(this).find('.i18n').each(function(index) {process($(this));});
 	return this;
 }
 $.ongt = function(cb) {$('body').bind('onreadygettext',cb);};

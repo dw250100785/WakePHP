@@ -18,22 +18,71 @@ class CmpAccount extends Component {
 					$authEvent->setResult();
 				};
 				if (isset($authEvent->component->req->attrs->session['accountId'])) {
-					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'],$cb);
+					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'], $cb);
 				}
 				else {
-					$authEvent->component->appInstance->accounts->getAccountByName('Guest',$cb);
+					$authEvent->component->appInstance->accounts->getAccountByName('Guest', $cb);
 				}
 			});
 		};
 	}
 	
+	public function UsernameAvailablityCheckController() {
+		$req = $this->req;
+		$this->appInstance->accounts->getAccountByName(Request::getString($req->attrs->request['username']), function($account) use ($req) {
+			$req->setResult(array('success' => true, 'available' => $account === false));
+		});
+	}
+	
 	public function SignupController() {
 		$req = $this->req;
 		$this->onSessionStart(function($sessionEvent) use ($req) {
-			$req->components->CAPTCHA->validate(function($result) {
-			 
+			$job = $req->job = new ComplexJob(function($job) {
+				$errors = array();
+				foreach ($job->results as $name => $result) {
+					$errors[$name] = $result;
+				}
+				$success = sizeof($errors) === 0;
+				$job->req->setResult(array('success' => $success, 'errors' => $errors));
+				
 			});
-			$req->setResult(array('success' => true));
+			$req->job->req = $req;
+			
+			
+			$job('captcha',function($jobname, $complex) {
+				$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
+			 
+					$errors = array();
+					if (!$captchaOK) {
+						if ($msg === 'incorrect-captcha-sol') {
+							$errors[] = 'Incorrect CAPTCHA solution.';
+						}
+						else {
+							$errors[] = 'Unknown error.';
+							$complex->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
+						}
+					}
+					
+					$complex->setResult($jobname, $errors);
+				});
+			});
+			
+			$job('username',function($jobname, $complex) {
+				$complex->req->appInstance->accounts->getAccountByName(
+					Request::getString($complex->req->attrs->request['username']),
+					function($account) use ($jobname, $complex) {
+			 
+					$errors = array();
+					if ($account) {
+						$errors[] = 'Username already taken.';
+					}
+					
+					$complex->setResult($jobname, $errors);
+				});
+			});
+			
+			
+			$job();
 		});
 	}
 	

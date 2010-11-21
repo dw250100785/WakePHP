@@ -23,6 +23,9 @@ msgstr "Войти"
 msgid "signup"
 msgstr "зарегистрироваться"
 
+msgid "I accept. Create my account."
+msgstr "Я принимаю условия. Создайте мою учетную запись."
+
 msgid "or"
 msgstr "или"
 
@@ -40,4 +43,34 @@ msgstr "Загружается CAPTCHA..."
 
 msgid "You're logged as %s."
 msgstr "Вы вошли как %s."
+
+msgid "Account Registration"
+msgstr "Создание учетной записи"
+
+msgid "Incorrect CAPTCHA solution."
+msgstr "Неверное решение автоматического теста Тьюринга."
+
+msgid "Authentication"
+msgstr "Авторизация"
+
+msgid "E-Mail"
+msgstr "Электропочта"
+
+msgid "Desired Login Name"
+msgstr "Имя для входа (логин)"
+
+msgid "Choose a password"
+msgstr "Задайте пароль"
+
+msgid "CAPTCHA"
+msgstr "Тест Тьюринга"
+
+msgid "Terms of Service"
+msgstr "Условия предоставления услуг"
+
+msgid "By clicking on 'I accept' below you are agreeing to the Terms of Service above and the Privacy Policy."
+msgstr "Нажимая расположенную ниже кнопку \"Принимаю\", вы принимаете Условия использования, изложенные выше, а также Политику конфиденциальности."
+
+
+
 

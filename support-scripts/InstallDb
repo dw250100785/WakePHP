@@ -81,8 +81,13 @@ $blocks->remove();
 $blocks->ensureIndex(array('name' => 1));
 $blocks->ensureIndex(array('locale' => 1, 'path' => 1));
 
-foreach (glob('./PackagedThemes/'.$theme.'/blocks/*') as $file) {
-	$app->saveBlock(json_decode(file_get_contents($file),true));
+foreach (glob('./PackagedThemes/'.$theme.'/blocks/*.obj') as $file) {
+	$block = json_decode(file_get_contents($file),true);
+	$tplFilename = dirname($file).'/'.pathinfo($file,PATHINFO_FILENAME).'.tpl';
+	if (file_exists($tplFilename)) {
+		$block['template'] = file_get_contents($tplFilename);
+	}
+	$app->saveBlock($block);
 }
 
 shell_exec(dirname(__FILE__).'/BuildLocales');

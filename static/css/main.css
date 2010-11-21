@@ -1,3 +1,5 @@
+/* main */
+
 * {
 	margin: 0; padding: 0;
 }
@@ -6,34 +8,78 @@ body {
 	font-size: 0.8em;
 	line-height: 1.4em;
 }
-.Footer {
-	font-family: Verdana,Helvetica,sans-serif;
-	font-size: 0.7em;
-	line-height: 1.5em;
-	margin-top: 12px;
-	padding-top: 12px;
-	padding-left: 2.5em;
-	border-top: 1px solid gray;
+img {
+	border: none;
 }
-.Footer address {
-	color: gray;
-	font-style: italic;
+.clearfloat {
+	clear: both;
+	height: 0;
+	font-size: 1px;
+	line-height: 0px;
+}
+
+
+/* page */
+
+.pageContent {
+	padding-top: 60px;
+	margin-left: 60px;
+}
+
+
+/* core forms */
+
+form h1 {
+ color: #999999;
+ margin-bottom: 30px;
+}
+form .fieldname {
+	font-weight: bold;
+	float: left;
+}
+form .fieldcontrols {
+ float: left;
 }
 
 form .errorMessage {
 	color: red;
 }
 
-.pageContent {
-	padding-left: 1.5em;
-}
-.AccountLoginForm form {
-
-}
 form button {
 	font-size: 20px;
 	padding: 5px;
 }
+.allowMsg {
+	color: green;
+}
+.denyMsg {
+	color: red;
+}
+
+/* account */
+
+
+.AccountLoginForm {
+	
+}
+.AccountLoginForm input {
+	font-size: 3em;
+	
+}
+
+
+.AccountSignupForm {
+}
+
+.AccountSignupForm h1 {
+}
+.AccountSignupForm .fieldname {
+	
+	width: 200px;
+	
+}
+
+/* UserMiniPanel */
 
 .UserMiniPanel {
 	background-color: #2A2B2F;
@@ -61,35 +107,31 @@ form button {
 } 
 
 
-img {
-	border: none;
-}
-
-.footerStat {
-	margin-left: 25px;
-	margin-top: 15px;
-	font-size: 11px;
-}
+/* blocks */
 
 .blockEditableBordered {
 	border: 1px dashed #c0c0c0;
 }
 
 
-.blockEditable {
-}
+/* footer */
 
-.blockControls {
-
-	position: absolute;
-	display: block;
+.Footer {
+	font-family: Verdana,Helvetica,sans-serif;
+	font-size: 0.7em;
+	line-height: 1.5em;
+	margin-top: 42px;
+	padding-top: 12px;
+	padding-left: 2.5em;
+	border-top: 1px solid gray;
 }
-
-.ui-resizable-helper
-{
-	border: 2px dotted #00F;
+.footerStat {
+	margin-left: 25px;
+	margin-top: 15px;
+	font-size: 11px;
 }
-.ui-resizable-ghost {
-	border: 1px dotted gray;
+.Footer address {
+	color: gray;
+	font-style: italic;
 }
 
