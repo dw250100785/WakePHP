@@ -29,8 +29,18 @@ class CmpAccount extends Component {
 	
 	public function UsernameAvailablityCheckController() {
 		$req = $this->req;
-		$this->appInstance->accounts->getAccountByName(Request::getString($req->attrs->request['username']), function($account) use ($req) {
-			$req->setResult(array('success' => true, 'available' => $account === false));
+		$username = Request::getString($req->attrs->request['username']);
+		if (($r = $this->checkUsernameFormat($username)) !== true) {
+			$req->setResult(array('success' => true,  'error' => $r));
+			return;
+		}
+		$this->appInstance->accounts->getAccountByUnifiedName($username, function($account) use ($req) {
+			if ($account) {
+				$req->setResult(array('success' => true, 'error' => 'Username already taken.'));
+			}
+			else {
+				$req->setResult(array('success' => true));
+			}
 		});
 	}
 	
@@ -40,14 +50,38 @@ class CmpAccount extends Component {
 			$job = $req->job = new ComplexJob(function($job) {
 				$errors = array();
 				foreach ($job->results as $name => $result) {
-					$errors[$name] = $result;
+					if (sizeof($result) > 0) {
+						$errors[$name] = $result;
+					}
 				}
-				$success = sizeof($errors) === 0;
-				$job->req->setResult(array('success' => $success, 'errors' => $errors));
+				$req = $job->req;
+				if (sizeof($errors) === 0) {
+					
+					$req->appInstance->accounts->saveAccount(array(
+						'username' => $username = Request::getString($req->attrs->request['username']),
+						'password' => Request::getString($req->attrs->request['password']),
+						'email' => Request::getString($req->attrs->request['email']),
+						'aclgroups' => array('Users'),
+						'acl' => array(),
+					), function ($lastError) use ($req, $username)
+					{
+						$req->appInstance->accounts->getAccountByName($username, function ($account) use ($req) {
+							if (!$account) {
+								$req->setResult(array('success' => false));
+								return;
+							}
+							$req->attrs->session['accountId'] = $account['_id'];
+							$req->updatedSession = true;
+							$req->setResult(array('success' => true));
+						});
+					});
+				}
+				else {
+					$req->setResult(array('success' => false, 'errors' => $errors));
+				}
 				
 			});
 			$req->job->req = $req;
-			
 			
 			$job('captcha',function($jobname, $complex) {
 				$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
@@ -68,8 +102,14 @@ class CmpAccount extends Component {
 			});
 			
 			$job('username',function($jobname, $complex) {
-				$complex->req->appInstance->accounts->getAccountByName(
-					Request::getString($complex->req->attrs->request['username']),
+			
+				$username = Request::getString($complex->req->attrs->request['username']);
+				if (($r = $complex->req->components->Account->checkUsernameFormat($username)) !== true) {
+					$complex->setResult($jobname, array($r));
+					return;
+				}
+				$complex->req->appInstance->accounts->getAccountByUnifiedName(
+					$username,
 					function($account) use ($jobname, $complex) {
 			 
 					$errors = array();
@@ -82,10 +122,38 @@ class CmpAccount extends Component {
 			});
 			
 			
+			$job('email',function($jobname, $complex) {
+				if (filter_var(Request::getString($complex->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
+					$complex->setResult($jobname, array('Incorrect E-Mail.'));
+					return;
+				}
+				$complex->req->appInstance->accounts->getAccountByEmail(
+					Request::getString($complex->req->attrs->request['email']),
+					function($account) use ($jobname, $complex) {
+			 
+					$errors = array();
+					if ($account) {
+						$errors[] = 'Another account already registered with this E-Mail.';
+					}
+					
+					$complex->setResult($jobname, $errors);
+				});
+			});
+			
+			
 			$job();
 		});
 	}
 	
+	public function checkUsernameFormat($username) {
+		if (preg_match('~^(?![\-_\x20])[A-Za-z\d_\-А-Яа-яёЁ\x20]{2,25}(?<![\-_\x20])$~u',$username) == 0) {
+			return 'Incorrect username format.';
+		}
+		elseif (preg_match('~(.)\1\1\1~',$username) > 0) {
+			return 'Username contains 4 identical symbols in a row.';
+		}
+		return true;
+	}
 	
 	public function LogoutController() {
 		$req = $this->req;

@@ -1,0 +1,22 @@
+#!/usr/bin/php -q
+<?php
+chdir(__DIR__.'/..');
+$mongo = new Mongo();
+$db = $mongo->xE;
+$theme = 'simple';
+
+/* blocks */ 
+$blocks = $db->selectCollection('blocks');
+$find = $blocks->find();
+while ($block = $find->getNext()) {
+	
+	if (isset($block['template'])) {
+		file_put_contents('./PackagedThemes/'.$theme.'/blocks/'.$block['name'].'.tpl',$block['template']);
+		unset($block['template']);
+	}
+	unset($block['templatePHP']);
+	unset($block['templateBC']);
+	unset($block['_id']);
+	file_put_contents('./PackagedThemes/'.$theme.'/blocks/'.$block['name'].'.obj',json_encode($block));
+}
+

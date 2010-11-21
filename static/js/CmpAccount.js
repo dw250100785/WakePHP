@@ -48,12 +48,14 @@ $(function() {
 			for (var field in result.errors) {
 				
 				if (field == 'captcha') {
-					$('form.AccountSignupForm .CAPTCHA').captcha().after('<div class="errorMessage">'+_(result.errors[field])+'</div>');
+					$('form.AccountSignupForm .CAPTCHA').captcha().after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
 				} else {
-					$form.find('input[name="'+field+'"]').after('<div class="errorMessage">'+_(result.errors[field])+'</div>');
+					$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
 				}
 			
 			}
+			$('.usernameAvailability').html('');
+			$("form.AccountSignupForm input[name='username']").change();
 		}
 	}}).find('button[disabled]').removeAttr('disabled');
 	
@@ -62,13 +64,15 @@ $(function() {
 		if ($(this).val().length > 3) {
 			$.queryController('Account/UsernameAvailablityCheck', function(data) {
 				if (data.success) {
+					$('form.AccountSignupForm .errorMessageUsername').remove();
 					var div = $('.usernameAvailability');
-					div.html(data.available?'Username available.':'Username already taken.').i18n();
-					if (data.available) {
+					if (data.error == null) {
+						div.html(_('Username available.'));
 						div.removeClass('denyMsg');
 						div.addClass('allowMsg');
 					}
 					else {
+						div.html(_(data.error));
 						div.removeClass('allowMsg');
 						div.addClass('denyMsg');
 					}
@@ -76,6 +80,6 @@ $(function() {
 			}, {username: $(this).val()}
 			);
 		}
-	});
+	}).change();
 
 });

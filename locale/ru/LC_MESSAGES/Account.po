@@ -11,6 +11,12 @@ msgstr "Неверный пароль"
 msgid "Unrecognized username."
 msgstr "Имя пользователя не опознано."
 
+msgid "Incorrect username format."
+msgstr "Некорретный формат имени пользователя."
+
+msgid "Username contains 4 identical symbols in a row."
+msgstr "Имя пользователя содержит 4 одинаковых символа подряд."
+
 msgid "Hello, %s!"
 msgstr "Здравствуйте, %s!"
 
@@ -71,6 +77,16 @@ msgstr "Условия предоставления услуг"
 msgid "By clicking on 'I accept' below you are agreeing to the Terms of Service above and the Privacy Policy."
 msgstr "Нажимая расположенную ниже кнопку \"Принимаю\", вы принимаете Условия использования, изложенные выше, а также Политику конфиденциальности."
 
+msgid "Username available."
+msgstr "Имя доступно."
 
+msgid "Username already taken."
+msgstr "Имя уже занято."
+
+msgid "Another account already registered with this E-Mail."
+msgstr "Другая учетная запись уже зарегистрирована с данной электропочтой."
+
+msgid "Incorrect E-Mail."
+msgstr "Некорректная электропочта."
 
 

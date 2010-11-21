@@ -52,6 +52,7 @@ $sessions->ensureIndex(array('accountId' => 1));
 $accounts = $db->selectCollection('accounts');
 $accounts->remove();
 $accounts->ensureIndex(array('username' => 1),array('unique' => true));
+$accounts->ensureIndex(array('unifiedusername' => 1),array('unique' => true));
 $accounts->ensureIndex(array('email' => 1),array('unique' => true));
 $app->saveAccount(array(
 				'username' => 'Guest',

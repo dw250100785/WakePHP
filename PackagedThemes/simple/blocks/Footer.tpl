@@ -1,0 +1,1 @@
+<address<s>©</s> Z-IT 2010</address><br /><span class="i18n">Page took (real time, not processor time):</span> {getBlock type="Pagetook"}

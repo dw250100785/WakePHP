@@ -94,6 +94,8 @@
 			$.gt.setLang($('html').attr('lang'));
 		},
 		gettext: function(msgstr) {
+			if (msgstr == '') {return '';}
+
 			var lang = $.gt.lang;
 			
 			if(lang == 'C' || typeof $.gt.messages[lang] == 'undefined') {
