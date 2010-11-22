@@ -59,8 +59,8 @@ form button {
 /* account */
 
 
-.AccountLoginForm {
-	
+.AccountLoginForm .fieldname {
+ float: none;
 }
 .AccountLoginForm input {
 	font-size: 3em;

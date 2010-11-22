@@ -33,6 +33,32 @@ jQuery.urlParam = function(name){
 jQuery.text = function (string) {
 	return $('<span>').text(string).html();
 };
+
+if (typeof WebSocket != 'undefined') {WebSocket.__swfLocation = "/files/websocket/WebSocketMain.swf";}
+
+
+jQuery.urlencode = function(s) {
+	if (typeof encodeURIComponent != 'undefined') {
+		return encodeURIComponent(s).replace(new RegExp('\\+','g'), '%20');
+	}
+	return escape(s).replace(new RegExp('\\+','g'), '%20');
+};
+jQuery.urldecode = function(s) {
+	return unescape(s).replace(new RegExp('\\+','g'),' ');
+};
+jQuery.fsize = function(x) {
+	if (x >= 1024*1024*1024) {
+		return (Math.floor(x/1024/1024/1024*100)/100)+' Gb';
+	}
+	if (x >= 1024*1024) {
+		return (Math.floor(x/1024/1024*100)/100)+' Mb';
+	}
+	if (x >= 1024) {
+		return (Math.floor(x/1024*100)/100)+' Kb';
+	}
+	return (x)+' B';
+}
+
 function ucfirst (str) {
     // Makes a string's first character uppercase  
     // 
