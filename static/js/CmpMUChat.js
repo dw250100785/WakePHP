@@ -1,8 +1,8 @@
 $.chat = {
 	serverUrl: {
-		ws: 'ws://'+document.domain+'/PChat',
-		comet  : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=PChat',
-		polling : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=PChat'
+		ws: 'ws://'+document.domain+'/MUChat',
+		comet  : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=MUChat',
+		polling : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=MUChat'
 	},
 	tabs: {},
 	curTab: '#room',
@@ -453,7 +453,7 @@ $.chat = {
 		$.chat.userlist[o.username][o.sid] = {"username": o.username, "sid": o.sid, "tags": o.tags, "statusmsg": o.statusmsg};
 		$.chat.updatedUserlist();
 	},
-	partsUser : function (o) {
+	partsUserCommand : function (o) {
 		if (o.history == true) {
 			return;
 		}

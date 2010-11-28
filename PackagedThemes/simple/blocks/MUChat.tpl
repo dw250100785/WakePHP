@@ -32,12 +32,10 @@ $.chat.authkey = "yourauthkeyhere";
        </div>
      </div>
 </div>
-
 <div class="contextMenu" id="userContextMenu">
 <ul><li id="profile"><img src="files/folder.png" /> Profile</li>
 <li id="sendpm"><img src="files/email.png" /> Send private message</li>
 <li id="ignore"><img src="files/cross.png" /> Ignore this user</li>
 <li id="kick"><img src="files/cross.png" /> Kick</li>
 </ul>
-
 </div>
