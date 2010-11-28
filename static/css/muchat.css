@@ -1,0 +1,145 @@
+legend {font-size: 15px;}
+img {border: none;}
+.clearfloat {clear: both; height: 0; font-size: 1px; line-height: 0px;}
+ul {list-style: none;}
+.bquote {background-color:#F0F0F0; padding: 1em; margin-top: 10px; margin-bottom: 10px;}
+a {color: #000000;}
+#tabs
+{
+ height: 500px;
+ min-height: 300px;
+}
+#tabs ul
+{
+ min-width: 95%;
+}
+.accept_pm
+{
+ font-size: 12px;
+}
+.darkbox
+{
+ background: #000;
+ opacity: 0.50;
+ width: 100%;
+ height: 100%;
+ position: absolute;
+ top: 0px;
+ left: 0px;
+ z-index: 100;
+}
+.darkboxWindow input
+{
+ padding: 5px;
+}
+.roomsList div
+{
+ cursor: pointer;
+ cursor: hand;
+}
+.darkboxWindow
+{
+ background-color: whitesmoke;
+ padding: 25px;
+ color: #000;
+ 
+ /* border-radius */
+ -moz-border-radius: 10px 10px 10px 10px;
+ -webkit-border-radius: 10px 10px 10px 10px;
+ border-radius: 10px 10px 10px 10px;
+  
+ /* shadow */
+  box-shadow:10px 10px 20px #777777;
+ -webkit-box-shadow:10px 10px 20px #777777;
+ -moz-box-shadow: 10px 10px 20px #777777;
+  
+  z-index: 200;
+  width: 400px;
+  height: 200px;
+  position: absolute;
+  top: 50px;
+  left: 50px;
+}
+#footer
+{
+ letter-spacing: 0.5pt; margin-left: auto; margin-right: auto; width: 1000px; padding-bottom: 5px;
+ font-size: 0.7em;
+ line-height: 1.5em;
+ font-family: Verdana,Arial,sans-serif;
+}
+#footer address
+{
+ font-style : italic;
+ color: gray;
+}
+#footer div
+{
+ font-size: 20px;
+}
+#footer a:link
+{
+ text-decoration: none;
+ color: #777;
+}
+.term {text-decoration: none; border-bottom:1px dashed #000000;}
+.inputForm input
+{
+ margin: 5px;
+ padding: 5px;
+}
+.messages
+{
+ height: 75%;
+ width: 70%;
+ border-top: 0px;
+ border: 1px solid;
+ padding: 10px;
+ overflow: auto;
+ float: left;
+ word-wrap: break-word;
+ line-height: 1.5em;
+ min-width: 500px;
+ min-height: 100px;
+}
+.messagesWide
+{
+ width: 90%;
+}
+.nowrap
+{
+ white-space: nowrap;
+ min-width: 900px;
+}
+.messages a
+{
+ text-decoration: none;
+}
+.room
+{
+ overflow: auto;
+}
+.userlist
+{
+ height: 75%;
+ width: 20%;
+ border: 1px solid;
+ padding: 10px;
+ overflow: auto;
+ float: left;
+ margin-left: 10px;
+ min-width: 200px;
+ min-height: 100px;
+ word-wrap: break-word;
+}
+#tooltip {
+ background-color:#EEEEEE;
+ border:1px solid #111111;
+ opacity:0.85;
+ padding:5px;
+ position:absolute;
+ z-index:3000;
+}
+#tooltip .body
+{
+ font: 12px Verdana;
+}

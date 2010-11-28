@@ -1,9 +1,14 @@
 jQuery.fn.ajaxFormController = function(options) {
-	var resultOptions = $.queryOptions(this.attr('action'),null);
-	for (var k in options) {
-		resultOptions[k] = options[k];
+	if (!this.length) {
+		return this;
 	}
-	this.ajaxForm(resultOptions);
+	return this.each(function() {
+		var resultOptions = $.queryOptions(this.attr('action'),null);
+		for (var k in options) {
+			resultOptions[k] = options[k];
+		}
+		this.ajaxForm(resultOptions);
+	});
 	return this;
 };
 jQuery.queryController = function(method, success, data, dataType) {
@@ -30,7 +35,7 @@ jQuery.urlParam = function(name){
 	return results[1] || null;
 };
 
-jQuery.text = function (string) {
+jQuery.xmlescape = function (string) {
 	return $('<span>').text(string).html();
 };
 
