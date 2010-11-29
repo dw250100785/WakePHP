@@ -16,21 +16,20 @@
  * @project jquery.i18n
  
  */
-;(function($) {
-$.fn.i18n = function() {
-	var process = function(el) {
-		var clone = el.clone();
-		var argValues = [];
-		clone.find('.i18nArg').each(function() {
-			argValues.push($(this).outerHTML());
-			$(this).replaceWith('%s');
-		});
-		el.html($.vsprintf(_(clone.html()),argValues));
-	};
-	if ($(this).hasClass('.i18n')) {process($(this));}
-	$(this).find('.i18n').each(function(index) {process($(this));});
-	return this;
-}
+;(function($) {$.extend($.fn, {i18n: function() {
+var process = function(el) {
+	var clone = el.clone();
+	var argValues = [];
+	clone.find('.i18nArg').each(function() {
+		argValues.push($(this).outerHTML());
+		$(this).replaceWith('%s');
+	});
+	el.html($.vsprintf(_(clone.html()),argValues));
+};
+if ($(this).hasClass('.i18n')) {process($(this));}
+$(this).find('.i18n').each(function(index) {process($(this));});
+return this;
+}});
 $.ongt = function(cb) {$('body').bind('onreadygettext',cb);};
 $.fn.outerHTML = function() {return $('<div></div>').append( this.clone() ).html();}
 $(function() {$.ongt(function(e) {$(this).i18n();});});

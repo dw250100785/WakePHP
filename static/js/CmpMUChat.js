@@ -1,4 +1,9 @@
-$.chat = {
+;(function($) {
+$.extend($.fn, {muchat: function() {
+
+var chatEl = this;
+
+var chat = {
 	serverUrl: {
 		ws: 'ws://'+document.domain+'/MUChat',
 		comet  : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=MUChat',
@@ -7,7 +12,7 @@ $.chat = {
 	tabs: {},
 	curTab: '#room',
 	status: null,
-	authkey: null,
+	authkey: $.cookie('SESSID'),
 	ws: null,
 	su: false,
 	onStatusReady: null,
@@ -23,92 +28,92 @@ $.chat = {
 	packetSeq: 1,
 	callbacks: {},
 	acceptPM : function (bool) {
-		for (var k in $.chat.tags) {
-			if ($.chat.tags[k] == '%private') {
-				delete $.chat.tags[k];
+		for (var k in chat.tags) {
+			if (chat.tags[k] == '%private') {
+				delete chat.tags[k];
 			}
 		}
 		if (bool) {
-			$.chat.tags.push('%private');
+			chat.tags.push('%private');
 		}
-		$.chat.setTags($.chat.tags);
+		chat.setTags(chat.tags);
 	},
 	roomSelectScreen : function () {
-		$.chat.query({"cmd":'getAvailTags'},function (o) {
-			$('.darkbox').remove();    
-			$('#tabs').append($('<div class="darkbox" style="opacity: 0.5">'));
-			$('#tabs').append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a new room:<br /><br /><br /><div class="roomsList"></div>');
+		chat.query({"cmd":'getAvailTags'},function (o) {
+			$('.darkbox', chatEl).remove();    
+			$('#tabs', chatEl).append($('<div class="darkbox" style="opacity: 0.5">'));
+			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a new room:<br /><br /><br /><div class="roomsList"></div>');
 			for (var k in o.tags) {
-				$('.roomsList').append($('<div>').attr('name',k)
+				$('.roomsList', chatEl).append($('<div>').attr('name',k)
 				.click(function () {
-					if ($.chat.kicked) {
-						$.chat.kicked = false;
-						$.chat.connect();
+					if (chat.kicked) {
+						chat.kicked = false;
+						chat.connect();
 					}
-					$('#room .messages').html('');
-					if ($.inArray('%private', $.chat.tags)) {
-						$.chat.tags = [$(this).attr('name'), '%private'];
+					$('#room .messages', chatEl).html('');
+					if ($.inArray('%private', chat.tags)) {
+						chat.tags = [$(this).attr('name'), '%private'];
 					}
 					else {
-						$.chat.tags = [$(this).attr('name')];
+						chat.tags = [$(this).attr('name')];
 					}
-					$.chat.setTags();
-					$('.darkbox, .darkboxWindow').remove();
+					chat.setTags();
+					$('.darkbox, .darkboxWindow', chatEl).remove();
 				})
 				.html('<h3>'+$.xmlescape(o.tags[k].title != null?o.tags[k].title:k)+' ('+o.tags[k].number+')</h3>'+(o.tags[k].description != null?$.xmlescape(o.tags[k].description):'<i>no description</i>')+'<br /><br />'));
 			}
-			$.chat.onResize($(window).width(),$(window).height());
+			chat.onResize($(window).width(),$(window).height());
 		});
 	},
 	query : function (o, c, d) {
-		if ($.chat.status == 0) {
+		if (chat.status == 0) {
 			return;
 		}
-		o._id = ++$.chat.packetSeq;
+		o._id = ++chat.packetSeq;
 		if (c) {
-			$.chat.callbacks[o._id] = [c, d];
-			$('.ajaxloader').show();
+			chat.callbacks[o._id] = [c, d];
+			$('.ajaxloader', chatEl).show();
 		}
-		$.chat.sendPacket(o);
+		chat.sendPacket(o);
 	},
 	sendPacket : function (packet) {
 		var s = $.toJSON(packet);
-		$.chat.sentBytes += s.length;
+		chat.sentBytes += s.length;
 		try {
-			$.chat.ws.send(s);
+			chat.ws.send(s);
 		}
 		catch (err) {}
 	},
 	setForms : function () {
-		if ($.chat.username != null) {
-			$('.yourusername').text($.chat.username);
-			$('.inputForm').show();
-			$('#loginForm').hide();
+		if (chat.username != null) {
+			$('.yourusername', chatEl).text(chat.username);
+			$('.inputForm', chatEl).show();
+			$('#loginForm', chatEl).hide();
 		}
 		else {
-			$('.inputForm').hide();
-			$('#loginForm').show();
+			$('.inputForm', chatEl).hide();
+			$('#loginForm', chatEl).show();
 		}
-		$('.yourtags').text($.chat.tags.toString());
+		$('.yourtags', chatEl).text(chat.tags.toString());
 	},
 	setRecipient : function (username) {
-		$.chat.lastRecipients = '@' + username;
-		var e = $('.inputMessage:visible').val().split(': ', 2);
-		$('.inputMessage:visible').val($.chat.lastRecipients + ': ' + (e[1] != null ? e[1] : ''));
-		$('.inputMessage:visible').focus();
+		chat.lastRecipients = '@' + username;
+		var e = $('.inputMessage:visible', chatEl).val().split(': ', 2);
+		$('.inputMessage:visible', chatEl).val(chat.lastRecipients + ': ' + (e[1] != null ? e[1] : ''));
+		$('.inputMessage:visible', chatEl).focus();
 	},
 	setIgnore : function (username, action) {
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "setIgnore",
 			username: username,
 			action: action
 		});
 	},
 	updatedUserlist : function () {
-		$('#room .userlist').html('');
+		$('#room .userlist', chatEl).html('');
 		var found = false;
-		for (var k in $.chat.userlist) {
-			var u = $.chat.userlist[k];
+		for (var k in chat.userlist) {
+			var u = chat.userlist[k];
 			var title = $.xmlescape(k);
 			var statuses = '';
 			for (var j in u) {
@@ -118,40 +123,33 @@ $.chat = {
 				title += ' - '+statuses;
 			}
 			title += ' - Tags: '+u[j].tags;
-			$('#room .userlist').append($('<p>').append(
-			$('<a href="#" title="'+title+'" name="'+$.xmlescape(k)+'" onclick="$.chat.setRecipient('+$.xmlescape($.toJSON(k))+'); return false">')
+			$('#room .userlist', chatEl).append($('<p>').append(
+			$('<a href="#" title="'+title+'" name="'+$.xmlescape(k)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(k))+'); return false">')
 				.html($.xmlescape(k))
 				.attr('_id',k)
-				.contextMenu('userContextMenu', {
-					menuStyle : {
-						width: "200px"
-					},
-					onShowMenu : function (e, menu) {
-						if (!$.chat.su) {
-							$('#kick', menu).remove();
-						}
-						return menu;
-					},
-					bindings : {
-						profile : function (t) {window.open('http://domain.com/?'+t.name);},
-						sendpm : function (t) {$.chat.sendPM(t.name);},
-						ignore : function (t) {$.chat.setIgnore(t.name,true);},
-						kick : function (t) {$.chat.sendMessage({text: "/kick "+t.name,color:"black",tags:$.chat.tags});}
-					}
+				.contextMenu({
+					menu: $('.MUChatContextMenu', chatEl)
+				}, function(action, el, pos) {
+						
+							/*profile : function (t) {window.open('http://domain.com/?'+t.name);},
+						sendpm : function (t) {chat.sendPM(t.name);},
+						ignore : function (t) {chat.setIgnore(t.name,true);},
+						kick : function (t) {chat.sendMessage({text: "/kick "+t.name,color:"black",tags:chat.tags});}*/
+					return menu;
 				})
 			));
 			found = true;
 		}
 		if (!found) {
-			if ($.chat.tags.toString() != '') {
-				$('#room .userlist').html("<i>No users</i>");
+			if (chat.tags.toString() != '') {
+				$('#room .userlist', chatEl).html("<i>No users</i>");
 			}
 			else {
-				$('#room .userlist').html("<i>You\'re not listed on any tags.</i>");
+				$('#room .userlist', chatEl).html("<i>You\'re not listed on any tags.</i>");
 			}
 		}
 		else {
-			$('#room .userlist a').tooltip({ 
+			$('#room .userlist a', chatEl).tooltip({ 
 				track			: true, 
 				delay 		: 500, 
 				showURL		: false, 
@@ -162,42 +160,42 @@ $.chat = {
 	},
 	setTags : function (tags) {
 		if (tags == null) {
-			tags = $.chat.tags;
+			tags = chat.tags;
 		}
 		else {
-			$.chat.tags = tags;
+			chat.tags = tags;
 		}
-		$.chat.sendPacket({
+		chat.sendPacket({
 			"cmd": "setTags",
 			"tags": tags
 		});
 	},
 	keepalive: function () {
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "keepalive"
 		});
 	},
 	lastTS: 0,
 	addressOnChange: function () {
-		var $tabs = $('#tabs').tabs();
+		var $tabs = $('#tabs', chatEl).tabs();
 		$tabs.tabs('select', location.hash);
-		$('.messages').each(function () {
+		$('.messages', chatEl).each(function () {
 			$(this).scrollTo('100%',{"axis": "y"});
 		});
 	},
 	sendPM: function (username) {
-		$.chat.addTab(username);
+		chat.addTab(username);
 	},
 	closeTab: function (username) {
-		var $tabs = $('#tabs').tabs();
-		$tabs.tabs("remove", $("#tabli_room_"+username).attr('index'));
-		$("#tabs ul").index($("#tabli_room_"+username))
-		$.chat.updateTabIndexes();
-		$("#room_"+username).remove();
+		var $tabs = $('#tabs', chatEl).tabs();
+		$tabs.tabs("remove", $("#tabli_room_"+username, chatEl).attr('index'));
+		$("#tabs ul", chatEl).index($("#tabli_room_"+username, chatEl))
+		chat.updateTabIndexes();
+		$("#room_"+username, chatEl).remove();
 	},
 	addTab: function (username) {
-		var $tabs = $('#tabs').tabs();
-		if ($('#room_'+username).size() > 0) {
+		var $tabs = $('#tabs', chatEl).tabs();
+		if ($('#room_'+username, chatEl).size() > 0) {
 			location.href = '#room_'+username;
 			return;
 		}
@@ -220,61 +218,61 @@ $.chat = {
 								+ '<br /><br />Sent/Received data: <span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>'
 								+ '</form>'
 								+ '</div>';
-		$('#tabs').append(html);
-		$.chat.initInputForm();
-		$tabs.tabs("add", "#room_"+username,"["+$.xmlescape(username)+'] <img style="cursor: pointer" onclick="$.chat.closeTab('+$.xmlescape($.toJSON(username))+');" src="files/cross.png" /></a>');
-		$.chat.onResize($(window).width(),$(window).height());
-		$.chat.updateTabIndexes();
+		$('#tabs', chatEl).append(html);
+		chat.initInputForm();
+		$tabs.tabs("add", "#room_"+username,"["+$.xmlescape(username)+'] <img style="cursor: pointer" onclick="chat.closeTab('+$.xmlescape($.toJSON(username))+');" src="files/cross.png" /></a>');
+		chat.onResize($(window).width(),$(window).height());
+		chat.updateTabIndexes();
 		location.href = '#room_'+username;
 	},
 	updateTabIndexes : function () {
-		$('#tabs ul:first li').each(function (index) {
+		$('#tabs ul:first li', chatEl).each(function (index) {
 			$(this).attr('id','tabli_'+$(this).find('a').attr('href').substring(1));
 			$(this).attr('index',index);
 		});
 	},
 	onResize : function () {
 		var h = $(window).height();
-		$('#tabs').css({height: h - 70});
-		$('.messages').css({height: h - 300});
-		$('.userlist').css({height: h - 300});
-		$('.darkboxWindow .flow').css({top: $('#tabs').height()*0.30, left: $('#tabs').width()*0.30});
+		$('#tabs', chatEl).css({height: h - 70});
+		$('.messages', chatEl).css({height: h - 300});
+		$('.userlist', chatEl).css({height: h - 300});
+		$('.darkboxWindow .flow', chatEl).css({top: $('#tabs', chatEl).height()*0.30, left: $('#tabs', chatEl).width()*0.30});
 	},
 	init: function () {
-		$(window).resize($.chat.onResize);
-		$.chat.onResize($(window).width(),$(window).height());
+		$(window).resize(chat.onResize);
+		chat.onResize($(window).width(),$(window).height());
 		$.address
 			.init(function (event) {})
-			.change($.chat.addressOnChange);
-		$('#tabs').tabs({
+			.change(chat.addressOnChange);
+		$('#tabs', chatEl).tabs({
 			remove: function (event, ui) {
-				var $tabs = $('#tabs').tabs();
-				$tabs.tabs('select',$('#tabs li').find('a').attr('href'));
+				var $tabs = $('#tabs', chatEl).tabs();
+				$tabs.tabs('select',$('#tabs li', chatEl).find('a').attr('href'));
 			},
 			add: function (event, ui) {
-				var $tabs = $('#tabs').tabs();
+				var $tabs = $('#tabs', chatEl).tabs();
 				$tabs.tabs('select', '#' + ui.panel.id);
 			},
 			select: function (event, ui) {
 				location.href =  ui.tab.href;
-				$.chat.curTab = location.hash;
+				chat.curTab = location.hash;
 				return true;
 			}
     });
 	},
 	initConnect : function () {
-		$.chat.connect();
+		chat.connect();
 		setInterval(function () {
-			$.chat.connect();
-			$('.sentDataCounter').html($.fsize($.chat.sentBytes));
-			$('.recvDataCounter').html($.fsize($.chat.recvBytes));
+			chat.connect();
+			$('.sentDataCounter', chatEl).html($.fsize(chat.sentBytes));
+			$('.recvDataCounter', chatEl).html($.fsize(chat.recvBytes));
 		},1000);
 	},
 	initInputForm : function () {
-		$('.yourusername').text($.chat.username);
-		$('.inputMessage').keyboard('esc', function (event) {$(this).val('');});
-		$('.inputForm').submit(function () {
-			var val = $(this).find('.inputMessage').val();
+		$('.yourusername', chatEl).text(chat.username);
+		$('.inputMessage', chatEl).keyboard('esc', function (event) {$(this).val('');});
+		$('.inputForm', chatEl).submit(function () {
+			var val = $(this).find('.inputMessage', chatEl).val();
 			if (val == '') {
 				return false;
 			}
@@ -283,19 +281,19 @@ $.chat = {
 			for (var k in o) {
 				packet[o[k].name] = o[k].value;
 			}
-			packet.tags = $.chat.tags;
-			if ($.chat.curTab != '#room') {
+			packet.tags = chat.tags;
+			if (chat.curTab != '#room') {
 				if (packet.prefix != null) {
 					packet.text = packet.prefix + packet.text;
 					packet['tags'] = ['%private'];
 					delete packet.prefix;
 				}
 			}
-			$.chat.sendMessage(packet);
+			chat.sendMessage(packet);
 			var s = '';
-			if ($.chat.lastRecipients != null) {
+			if (chat.lastRecipients != null) {
 				var e = val.split(': ',2);
-				if ((e[0] != null) && (e[0] == $.chat.lastRecipients)) {s = e[0]+': ';}
+				if ((e[0] != null) && (e[0] == chat.lastRecipients)) {s = e[0]+': ';}
 			}
 			$(this).find('.inputMessage').val(s);
 			$(this).find('.inputMessage').focus();
@@ -303,10 +301,10 @@ $.chat = {
 		});
 	},
 	initLoginForm : function () {
-		$('#inputUsername').keyboard('esc', function (event) {$('#inputUsername').val('');});
-		$('#loginForm').submit(function () { 
+		$('#inputUsername', chatEl).keyboard('esc', function (event) {$('#inputUsername').val('');});
+		$('#loginForm', chatEl).submit(function () { 
 			setTimeout(function () {
-				$.chat.setUsername($('#inputUsername').val());
+				chat.setUsername($('#inputUsername', chatEl).val());
 			},5);
 			return false;
 		});
@@ -317,46 +315,46 @@ $.chat = {
 		}
 		var dateStr = (o.ts != null)?('['+(new Date(o.ts*1000).toTimeString().substring(0,8))+'] '):'';
 		if (o.mtype == 'status') {
-			if (($.chat.userlist[o.from] != null) && ($.chat.userlist[o.from][o.sid] != null)) {
-				$.chat.userlist[o.from][o.sid].statusmsg = o.text;
-				$.chat.updatedUserlist();
+			if ((chat.userlist[o.from] != null) && (chat.userlist[o.from][o.sid] != null)) {
+				chat.userlist[o.from][o.sid].statusmsg = o.text;
+				chat.updatedUserlist();
 			}
-			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="$.chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
+			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
 		}
 		else if (o.mtype == 'astatus') {
-			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="$.chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
+			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
 		}
 		else if (o.mtype == 'system') {
 			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+' '+$.xmlescape(o.text)+'</p>';
 		}
 		else {
 			var style = 'color: '+$.xmlescape(o.color)+';';
-			//if ((o.to != null) && (o.to.indexOf($.chat.username) != -1)) {style += ' font-weight: bold;';}
-			var s = '<p style="'+style+'">'+dateStr+'<a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="$.chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">&lt;'+$.xmlescape(o.from)+'&gt;</a>: '+$.xmlescape(o.text)+'</p>';
+			//if ((o.to != null) && (o.to.indexOf(chat.username) != -1)) {style += ' font-weight: bold;';}
+			var s = '<p style="'+style+'">'+dateStr+'<a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">&lt;'+$.xmlescape(o.from)+'&gt;</a>: '+$.xmlescape(o.text)+'</p>';
 		}
 		var roomId = '#room';
 		if (o.tags != null && o.tags[0] == '%private') {
-			if (o.from == $.chat.username) {
+			if (o.from == chat.username) {
 				roomId = '#room_'+o.to[0];
-				$.chat.addTab(o.to[0]);
+				chat.addTab(o.to[0]);
 			}
 			else {
 				roomId = '#room_'+o.from;
-				$.chat.addTab(o.from);
+				chat.addTab(o.from);
 			}
 		}
 		else if (o.tab != null) {
 			roomId = o.tab;
 		}
-		$(roomId+' .messages').append(s);
-		$(roomId+' .messages').scrollTo('100%',{"axis": "y"});
-		while ($(roomId+' .messages p').size() > 200) {
-			$(roomId+' .messages p:first').remove();
+		$(roomId+' .messages', chatEl).append(s);
+		$(roomId+' .messages', chatEl).scrollTo('100%',{"axis": "y"});
+		while ($(roomId+' .messages p', chatEl).size() > 200) {
+			$(roomId+' .messages p:first', chatEl).remove();
 		};
 	},
 	sendMessage : function (o) {
 		o.cmd = "sendMessage";
-		o.tab = $.chat.curTab;
+		o.tab = chat.curTab;
 		if (o.tags.length > 1) {
 			for (var k in o.tags) {
 				if (o.tags[k] == '%private') {
@@ -364,52 +362,52 @@ $.chat = {
 				}
 			}
 		}
-		$.chat.sendPacket(o);
+		chat.sendPacket(o);
 	},
 	getHistory : function () {
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "getHistory",
-			tags: $.chat.tags,
-			lastTS: $.chat.lastTS
+			tags: chat.tags,
+			lastTS: chat.lastTS
 		});
 	},
 	msgCommand : function (o) {
 		if (o.ts) {
-			$.chat.lastTS = o.ts;
+			chat.lastTS = o.ts;
 		}
-		$.chat.addMsg(o);
+		chat.addMsg(o);
 	},
 	youAreModeratorCommand : function (o) {
-		$.chat.su = true;
+		chat.su = true;
 	},
 	availableTagsCommand : function (o) {
-		if ($.chat.availTags == null) {
-			$('.darkbox').remove();    
-			$('#tabs').append($('<div class="darkbox" style="opacity: 0.5">'));
-			$('#tabs').append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a room:<br /><br /><br /><div class="roomsList"></div>');
+		if (chat.availTags == null) {
+			$('.darkbox', chatEl).remove();    
+			$('#tabs', chatEl).append($('<div class="darkbox" style="opacity: 0.5">'));
+			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a room:<br /><br /><br /><div class="roomsList"></div>');
 			for (var k in o.tags) {
-				$('.roomsList')
+				$('.roomsList', chatEl)
 					.append($('<div>')
 					.attr('name',k)
 					.click(function () {
-						if ($.chat.kicked) {
-							$.chat.kicked = false;
-							$.chat.connect();
+						if (chat.kicked) {
+							chat.kicked = false;
+							chat.connect();
 						}
-						$.chat.tags.push($(this).attr('name'));
-						$.chat.setTags();
-						$('.darkbox, .darkboxWindow').remove();
+						chat.tags.push($(this).attr('name'));
+						chat.setTags();
+						$('.darkbox, .darkboxWindow', chatEl).remove();
 					})
 					.html('<h3>'+$.xmlescape(o.tags[k].title != null?o.tags[k].title:k)+' ('+o.tags[k].number+')</h3>'+(o.tags[k].description != null?$.xmlescape(o.tags[k].description):'<i>no description</i>')+'<br /><br />'));
 			}
-			$.chat.onResize($(window).width(),$(window).height());
+			chat.onResize($(window).width(),$(window).height());
 		}
-		$.chat.availTags = o.tags;
+		chat.availTags = o.tags;
 	},
 	tagsCommand : function (o) {
-		$.chat.tags = o.tags;
-		$('.yourtags').text($.chat.tags.toString());
-		$.chat.getUserlist();
+		chat.tags = o.tags;
+		$('.yourtags', chatEl).text(chat.tags.toString());
+		chat.getUserlist();
 	},
 	userlistCommand : function (o) {
 		var newlist = {};
@@ -420,165 +418,173 @@ $.chat = {
 			}
 			newlist[u][o.userlist[k].id] = o.userlist[k];
 		};
-		$.chat.userlist = newlist;
-		$.chat.updatedUserlist();
+		chat.userlist = newlist;
+		chat.updatedUserlist();
 	},
 	youWereKickedCommand : function (o) {
-		$.chat.kicked = true;
-		$.chat.username = null;
-		$.chat.availTags = null;
-		$.chat.ws.close();
-		$.chat.ws = null;
-		$('.darkbox').remove();
-		$('#tabs').append($('<div class="darkbox">'));
-		$('#tabs').append('<div class="darkboxWindow flow">You were kicked. Reason: '+o.reason+' <br /><br /><br /><center><input type="button" onclick="$.chat.kicked = false;$.chat.connect();$(\'.darkbox, .darkboxWindow\').remove();" value="Reconnect" /></center></div>');
-		$.chat.onResize($(window).width(),$(window).height());
+		chat.kicked = true;
+		chat.username = null;
+		chat.availTags = null;
+		chat.ws.close();
+		chat.ws = null;
+		$('.darkbox', chatEl).remove();
+		$('#tabs', chatEl).append($('<div class="darkbox">'));
+		$('#tabs', chatEl).append('<div class="darkboxWindow flow">You were kicked. Reason: '+o.reason+' <br /><br /><br /><center><input type="button" onclick="chat.kicked = false;chat.connect();$(\'.darkbox, .darkboxWindow\').remove();" value="Reconnect" /></center></div>');
+		chat.onResize($(window).width(),$(window).height());
 	},
 	cstatusCommand : function (o) {
-		if ($.chat.username == null) {
-			$.chat.setTags($.chat.tagsDefault);
-			$.chat.getHistory();
-			$.chat.getUserlist();
+		if (chat.username == null) {
+			chat.setTags(chat.tagsDefault);
+			chat.getHistory();
+			chat.getUserlist();
 		}
-		$.chat.username = o.username;
-		$.chat.setForms();
+		chat.username = o.username;
+		chat.setForms();
 	},
 	joinsUserCommand : function (o) {
 		if (o.history == true) {
 			return;
 		}
-		if ($.chat.userlist[o.username] == null) {
-			$.chat.userlist[o.username] = {};
+		if (chat.userlist[o.username] == null) {
+			chat.userlist[o.username] = {};
 		}
-		$.chat.userlist[o.username][o.sid] = {"username": o.username, "sid": o.sid, "tags": o.tags, "statusmsg": o.statusmsg};
-		$.chat.updatedUserlist();
+		chat.userlist[o.username][o.sid] = {"username": o.username, "sid": o.sid, "tags": o.tags, "statusmsg": o.statusmsg};
+		chat.updatedUserlist();
 	},
 	partsUserCommand : function (o) {
 		if (o.history == true) {
 			return;
 		}
-		if ($.chat.userlist[o.username] == null) {
+		if (chat.userlist[o.username] == null) {
 			return;
 		}
-		if ($.chat.userlist[o.username][o.sid] == null) {
+		if (chat.userlist[o.username][o.sid] == null) {
 			return;
 		}
-		delete $.chat.userlist[o.username][o.sid];
+		delete chat.userlist[o.username][o.sid];
 		var found = false;
-		for (var k in $.chat.userlist[o.username]) {
+		for (var k in chat.userlist[o.username]) {
 			found = true;
 			break;
 		}
 		if (!found) {
-			delete $.chat.userlist[o.username];
+			delete chat.userlist[o.username];
 		}
-		$.chat.updatedUserlist();
+		chat.updatedUserlist();
 	},
 	changedUsernameCommand : function (o) {
 		if (o.history == true) {
 			return;
 		}
-		if ($.chat.userlist[o.old] == null) {
+		if (chat.userlist[o.old] == null) {
 			return;
 		}
-		if ($.chat.userlist[o.old][o.sid] == null) {
+		if (chat.userlist[o.old][o.sid] == null) {
 			return;
 		}
 		var n = o['new'];
-		if ($.chat.userlist[n] == null) {
-			$.chat.userlist[n] = {};
+		if (chat.userlist[n] == null) {
+			chat.userlist[n] = {};
 		}
-		$.chat.userlist[n][o.sid] = $.chat.userlist[o.old][o.sid];
-		$.chat.userlist[n][o.sid].username = n;
-		delete $.chat.userlist[o.old][o.sid];
+		chat.userlist[n][o.sid] = chat.userlist[o.old][o.sid];
+		chat.userlist[n][o.sid].username = n;
+		delete chat.userlist[o.old][o.sid];
 		var found = false;
-		for (var k in $.chat.userlist[o.old]) {
+		for (var k in chat.userlist[o.old]) {
 			found = true;
 			break;
 		}
 		if (!found) {
-			delete $.chat.userlist[o.old];
+			delete chat.userlist[o.old];
 		}
-		$.chat.updatedUserlist();
+		chat.updatedUserlist();
 	},
 	getUserlist : function () {
-		if ($.chat.userlistUpdateTimeout != null) {
-			clearTimeout($.chat.userlistUpdateTimeout);
+		if (chat.userlistUpdateTimeout != null) {
+			clearTimeout(chat.userlistUpdateTimeout);
 		}
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "getUserlist",
-			tags: $.chat.tags
+			tags: chat.tags
 		});
-		$.chat.userlistUpdateTimeout = setTimeout($.chat.getUserlist,25000);
+		chat.userlistUpdateTimeout = setTimeout(chat.getUserlist,25000);
 	},
 	setUsername : function (username) {
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "setUsername",
 			username: username
 		});
 	},
 	sendHello : function (authkey) {
-		$.chat.sendPacket({
+		chat.sendPacket({
 			cmd: "hello",
 			authkey: authkey
 		});
 	},
 	connect : function () {
-		if ($.chat.kicked) {
+		if (chat.kicked) {
 			return;
 		}
-		if ($.chat.ws != null) {
-			if ($.chat.ws.readyState != 2) {
+		if (chat.ws != null) {
+			if (chat.ws.readyState != 2) {
 				return;
 			}
 			else {
-				$.chat.addMsg({"text": "* Trying to reconnect..", "color": "gray", "mtype": "system"});
+				chat.addMsg({"text": "* Trying to reconnect..", "color": "gray", "mtype": "system"});
 			}
 		}
-		$.chat.addMsg({"text": "* Connecting...", "color": "gray", "mtype": "system"});
-		//$.chat.ws = new WebSocket($.chat.serverUrl.ws);
-		$.chat.ws = new WebSocketConnection({url: $.chat.serverUrl,root: '/js/'});
-		$.chat.ws.onopen = function () {
-			$.chat.kicked = false;      
-			$.chat.addMsg({"text": "* Connected successfully.", "color": "gray", "mtype": "system"});
-			if ($.chat.username != null) {
-				$.chat.setUsername($.chat.username);
+		chat.addMsg({"text": "* Connecting...", "color": "gray", "mtype": "system"});
+		//chat.ws = new WebSocket(chat.serverUrl.ws);
+		chat.ws = new WebSocketConnection({url: chat.serverUrl,root: '/js/'});
+		chat.ws.onopen = function () {
+			chat.kicked = false;
+			chat.addMsg({"text": "* Connected successfully.", "color": "gray", "mtype": "system"});
+			if (chat.username != null) {
+				chat.setUsername(chat.username);
 			}
-			if ($.chat.authkey != null) {
-				$.chat.sendHello($.chat.authkey);
+			if (chat.authkey != null) {
+				chat.sendHello(chat.authkey);
 			}
-			$.chat.su = false;
+			chat.su = false;
 			setInterval(function () {
-				$.chat.keepalive();
+				chat.keepalive();
 			},20000);
 		};
-		$.chat.ws.onmessage = function (e) {
+		chat.ws.onmessage = function (e) {
 			if (e.data == null) {
 				return;
 			}
-			$.chat.recvBytes += e.data.length;
+			chat.recvBytes += e.data.length;
 			var o = $.parseJSON($.urldecode(e.data));
-			if ((typeof (o._id) != 'undefined') && (typeof ($.chat.callbacks[o._id]) != 'undefined')) {
-				$.chat.callbacks[o._id][0](o,$.chat.callbacks[o._id][1]);
-				delete $.chat.callbacks[o._id];
+			if ((typeof (o._id) != 'undefined') && (typeof (chat.callbacks[o._id]) != 'undefined')) {
+				chat.callbacks[o._id][0](o,chat.callbacks[o._id][1]);
+				delete chat.callbacks[o._id];
 			}
-			else if ($.chat[o.type+'Command'] != null) {
-				$.chat[o.type+'Command'](o);
+			else if (chat[o.type+'Command'] != null) {
+				chat[o.type+'Command'](o);
 			}
 			else {
 				alert(o.type+'Command');
 			}
 		};
-		$.chat.ws.onclose = function () {
-			if (!$.chat.kicked) {
-				$.chat.addMsg({"text": "* Ooops! You're disconnected from the server!", "color": "gray", "mtype": "system"});
-				$.chat.ws = null;
+		chat.ws.onclose = function () {
+			if (!chat.kicked) {
+				chat.addMsg({"text": "* Ooops! You're disconnected from the server!", "color": "gray", "mtype": "system"});
+				chat.ws = null;
 			}
 		};
 	}
 };
-$(document).ready(function () {
-	$.chat.init();
-	$.chat.initInputForm();
-	$.chat.initConnect();
-});
+chat.init();
+chat.initInputForm();
+chat.initConnect();
+chatEl.append($('<ul class="MUChatContextMenu contextMenu">').html(
+			'<li class="edit"><a href="#edit" class="i18n">Profile</a></li>'
+		+ '<li class="quit separator"><a href="#quit" class="i18n">Send private message</a></li>'
+		+ '<li class="quit separator"><a href="#quit" class="i18n">Ignore this user</a></li>'
+		+ '<li class="quit separator"><a href="#quit" class="i18n">Quit</a></li>'
+		+ '</ul>').i18n());
+
+}});
+$(function() {$('.MUChat').muchat();});
+})(jQuery);

@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Sessions
+ * SessionsORM
  */
-class Sessions extends ORM {
+class SessionsORM extends ORM {
 	public $sessions;
 
 	public function init() {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};
 	}
-	public function getSessionById($id,$cb) {
+	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb,array(
 				'where' =>	array('_id' => new MongoId($id))
 		));

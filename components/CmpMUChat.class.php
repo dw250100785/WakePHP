@@ -2,18 +2,19 @@
 /*
 DRAFT:
 
- db.chatsessions.ensureIndex({id:1},{unique: true});
- db.chatsessions.ensureIndex({tags:1});
- db.ignore.ensureIndex({user:1,blocked:1},{unique: true});
- db.authkeys.ensureIndex({authkey:1},{unique: true});
- db.createCollection("chatevents", {capped:true, size:100000})
+ db.muchatsessions.ensureIndex({id:1},{unique: true});
+ db.muchatsessions.ensureIndex({tags:1});
+ db.muchatignore.ensureIndex({user:1,blocked:1},{unique: true});
+ db.createCollection("muchatevents", {capped:true, size:100000})
 */
 
-class MUChat extends AppInstance {
+class CmpMUChat extends AppInstance {
  
 	public $sessions = array();
 
 	public $db;
+	
+	public $dbname;
 
 	public $tags;
 
@@ -30,23 +31,27 @@ class MUChat extends AppInstance {
 	public $LockClient;
 	
 	public $statTags;
+	
+	public $ORM;
 
 	protected function getConfigDefaults() {
 		return array(
-			'dbname' => 'muchat',
+			'dbname' => 'WakePHP',
 			'adminpassword' => 'lolz',
 		);
 	}
 
 	public function init() {
 	
-		Daemon::log(__CLASS__.' up.');
+		Daemon::log(__CLASS__ . ' up.');
 		$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
+		$this->dbname = $this->config->dbname->value;
+		$this->ORM = new MUChatORM($this);
 		$this->tags = array();
 		$this->minMsgInterval = 1;
 
 		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
-		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid.'-' . microtime(true)));
+		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid .'-' . microtime(true)));
 
 	}
 	
@@ -120,7 +125,7 @@ class MUChat extends AppInstance {
 		if (!isset($doc['tags'])) {
 			$doc['tags'] = array();
 		}
-		$this->db->{$this->config->dbname->value . '.chatevents'}->insert($doc);
+		$this->db->{$this->config->dbname->value . '.muchatevents'}->insert($doc);
 		
 	}
 	public function onHandshake($client) {
@@ -168,7 +173,7 @@ class MUChatTag {
 	public function touch() {
 		if (!$this->cursor || $this->cursor->destroyed) {
 			$tag = $this;
-			$this->appInstance->db->{$this->appInstance->config->dbname->value . '.chatevents'}->find(function($cursor) use ($tag) {
+			$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatevents'}->find(function($cursor) use ($tag) {
 				$tag->cursor = $cursor;
 				foreach ($cursor->items as $k => &$item) {
 					if ($item['type'] === 'kickUsers') {
@@ -181,7 +186,7 @@ class MUChatTag {
 							$tag->appInstance->broadcastEvent(array(
 								'type' => 'msg',
 								'mtype' => 'system',
-								'text' => ' * Kicked: '.$sess->username.($item['reason'] !== ''?', reason: '.$item['reason']:''),
+								'text' => ' * Kicked: '.$sess->username . ($item['reason'] !== '' ? ', reason: '.$item['reason'] : ''),
 								'color' => 'green',
 								'tags' => $tag->tag,
 							));
@@ -303,7 +308,7 @@ class MUChatSession {
 		);
 		$this->setTags(array());
 		$this->broadcastEvent($a);
-		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.chatsessions'}->remove(array('id' => $this->sid));
+		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->remove(array('id' => $this->sid));
 		unset($this->appInstance->sessions[$this->client->connId]);
 	}
 	public function onAddedTags($tags, $silence = false) {
@@ -407,7 +412,7 @@ class MUChatSession {
  }
 	public function updateSession($a) {
 		$a['id'] = $this->sid;
-		$this->appInstance->db->{$this->appInstance->config->dbname->value.'.chatsessions'}->upsert(
+		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->upsert(
 			array('id' => $this->sid),
 			array('$set' => $a)
 		);
@@ -454,7 +459,7 @@ class MUChatSession {
 		}
 		$clientId = $this->client->connId;
 		$appInstance = $this->appInstance;
-		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.chatsessions'}->findOne(function($item) use ($clientId, $appInstance, $name, $silence) {
+		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->findOne(function($item) use ($clientId, $appInstance, $name, $silence) {
 			if (!isset($appInstance->sessions[$clientId])) {
 				return;
 			}
@@ -531,19 +536,12 @@ class MUChatSession {
 			}
 			$clientId = $this->client->connId;
 			$appInstance = $this->appInstance;
-			$this->appInstance->db->{$this->appInstance->config->dbname->value . '.authkeys'}->findOne(function($authkey) use ($clientId, $appInstance) {
+			$appInstance->ORM->getAuthKey($packet['authkey'], function($authkey) use ($clientId, $appInstance) {
 				if (!isset($appInstance->sessions[$clientId])) {
 					return;
 				}
 				$session = $appInstance->sessions[$clientId];
 
-				if (!$authkey) {
-					$authkey = array(
-					'username' => 'TestUser'.mt_rand(0,100),
-					'tags' => array('mainroom','secondroom'),
-					'su' => true,
-					);
-				}
 				if (!$authkey) {
 					$session->send(array('type' => 'youWereKicked', 'reason' => 'Incorrect auth. data.'));
 					Daemon::log('Incorrect auth. data.');
@@ -553,7 +551,7 @@ class MUChatSession {
 					$session->su = $authkey['su'];
 				}
 				$session->authkey = $authkey;
-				$appInstance->db->{$appInstance->config->dbname->value.'.akicks'}->findOne(function($akick) use ($authkey, $clientId, $appInstance) {
+				$appInstance->db->{$appInstance->config->dbname->value . '.akicks'}->findOne(function($akick) use ($authkey, $clientId, $appInstance) {
 					if (!isset($appInstance->sessions[$clientId])) {
 						return;
 					}
@@ -564,13 +562,8 @@ class MUChatSession {
 					}
 					$session->updateAvailTags();     
 					$session->setUsername($authkey['username']);
-				},array(
-					'where' => array(
-						'username' => $authkey['username'],
-						'till' => array('$gt' => microtime(true))
-					)
-				));
-			},array('where' => array('authkey' => $packet['authkey'])));
+				});
+			});
 		}
 		elseif ($cmd === 'getAvailTags') {
 			$this->updateAvailTags($packet['_id']);
@@ -581,7 +574,7 @@ class MUChatSession {
 			}
 			$this->setTags($packet['tags']);
 		}
-		elseif ($cmd === 'setIgnore') {
+		elseif ($cmd === 'setmuchatignore') {
 			if ($this->username === null) {
 				return;
 			}
@@ -593,10 +586,10 @@ class MUChatSession {
 				return;
 			}
 			if ($packet['action']) {
-				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.ignore'}->insert($doc);
+				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatignore'}->insert($doc);
 			}
 			else {
-				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.ignore'}->remove($doc);
+				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatignore'}->remove($doc);
 			}
 		}
 		elseif ($cmd === 'keepalive') {
@@ -614,7 +607,7 @@ class MUChatSession {
 			if ($lastTS > 0) {
 				$condts['$gt'] = $lastTS;
 			}
-			$this->appInstance->db->{$this->appInstance->config->dbname->value.'.chatevents'}->find(function($cursor) use ($session) {
+			$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatevents'}->find(function($cursor) use ($session) {
 				$tag->cursor = $cursor;
 				$cursor->items = array_reverse($cursor->items);
 				foreach ($cursor->items as $k => &$item) {
@@ -649,7 +642,7 @@ class MUChatSession {
 				return;
 			}
 			$session = $this;
-			$this->appInstance->db->{$this->appInstance->config->dbname->value.'.chatsessions'}->find(function($cursor) use ($session) {
+			$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->find(function($cursor) use ($session) {
 				$tag->cursor = $cursor;
 				$cursor->items = array_reverse($cursor->items);
 				foreach ($cursor->items as $k => &$item) {
@@ -681,9 +674,9 @@ class MUChatSession {
 			}
 			$text = $packet['text'];
 			$color = isset($packet['color']) ? (string) $packet['color'] : '';
-			static $colors = array('black','red','green','blue');
-			if (!in_array($color,$colors)) {
-				$color = 'black';
+			static $colors = array('black', 'red', 'green', 'blue');
+			if (!in_array($color, $colors)) {
+				$color = $colors[0];
 			}
 			$c = substr($text,0,1);
 			if ($c === '/') {
@@ -734,7 +727,7 @@ class MUChatSession {
 					if ($this->su || (($password !== '') && ($password === $this->appInstance->config->adminpassword->value))) {
 						$this->su = true;
 						$this->send(array('type' => 'youAreModerator'));
-						$this->sysMsg('* You\'ve got the power.',$packet['tab']);
+						$this->sysMsg('* You\'ve got the power.', $packet['tab']);
 					}
 					else {
 						$this->sysMsg('* Your powers are weak, old man.', $packet['tab']);
@@ -800,7 +793,7 @@ class MUChatSession {
 				if (in_array('%private', $packet['tags'])) {
 					$clientId = $this->client->connId;
 					$appInstance = $this->appInstance;
-					$this->appInstance->db->{$this->appInstance->config->dbname->value . '.ignore'}->findOne(function($item) use ($clientId, $appInstance, $doc) {
+					$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatignore'}->findOne(function($item) use ($clientId, $appInstance, $doc) {
 						if (!$item) {
 							if (!isset($appInstance->sessions[$clientId])) {
 								return;
@@ -851,7 +844,7 @@ class MUChatSession {
 			$doc['tags'] = $this->tags;
 		}
 		$doc['sid'] = $this->sid;
-		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.chatevents'}->insert($doc);
+		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatevents'}->insert($doc);
 	}
 	public function sysMsg($msg, $tab = null) {
 		$this->send(array(
@@ -876,7 +869,7 @@ class MUChat_MsgQueueRequest extends Request {
 class MUChat_IdleCheck extends Request {
 	public function run() {
 		$appInstance = $this->appInstance;
-		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.chatsessions'}->find(function($cursor) use ($appInstance) {
+		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->find(function($cursor) use ($appInstance) {
 			$users = array();
 			foreach ($cursor->items as $sess) {
 				$users[] = $sess['username'];
@@ -899,14 +892,14 @@ class MUChat_UpdateStat extends Request {
 	
 		$appInstance = $this->appInstance;
 		$appInstance->db->distinct(array(
-			'col' => $appInstance->dbname . '.chatsessions',
+			'col' => $appInstance->dbname . '.muchatsessions',
 			'key' => 'tags'
 		), function($result) use ($appInstance) {
 			foreach ($result['values'] as $tag) {
 				if ($tag == '%private') {
 					continue;
 				}
-				$appInstance->db->{$appInstance->dbname . '.chatsessions'}->count(function($result) use ($tag, $appInstance) {
+				$appInstance->db->{$appInstance->dbname . '.muchatsessions'}->count(function($result) use ($tag, $appInstance) {
 					$appInstance->db->{$appInstance->dbname . '.tags'}->upsert(
 						array('tag' => $tag),
 						array('$set' => array(

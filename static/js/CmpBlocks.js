@@ -13,14 +13,14 @@ $(function() {$.ongt(function() {
 		
 	});	
 	$("body")
-	.append($('<ul id="blockContextMenu" class="contextMenu">').html(
+	.append($('<ul class="blockContextMenu contextMenu">').html(
 				'<li class="edit"><a href="#edit" class="i18n">Edit (WYSIWYG)</a></li>'
 			+ '<li class="quit separator"><a href="#quit" class="i18n">Quit</a></li>'
 			+ '</ul>').i18n());
 
 	$(".blockEditable").contextMenu({
 
-		menu: 'blockContextMenu'
+		menu: '.blockContextMenu'
 	},
 	function(action, el, pos) {
 	

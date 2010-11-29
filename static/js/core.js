@@ -3,11 +3,11 @@ jQuery.fn.ajaxFormController = function(options) {
 		return this;
 	}
 	return this.each(function() {
-		var resultOptions = $.queryOptions(this.attr('action'),null);
+		var resultOptions = $.queryOptions($(this).attr('action'),null);
 		for (var k in options) {
 			resultOptions[k] = options[k];
 		}
-		this.ajaxForm(resultOptions);
+		$(this).ajaxForm(resultOptions);
 	});
 	return this;
 };

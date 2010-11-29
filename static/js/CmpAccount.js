@@ -34,30 +34,30 @@ $(function() {
 	$('form.AccountSignupForm').ajaxFormController({
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
-			$('form.AccountSignupForm .CAPTCHA').html('');
+			$('form.AccountSignupForm .CAPTCHA').html(_('Testing not required.'));
 			if (result.success) {
 				var backUrl = $.urlParam('backUrl');
 				if (backUrl != null) {
-				location.href = backUrl;
-			}
-			else {
-				location.href = '/';
-			}
-		} else {
-			
-			for (var field in result.errors) {
-				
-				if (field == 'captcha') {
-					$('form.AccountSignupForm .CAPTCHA').captcha().after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
-				} else {
-					$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+					location.href = backUrl;
 				}
-			
+				else {
+					location.href = '/';
+				}
+			} else {
+				$('form.AccountSignupForm .CAPTCHA').captcha();
+				for (var field in result.errors) {
+				
+					if (field == 'captcha') {
+						$('form.AccountSignupForm .CAPTCHA').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+					} else {
+						$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+					}			
+				}
+				$('.usernameAvailability').html('');
+				$("form.AccountSignupForm input[name='username']").change();
 			}
-			$('.usernameAvailability').html('');
-			$("form.AccountSignupForm input[name='username']").change();
 		}
-	}}).find('button[disabled]').removeAttr('disabled');
+	}).find('button[disabled]').removeAttr('disabled');
 	
 	
 	$("form.AccountSignupForm input[name='username']").change(function() {
