@@ -10,6 +10,8 @@
 <link href="favicon.ico" rel="icon" type="image/x-icon" /> 
 <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
 <link href="/locale/{$req->locale}/Account.json" lang="{$req->locale}" rel="gettext"/>
+<link href="/locale/{$req->locale}/Blocks.json" lang="{$req->locale}" rel="gettext"/>
+<link href="/locale/{$req->locale}/MUChat.json" lang="{$req->locale}" rel="gettext"/>
 <meta name="description" content="WakePHP — PHP that never sleeps" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
 {?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}

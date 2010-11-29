@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WakePHP 0.1-alpha \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Change a room"
+msgstr "Сменить комнату"
+
+msgid "Send"
+msgstr "Отправить"
+
+msgid "Black"
+msgstr "Черный"
+
+msgid "Red"
+msgstr "Красный"
+
+msgid "Green"
+msgstr "Зеленый"
+
+msgid "Blue"
+msgstr "Синий"
+
+msgid "Do not accept incoming private messages."
+msgstr "Не принимать личных сообщений."
+
+msgid "Send/Received data"
+msgstr "Отпр./Прин. данных"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Send private message"
+msgstr "Отправить личное сообщение"
+
+msgid "Ignore this user"
+msgstr "Игнорировать этого пользователя"
+
+msgid "You were kicked. Reason:"
+msgstr "Вы были выгнаны. Причина:"
+
+msgid "Idle"
+msgstr "Бездействие"
+
+msgid "Select a room:"
+msgstr "Выберите комнату:"
+
+msgid "no description"
+msgstr "нет описания"
+
+msgid "Reconnect"
+msgstr "Переподключиться"
+

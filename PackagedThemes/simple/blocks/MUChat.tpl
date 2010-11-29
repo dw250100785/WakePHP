@@ -2,36 +2,27 @@
 <script type="text/javascript" src="/js/websocket.js"></script>
 <script type="text/javascript" src="/js/CmpMUChat.js"></script>
 <div id="tabs" class="ui-tabs">
-     <ul>
-         <li><a href="#room"><span>Room</span></a></li>
-     </ul>
-     <div id="room" class="room">
-       <div class="nowrap">
-         <div class="nowrap">
-         <div class="messages"></div>
-         <div class="userlist"></div>
-         </div>
-         <br class="clearfloat" /><br />
-         <form action="#" class="inputForm" style="display: none">
+<ul><li><a href="#room"><span>Room</span></a></li></ul>
+<div id="room" class="room">
+<div class="nowrap">
+<div class="nowrap">
+<div class="messages"></div>
+<div class="userlist"></div>
+</div>
+<br class="clearfloat" /><br />
+<form action="#" class="inputForm" style="display: none">
 <input type="text" size="70" name="text" autocomplete="off" class="inputMessage" />
 <select name="color">
-<option value="black">Black</option>
-<option value="red">Red</option>
-<option value="green">Green</option>
-<option value="blue">Blue</option>
+<option value="black" class="i18n">Black</option>
+<option value="red" class="i18n">Red</option>
+<option value="green" class="i18n">Green</option>
+<option value="blue" class="i18n">Blue</option>
 </select>
-<input type="submit" value="Send" /> (<span class="yourusername"></span>)
-<br /><br />Sent/Received data: <span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>&nbsp;&nbsp;&nbsp;&nbsp;<label for="accept_pm" class="accept_pm"><input type="checkbox" id="accept_pm" onchange="$.chat.acceptPM(!this.checked)" value="1" /> Do not accept incoming private messages</label>
-&nbsp;&nbsp;&nbsp;<input type="button" onclick="$.chat.roomSelectScreen();" value="Change a room" />
+<button type="submit" class="i18n">Send</button> (<span class="yourusername"></span>)
+<br /><br /><span class="i18n">Sent/Received data: </span><span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>
+<label for="accept_pm" class="accept_pm"><input type="checkbox" id="accept_pm" onchange="$.chat.acceptPM(!this.checked)" value="1" /><span class="i18n"> Do not accept incoming private messages.</span></label>
+<button onclick="$.chat.roomSelectScreen();" class="changeRoomButton i18n">Change a room</button>
 </form>
-
        </div>
      </div>
-</div>
-<div class="contextMenu" id="userContextMenu">
-<ul><li id="profile"><img src="files/folder.png" /> Profile</li>
-<li id="sendpm"><img src="files/email.png" /> Send private message</li>
-<li id="ignore"><img src="files/cross.png" /> Ignore this user</li>
-<li id="kick"><img src="files/cross.png" /> Kick</li>
-</ul>
 </div>

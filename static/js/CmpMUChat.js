@@ -42,7 +42,7 @@ var chat = {
 		chat.query({"cmd":'getAvailTags'},function (o) {
 			$('.darkbox', chatEl).remove();    
 			$('#tabs', chatEl).append($('<div class="darkbox" style="opacity: 0.5">'));
-			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a new room:<br /><br /><br /><div class="roomsList"></div>');
+			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;"><span class="i18n">Select a new room:</span><br /><br /><br /><div class="roomsList"></div>');
 			for (var k in o.tags) {
 				$('.roomsList', chatEl).append($('<div>').attr('name',k)
 				.click(function () {
@@ -384,7 +384,7 @@ var chat = {
 		if (chat.availTags == null) {
 			$('.darkbox', chatEl).remove();    
 			$('#tabs', chatEl).append($('<div class="darkbox" style="opacity: 0.5">'));
-			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;">Select a room:<br /><br /><br /><div class="roomsList"></div>');
+			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;"><span class="i18n">Select a room:</span><br /><br /><br /><div class="roomsList"></div>').i18n();
 			for (var k in o.tags) {
 				$('.roomsList', chatEl)
 					.append($('<div>')
@@ -398,7 +398,7 @@ var chat = {
 						chat.setTags();
 						$('.darkbox, .darkboxWindow', chatEl).remove();
 					})
-					.html('<h3>'+$.xmlescape(o.tags[k].title != null?o.tags[k].title:k)+' ('+o.tags[k].number+')</h3>'+(o.tags[k].description != null?$.xmlescape(o.tags[k].description):'<i>no description</i>')+'<br /><br />'));
+					.html('<h3>' + $.xmlescape(o.tags[k].title != null ? o.tags[k].title:k) + ' (' + o.tags[k].number + ')</h3>' + (o.tags[k].description != null ? $.xmlescape(o.tags[k].description) : '<i class="i18n">no description</i>')+'<br /><br />').i18n());
 			}
 			chat.onResize($(window).width(),$(window).height());
 		}
@@ -429,7 +429,15 @@ var chat = {
 		chat.ws = null;
 		$('.darkbox', chatEl).remove();
 		$('#tabs', chatEl).append($('<div class="darkbox">'));
-		$('#tabs', chatEl).append('<div class="darkboxWindow flow">You were kicked. Reason: '+o.reason+' <br /><br /><br /><center><input type="button" onclick="chat.kicked = false;chat.connect();$(\'.darkbox, .darkboxWindow\').remove();" value="Reconnect" /></center></div>');
+		$('#tabs', chatEl).append($('<div class="darkboxWindow flow">')
+						.append('<span class="i18n">You were kicked. Reason:</span> <span class="i18n">'+o.reason+'</span><br /><br /><br />')
+						.append($('<center>').append($('<button class="i18n">Reconnect</button>').click(function() {
+							chat.kicked = false;
+							chat.connect();
+							$('.darkbox, .darkboxWindow').remove();
+						}))
+						).i18n()
+		);
 		chat.onResize($(window).width(),$(window).height());
 	},
 	cstatusCommand : function (o) {

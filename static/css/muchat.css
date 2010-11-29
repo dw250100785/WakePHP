@@ -1,5 +1,5 @@
 .MUChatContextMenu {
- width: 200px;
+ width: 250px;
 }
 
 .clearfloat {
@@ -7,6 +7,12 @@
 	height: 0;
 	font-size: 1px;
 	line-height: 0px;
+}
+.changeRoomButton {
+ margin-left: 10px;
+}
+.accept_pm {
+ margin-left: 10px;
 }
 ul {
 	list-style: none;
