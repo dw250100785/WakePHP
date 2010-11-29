@@ -2,9 +2,6 @@
 <script type="text/javascript" src="/js/websocket.js"></script>
 <script type="text/javascript" src="/js/jquery.contextmenu.old.js"></script>
 <script type="text/javascript" src="/js/CmpMUChat.js"></script>
-<script>
-$.chat.authkey = "yourauthkeyhere";
-</script>
 <div id="tabs" class="ui-tabs">
      <ul>
          <li><a href="#room"><span>Room</span></a></li>

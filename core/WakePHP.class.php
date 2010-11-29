@@ -10,17 +10,19 @@ class WakePHP extends AppInstance {
 	public $accounts;
 	public $sessions;
 	public $db;
-	public $dbname = 'xE';
+	public $dbname;
 
 	public function init() {
-		Daemon::log('xE up.');
+		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors','On');
 		$appInstance = $this;
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
-		$appInstance->blocks = new Blocks($this);
-		$appInstance->accounts = new Accounts($this);
-		$appInstance->sessions = new Sessions($this);
+		$appInstance->dbname = $this->config->dbname->value;
+		$appInstance->blocks = new BlocksORM($this);
+		$appInstance->accounts = new AccountsORM($this);
+		$appInstance->sessions = new SessionsORM($this);
 	}
+	
 	public function getQuickyInstance() {
 		$tpl = new Quicky;
 		$tpl->template_dir = $this->config->templatedir->value;
@@ -32,6 +34,7 @@ class WakePHP extends AppInstance {
 	protected function getConfigDefaults() {
 		return array(
 			'templatedir' => './templates/',
+			'dbname' => 'WakePHP',
 		);
 	}
 	

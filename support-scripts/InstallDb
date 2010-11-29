@@ -1,14 +1,15 @@
 #!/usr/bin/php -q
 <?php
-chdir(__DIR__.'/..');
-$mongo = new Mongo();
-$db = $mongo->xE;
-
-$name = 'test';
+$dbname = 'WakePHP'; // Mongo database name 
+$name = ''; // AppInstance name ('test' for "WakePHP test {...")
 $pidfile = '/var/run/phpd.pid';
 $mastersocket = '/tmp/phpDaemon-master-%x.sock';
 $theme = 'simple';
 
+
+$mongo = new Mongo();
+$db = $mongo->{$dbname};
+chdir(__DIR__.'/..');
 class WakePHP {
 	public $name;
 	public function __construct($path,$name) {

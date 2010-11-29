@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Blocks.
+ * BlocksORM
  */
-class Blocks extends ORM {
+class BlocksORM extends ORM {
 
 	public $blocks;
 

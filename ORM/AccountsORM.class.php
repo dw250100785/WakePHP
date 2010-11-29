@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Accounts
+ * AccountsORM
  */
-class Accounts extends ORM {
+class AccountsORM extends ORM {
 
 	public function init() {
 		$this->accounts = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};

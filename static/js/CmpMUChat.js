@@ -7,7 +7,7 @@ $.chat = {
 	tabs: {},
 	curTab: '#room',
 	status: null,
-	authkey: null,
+	authkey: $.cookie('SESSID'),
 	ws: null,
 	su: false,
 	onStatusReady: null,
