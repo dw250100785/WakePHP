@@ -35,7 +35,7 @@ class WakePHP extends AppInstance {
 		return array(
 			'templatedir' => './templates/',
 			'dbname' => 'WakePHP',
-			'defaultlocale' => 'ru',
+			'defaultlocale' => 'en',
 		);
 	}
 	
