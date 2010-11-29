@@ -181,12 +181,12 @@ class MUChatTag {
 						$sess = $tag->appInstance->sessions[$id];
 						if (($sess->username !== null) && ($tag->appInstance->compareMask($sess->username, $item['users']))) {
 							$sess->removeTags(array($tag->tag), true);
-							$sess->sysMsg('* You were kicked from #'.$tag->tag . '.'.($item['reason'] !== '' ? ' Reason: '.$item['reason'] : ''));
+							$sess->sysMsg('You were kicked from #'.$tag->tag . '.'.($item['reason'] !== '' ? ' Reason: '.$item['reason'] : ''));
 							$sess->send(array('type' => 'youWereKicked', 'reason' => $item['reason']));
 							$tag->appInstance->broadcastEvent(array(
 								'type' => 'msg',
 								'mtype' => 'system',
-								'text' => ' * Kicked: '.$sess->username . ($item['reason'] !== '' ? ', reason: '.$item['reason'] : ''),
+								'text' => ' Kicked: '.$sess->username . ($item['reason'] !== '' ? ', reason: '.$item['reason'] : ''),
 								'color' => 'green',
 								'tags' => $tag->tag,
 							));
@@ -302,7 +302,7 @@ class MUChatSession {
 		$a = array(
 			'type' => 'msg',
 			'mtype' => 'system',
-			'text' => '* Disconnected user: ' . $this->username,
+			'text' => 'Disconnected user: ' . $this->username,
 			'color' => 'green',
 			'tags' => array_values(array_diff($this->tags, array('%private'))),
 		);
@@ -330,7 +330,7 @@ class MUChatSession {
 				$this->broadcastEvent(array(
 					'type' => 'msg',
 					'mtype' => 'system',
-					'text' => '* Joins: ' . $this->username,
+					'text' => 'Joins: ' . $this->username,
 					'color' => 'green',
 					'tags' => $tags,
 				));
@@ -355,7 +355,7 @@ class MUChatSession {
 				$this->broadcastEvent(array(
 					'type' => 'msg',
 					'mtype' => 'system',
-					'text' => '* Parts: '.$this->username,
+					'text' => 'Parts: '.$this->username,
 					'color' => 'green',
 					'tags' => $tags,
 				));
@@ -444,13 +444,13 @@ class MUChatSession {
 		$name = trim($name);
 		if ($name === '') {
 			if (!$silence) {
-				$this->sysMsg('* /nick <name>: insufficient parameters',$packet['tab']);
+				$this->sysMsg('/nick <name>: insufficient parameters',$packet['tab']);
 			}
 			return 4;
 		}
 		if (!$this->appInstance->validateUsername($name)) {
 			if (!$silence) {
-				$this->sysMsg('* /nick: errorneus username');
+				$this->sysMsg('/nick: errorneus username');
 			}
 			return 2;
 		}
@@ -466,7 +466,7 @@ class MUChatSession {
 			$session = $appInstance->sessions[$clientId];
 			if ($item) { // we have got the same username		
 				if (!$silence) {
-					$session->sysMsg('* /nick: the username is taken already');
+					$session->sysMsg('/nick: the username is taken already');
 				}
 				return;
 			}
@@ -504,7 +504,7 @@ class MUChatSession {
 				$session->broadcastEvent(array(
 					'type' => 'msg',
 					'mtype' => 'system',
-					'text' => '* Joins: '.$name,
+					'text' => 'Joins: '.$name,
 					'color' => 'green',
 				));
 			}
@@ -685,7 +685,7 @@ class MUChatSession {
 				$text = isset($e[1]) ? trim($e[1]) : '';
 				if ($m === 'me') {
 					if ($text === '') {
-						$this->sysMsg('* /me <message>: insufficient parameters', $packet['tab']);
+						$this->sysMsg('/me <message>: insufficient parameters', $packet['tab']);
 					}
 					else {
 						$this->updateSession(array('statusmsg' => $text));
@@ -696,7 +696,7 @@ class MUChatSession {
 					if ($tags !== '') {
 						$this->setTags(array_map('trim',explode(',', $tags)));
 					}
-					$this->sysMsg('* /tags: '.implode(', ', $this->tags), $packet['tab']);
+					$this->sysMsg('/tags: '.implode(', ', $this->tags), $packet['tab']);
 				}
 				elseif ($m === 'join') {
 					$tags = $text;
@@ -704,7 +704,7 @@ class MUChatSession {
 						$this->addTags(array_map('trim', explode(',', $tags)));
 					}
 					else {
-						$this->sysMsg('* /join <tag1>{,<tagN>}: insufficient parameters', $packet['tab']);
+						$this->sysMsg('/join <tag1>{,<tagN>}: insufficient parameters', $packet['tab']);
 					}
 				}
 				elseif ($m === 'part') {
@@ -713,24 +713,24 @@ class MUChatSession {
 						$this->removeTags(array_map('trim', explode(',', $tags)));
 					}
 					else {
-						$this->sysMsg('* /part <tag1>{,<tagN>}: insufficient parameters', $packet['tab']);
+						$this->sysMsg('/part <tag1>{,<tagN>}: insufficient parameters', $packet['tab']);
 					}
 				}
 				elseif ($m === 'nick') {
 					//$this->setUsername($text);
 				}
 				elseif ($m === 'thetime') {
-					$this->sysMsg('* Current time: '.date('r'),$packet['tab']);
+					$this->sysMsg('Current time: '.date('r'),$packet['tab']);
 				}
 				elseif ($m === 'su') {
 					$password = $text;
 					if ($this->su || (($password !== '') && ($password === $this->appInstance->config->adminpassword->value))) {
 						$this->su = true;
 						$this->send(array('type' => 'youAreModerator'));
-						$this->sysMsg('* You\'ve got the power.', $packet['tab']);
+						$this->sysMsg('You\'ve got the power.', $packet['tab']);
 					}
 					else {
-						$this->sysMsg('* Your powers are weak, old man.', $packet['tab']);
+						$this->sysMsg('Your powers are weak, old man.', $packet['tab']);
 					}
 				}
 				elseif ($m === 'kick') {
@@ -739,11 +739,11 @@ class MUChatSession {
 					$tags = isset($e[1]) ? trim($e[1]) : '';
 					$reason = isset($e[2]) ? trim($e[2]) : '';
 					if ($users === '') {
-						$this->sysMsg('* /kick <name> [<tags>] [<reason>]: insufficient parameters', $packet['tab']);
+						$this->sysMsg('/kick <name> [<tags>] [<reason>]: insufficient parameters', $packet['tab']);
 					}
 					else {
 						if (!$this->su) {
-							$this->sysMsg('* Your powers are weak, old man.', $packet['tab']);
+							$this->sysMsg('Your powers are weak, old man.', $packet['tab']);
 						}
 						else {
 							$this->appInstance->kickUsers($users,$tags,$reason);
@@ -755,14 +755,14 @@ class MUChatSession {
 					$name = isset($e[0]) ? trim($e[0]) : '';
 					$newname = isset($e[1]) ? trim($e[1]) : '';
 					if (($name === '') || ($newname === '')) {
-						$this->sysMsg('* /fchname <name> <newname>: insufficient parameters', $packet['tab']);
+						$this->sysMsg('/fchname <name> <newname>: insufficient parameters', $packet['tab']);
 					}
 					elseif (!$this->appInstance->validateUsername($newname)) {
-						$this->sysMsg('* /fchname: newname>', $packet['tab']);
+						$this->sysMsg('/fchname: newname>', $packet['tab']);
 					}
 					else {
 						if (!$this->su) {
-							$this->sysMsg('* Your powers are weak, old man.', $packet['tab']);
+							$this->sysMsg('Your powers are weak, old man.', $packet['tab']);
 						}
 						else {
 							$this->appInstance->forceChangeNick($name, $newname);
@@ -770,7 +770,7 @@ class MUChatSession {
 					}
 				}
 				else {
-					$this->sysMsg('* ' . $m . ' Unknown command', $packet['tab']);
+					$this->sysMsg($m . ' Unknown command', $packet['tab']);
 				}
 			}
 			else {
@@ -820,7 +820,7 @@ class MUChatSession {
 			$d = $t - $this->lastMsgTS;
 			$this->updateSession(array('mtime' => microtime(true)));
 			if ($d < $this->appInstance->minMsgInterval) {
-				$this->sysMsg('* Too fast. Min. interval is ' . $this->appInstance->minMsgInterval . ' sec. You made '.round($d,4) . '.', $doc['tab']);
+				$this->sysMsg('Too fast. Min. interval is ' . $this->appInstance->minMsgInterval . ' sec. You made '.round($d,4) . '.', $doc['tab']);
 				return;
 			}
 		}

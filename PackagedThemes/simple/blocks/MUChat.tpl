@@ -19,9 +19,9 @@
 <option value="blue" class="i18n">Blue</option>
 </select>
 <button type="submit" class="i18n">Send</button> (<span class="yourusername"></span>)
-<br /><br /><span class="i18n">Sent/Received data: </span><span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>
-<label for="accept_pm" class="accept_pm"><input type="checkbox" id="accept_pm" onchange="$.chat.acceptPM(!this.checked)" value="1" /><span class="i18n"> Do not accept incoming private messages.</span></label>
-<button onclick="$.chat.roomSelectScreen();" class="changeRoomButton i18n">Change a room</button>
+<br /><br /><span class="i18n">Sent/Received data:</span> <span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>
+<label for="accept_pm" class="accept_pm"><input type="checkbox" id="accept_pm" value="1" /> <span class="i18n">Do not accept incoming private messages.</span></label>
+<button class="changeRoomButton i18n">Change a room</button>
 </form>
        </div>
      </div>

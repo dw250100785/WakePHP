@@ -26,8 +26,8 @@ msgstr "Синий"
 msgid "Do not accept incoming private messages."
 msgstr "Не принимать личных сообщений."
 
-msgid "Send/Received data"
-msgstr "Отпр./Прин. данных"
+msgid "Sent/Received data:"
+msgstr "Отпр./Прин. данных:"
 
 msgid "Profile"
 msgstr "Профиль"
@@ -53,3 +53,8 @@ msgstr "нет описания"
 msgid "Reconnect"
 msgstr "Переподключиться"
 
+msgid "Select a new room:"
+msgstr "Выберите новую комнату:"
+
+msgid "Tags:"
+msgstr "Теги:"

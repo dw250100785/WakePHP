@@ -42,7 +42,7 @@ var chat = {
 		chat.query({"cmd":'getAvailTags'},function (o) {
 			$('.darkbox', chatEl).remove();    
 			$('#tabs', chatEl).append($('<div class="darkbox" style="opacity: 0.5">'));
-			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;"><span class="i18n">Select a new room:</span><br /><br /><br /><div class="roomsList"></div>');
+			$('#tabs', chatEl).append('<div class="darkboxWindow" style="height: 70%; width: 70%;"><span class="i18n">Select a new room:</span><br /><br /><br /><div class="roomsList"></div>').i18n();
 			for (var k in o.tags) {
 				$('.roomsList', chatEl).append($('<div>').attr('name',k)
 				.click(function () {
@@ -60,7 +60,7 @@ var chat = {
 					chat.setTags();
 					$('.darkbox, .darkboxWindow', chatEl).remove();
 				})
-				.html('<h3>'+$.xmlescape(o.tags[k].title != null?o.tags[k].title:k)+' ('+o.tags[k].number+')</h3>'+(o.tags[k].description != null?$.xmlescape(o.tags[k].description):'<i>no description</i>')+'<br /><br />'));
+				.html('<h3>' + $.xmlescape(o.tags[k].title != null ? o.tags[k].title:k) + ' (' + o.tags[k].number + ')</h3>' + (o.tags[k].description != null ? $.xmlescape(o.tags[k].description) : '<i class="i18n">no description</i>') + '<br /><br />').i18n());
 			}
 			chat.onResize($(window).width(),$(window).height());
 		});
@@ -114,7 +114,7 @@ var chat = {
 		var found = false;
 		for (var k in chat.userlist) {
 			var u = chat.userlist[k];
-			var title = $.xmlescape(k);
+			var titleEl = $('<span>').html($.xmlescape(k));
 			var statuses = '';
 			for (var j in u) {
 				if (u[j].statusmsg != null) {statuses += $.xmlescape(u[j].statusmsg)+' ... ';}
@@ -122,20 +122,38 @@ var chat = {
 			if (statuses != '') {
 				title += ' - '+statuses;
 			}
-			title += ' - Tags: '+u[j].tags;
+			var tagsEl = $('<span>');
+			var i = 0;
+			$.each(u[j].tags, function (key, tag) {
+				if (tag == '%private') {
+					return true;
+				}
+				tagsEl.append((i++ > 0 ? ', ' : '') + $.xmlescape(tag));
+			});
+			titleEl.append(' - '+_('Tags:')+' ').append(tagsEl);
 			$('#room .userlist', chatEl).append($('<p>').append(
-			$('<a href="#" title="'+title+'" name="'+$.xmlescape(k)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(k))+'); return false">')
+			$('<a href="#" class="MUChatUsername">')
+				.attr('title',titleEl.html())
+				.data('username', k)
 				.html($.xmlescape(k))
 				.attr('_id',k)
 				.contextMenu({
 					menu: $('.MUChatContextMenu', chatEl)
-				}, function(action, el, pos) {
-						
-							/*profile : function (t) {window.open('http://domain.com/?'+t.name);},
-						sendpm : function (t) {chat.sendPM(t.name);},
-						ignore : function (t) {chat.setIgnore(t.name,true);},
-						kick : function (t) {chat.sendMessage({text: "/kick "+t.name,color:"black",tags:chat.tags});}*/
-					return menu;
+				},
+				function(action, el, pos) {
+				
+						if (action == 'profile') {
+							window.open('/'+$('html').attr('lang')+'/Account/Info/?'+$(el).data('username'));
+						}
+						else if (action == 'sendpm') {
+							chat.sendPM($(el).data('username'));
+						}
+						else if (action == 'ignore') {
+							chat.setIgnore($(el).data('username'),true);
+						}
+						else if (action == 'kick') {
+							chat.sendMessage({text: "/kick "+$(el).data('username'),color:"black",tags:chat.tags});
+						}
 				})
 			));
 			found = true;
@@ -157,6 +175,7 @@ var chat = {
 				fade			: 250 
 			});
 		}
+		$('.MUChatUsername', chatEl).live('click', function() {chat.setRecipient($(this).data('username')); return false;});
 	},
 	setTags : function (tags) {
 		if (tags == null) {
@@ -199,8 +218,8 @@ var chat = {
 			location.href = '#room_'+username;
 			return;
 		}
-		var html = '<div id="room_'+username+'" class="room">'
-								+ '<div class="nowrap">'
+		$('#tabs', chatEl).append($('<div id="room_'+username+'" class="room">').html(
+									'<div class="nowrap">'
 								+ '<div class="nowrap">'
 								+ '<div class="messages messagesWide"></div>'
 								+ '</div>'
@@ -209,18 +228,25 @@ var chat = {
 								+ '<input type="hidden" name="prefix" value="@'+$.xmlescape(username)+': "/>'
 								+ '<input type="text" size="70" name="text" autocomplete="off" class="inputMessage" />'
 								+ '<select name="color">'
-								+		'<option value="black">Black</option>'
-								+		'<option value="red">Red</option>'
-								+		'<option value="green">Green</option>'
-								+		'<option value="blue">Blue</option>'
+								+		'<option value="black" class="i18n">Black</option>'
+								+		'<option value="red" class="i18n">Red</option>'
+								+		'<option value="green" class="i18n">Green</option>'
+								+		'<option value="blue" class="i18n">Blue</option>'
 								+ '</select>'
-								+ '<input type="submit" value="Send" /> (<span class="yourusername"></span>)'
-								+ '<br /><br />Sent/Received data: <span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>'
+								+ '<button type="submit" class="i18n">Send</button> (<span class="yourusername"></span>)'
+								+ '<br /><br /><span class="i18n">Sent/Received data:</span> <span class="sentDataCounter">~</span>/<span class="recvDataCounter">~</span>'
 								+ '</form>'
-								+ '</div>';
-		$('#tabs', chatEl).append(html);
+								+ '</div>').i18n());
 		chat.initInputForm();
-		$tabs.tabs("add", "#room_"+username,"["+$.xmlescape(username)+'] <img style="cursor: pointer" onclick="chat.closeTab('+$.xmlescape($.toJSON(username))+');" src="files/cross.png" /></a>');
+		$tabs.tabs("add", "#room_"+username,
+			$('<span>')
+			.append('['+$.xmlescape(username)+'] ')
+			.append($('<img style="cursor: pointer" src="files/cross.png"/>')
+							.click(function() {
+								chat.closeTab('+$.xmlescape($.toJSON(username))+');
+								return false;
+							}))
+		);
 		chat.onResize($(window).width(),$(window).height());
 		chat.updateTabIndexes();
 		location.href = '#room_'+username;
@@ -314,23 +340,36 @@ var chat = {
 			o.color = 'black';
 		}
 		var dateStr = (o.ts != null)?('['+(new Date(o.ts*1000).toTimeString().substring(0,8))+'] '):'';
+		var msgEl = $('<p style="color: '+$.xmlescape(o.color)+'">');
 		if (o.mtype == 'status') {
 			if ((chat.userlist[o.from] != null) && (chat.userlist[o.from][o.sid] != null)) {
 				chat.userlist[o.from][o.sid].statusmsg = o.text;
 				chat.updatedUserlist();
 			}
-			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
+			msgEl.append('* ').append(
+				$('<a href="#" style="color: '+$.xmlescape(o.color)+'" class="MUChatUsername">')
+				.data('username',o.from)
+				.text(o.from)
+			).append(' '+$.xmlescape(o.text));
 		}
 		else if (o.mtype == 'astatus') {
-			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+'* <a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">'+$.xmlescape(o.from)+'</a> '+$.xmlescape(o.text)+'</p>';
+			msgEl.append(dateStr+'* ').append(
+				$('<a href="#" style="color: '+$.xmlescape(o.color)+'" class="MUChatUsername">')
+				.data('username',o.from)
+				.text(o.from)
+			).append(' '+$.xmlescape(o.text));
 		}
 		else if (o.mtype == 'system') {
-			var s = '<p style="color: '+$.xmlescape(o.color)+'">'+dateStr+' '+$.xmlescape(o.text)+'</p>';
+			msgEl.append(dateStr+' * '+$.xmlescape(o.text));
 		}
 		else {
-			var style = 'color: '+$.xmlescape(o.color)+';';
+			msgEl.css({'color' : o.color});
 			//if ((o.to != null) && (o.to.indexOf(chat.username) != -1)) {style += ' font-weight: bold;';}
-			var s = '<p style="'+style+'">'+dateStr+'<a href="#" style="color: '+$.xmlescape(o.color)+'" onclick="chat.setRecipient('+$.xmlescape($.toJSON(o.from))+'); return false">&lt;'+$.xmlescape(o.from)+'&gt;</a>: '+$.xmlescape(o.text)+'</p>';
+			msgEl.append(dateStr+'* ').append(
+				$('<a href="#" style="color: '+$.xmlescape(o.color)+'" class="MUChatUsername">')
+				.data('username',o.from)
+				.text('<'+o.from+'>')
+			).append(': '+$.xmlescape(o.text));
 		}
 		var roomId = '#room';
 		if (o.tags != null && o.tags[0] == '%private') {
@@ -346,7 +385,7 @@ var chat = {
 		else if (o.tab != null) {
 			roomId = o.tab;
 		}
-		$(roomId+' .messages', chatEl).append(s);
+		$(roomId+' .messages', chatEl).append(msgEl);
 		$(roomId+' .messages', chatEl).scrollTo('100%',{"axis": "y"});
 		while ($(roomId+' .messages p', chatEl).size() > 200) {
 			$(roomId+' .messages p:first', chatEl).remove();
@@ -538,15 +577,15 @@ var chat = {
 				return;
 			}
 			else {
-				chat.addMsg({"text": "* Trying to reconnect..", "color": "gray", "mtype": "system"});
+				chat.addMsg({"text": "Trying to reconnect..", "color": "gray", "mtype": "system"});
 			}
 		}
-		chat.addMsg({"text": "* Connecting...", "color": "gray", "mtype": "system"});
+		chat.addMsg({"text": "Connecting...", "color": "gray", "mtype": "system"});
 		//chat.ws = new WebSocket(chat.serverUrl.ws);
 		chat.ws = new WebSocketConnection({url: chat.serverUrl,root: '/js/'});
 		chat.ws.onopen = function () {
 			chat.kicked = false;
-			chat.addMsg({"text": "* Connected successfully.", "color": "gray", "mtype": "system"});
+			chat.addMsg({"text": "Connected successfully.", "color": "gray", "mtype": "system"});
 			if (chat.username != null) {
 				chat.setUsername(chat.username);
 			}
@@ -577,7 +616,7 @@ var chat = {
 		};
 		chat.ws.onclose = function () {
 			if (!chat.kicked) {
-				chat.addMsg({"text": "* Ooops! You're disconnected from the server!", "color": "gray", "mtype": "system"});
+				chat.addMsg({"text": "Ooops! You're disconnected from the server!", "color": "gray", "mtype": "system"});
 				chat.ws = null;
 			}
 		};
@@ -587,11 +626,14 @@ chat.init();
 chat.initInputForm();
 chat.initConnect();
 chatEl.append($('<ul class="MUChatContextMenu contextMenu">').html(
-			'<li class="edit"><a href="#edit" class="i18n">Profile</a></li>'
-		+ '<li class="quit separator"><a href="#quit" class="i18n">Send private message</a></li>'
-		+ '<li class="quit separator"><a href="#quit" class="i18n">Ignore this user</a></li>'
+			'<li class="edit"><a href="#profile" class="i18n">Profile</a></li>'
+		+ '<li class="quit separator"><a href="#sendPM" class="i18n">Send private message</a></li>'
+		+ '<li class="quit separator"><a href="#ignore" class="i18n">Ignore this user</a></li>'
 		+ '<li class="quit separator"><a href="#quit" class="i18n">Quit</a></li>'
 		+ '</ul>').i18n());
+$('.changeRoomButton', chatEl).live('click', function() {chat.roomSelectScreen();});
+$('.MUChatUsername', chatEl).live('click', function() {chat.setRecipient($(this).data('username'));});
+$('.accept_pm input', chatEl).change(function() {chat.acceptPM(!this.checked)});
 
 }});
 $(function() {$('.MUChat').muchat();});

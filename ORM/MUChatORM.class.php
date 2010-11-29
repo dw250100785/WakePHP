@@ -13,8 +13,7 @@ class MUChatORM extends ORM {
 		
 		$component = $this;
 		$this->sessions->getSessionById($authkey, function($session) use ($cb, $component) {
-				
-				Daemon::log($session);
+
 			if (!isset($session['accountId'])) {
 				$cb(false);
 				return;
