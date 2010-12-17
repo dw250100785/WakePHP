@@ -1,0 +1,12 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* aclgroups */ 
+$aclgroups = $db->selectCollection('aclgroups');
+$aclgroups->remove();
+$aclgroups->ensureIndex(array('name' => 1),array('unique' => true));
+$app->saveACLgroup(array(
+				'name' => 'Superusers',
+				'acl' => array('global' => array('all','grant')),
+));

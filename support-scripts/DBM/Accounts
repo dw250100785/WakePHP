@@ -1,0 +1,22 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* accounts */ 
+$accounts = $db->selectCollection('accounts');
+$accounts->remove();
+$accounts->ensureIndex(array('email' => 1),array('unique' => true));
+$accounts->ensureIndex(array('username' => 1));
+$accounts->ensureIndex(array('unifiedusername' => 1));
+$app->saveAccount(array(
+				'username' => 'Guest',
+				'aclgroups' => array('Guests'),
+				'acl' => array(),
+));
+$app->saveAccount(array(
+				'username' => 'admin',
+				'password' => 'passphrase',
+				'email' => 'admin@admin.tld',
+				'aclgroups' => array('Superusers'),
+				'acl' => array(),
+));

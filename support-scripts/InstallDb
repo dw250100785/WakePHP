@@ -2,40 +2,10 @@
 <?php
 include 'generic.php';
 
+shell_exec(__DIR__.'/ImportBlocks');
 
-shell_exec(dirname(__FILE__).'/ImportBlocks');
+shell_exec(__DIR__.'/BuildLocales');
 
-shell_exec(dirname(__FILE__).'/BuildLocales');
-
-/* sessions */ 
-$sessions = $db->selectCollection('sessions');
-$sessions->remove();
-$sessions->ensureIndex(array('accountId' => 1));
-
-/* accounts */ 
-$accounts = $db->selectCollection('accounts');
-$accounts->remove();
-$accounts->ensureIndex(array('email' => 1),array('unique' => true));
-$accounts->ensureIndex(array('username' => 1));
-$accounts->ensureIndex(array('unifiedusername' => 1));
-$app->saveAccount(array(
-				'username' => 'Guest',
-				'aclgroups' => array('Guests'),
-				'acl' => array(),
-));
-$app->saveAccount(array(
-				'username' => 'admin',
-				'password' => 'passphrase',
-				'email' => 'admin@admin.tld',
-				'aclgroups' => array('Superusers'),
-				'acl' => array(),
-));
-
-/* aclgroups */ 
-$aclgroups = $db->selectCollection('aclgroups');
-$aclgroups->remove();
-$aclgroups->ensureIndex(array('name' => 1),array('unique' => true));
-$app->saveACLgroup(array(
-				'name' => 'Superusers',
-				'acl' => array('global' => array('all','grant')),
-));
+foreach (glob(__DIR__.'/DBM/*') as $path) {
+	passthru(escapeshellarg($path));
+}
