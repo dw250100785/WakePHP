@@ -1,0 +1,19 @@
+#!/usr/bin/php -q
+<?php
+chdir(__DIR__.'/..');
+
+$lcPath = './locale';
+$jsPath = './static/locale';
+
+foreach (glob($lcPath.'/*/LC_MESSAGES/*.po') as $poFile) {
+	
+	$locale = pathinfo(dirname(dirname($poFile)), PATHINFO_FILENAME);
+	$domain = pathinfo($poFile, PATHINFO_FILENAME);
+	
+	$moFile = dirname($poFile).'/'.$domain.'.mo';
+	$jsFile = $jsPath.'/'.$locale.'/'.$domain.'.json';
+	shell_exec('mkdir -p '.escapeshellarg($jsPath.'/'.$locale));
+	shell_exec('msgfmt -o '.escapeshellarg($moFile).' '.escapeshellarg($poFile));
+	$cmd = 'gettext2json '.escapeshellarg($domain).' '.escapeshellarg($lcPath ).' '.escapeshellarg($locale).' > '.escapeshellarg($jsFile);
+	shell_exec($cmd);
+}

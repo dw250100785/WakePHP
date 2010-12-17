@@ -22,6 +22,7 @@ class WakePHP extends AppInstance {
 		$appInstance->blocks = new BlocksORM($this);
 		$appInstance->accounts = new AccountsORM($this);
 		$appInstance->sessions = new SessionsORM($this);
+		$appInstance->outgoingmail = new OutgoingmailORM($this);
 		$appInstance->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
 		{
@@ -29,6 +30,14 @@ class WakePHP extends AppInstance {
 				Daemon::$process->fileWatcher->addWatch($file, array($appInstance,'onBlockFileChanged'));
 			}
 		});
+	}
+	public function renderBlock($blockname, $variables, $cb) {
+			$appInstance = $this;
+			$this->blocks->getBlockByName($blockname, function ($block) use ($variables, $cb, $appInstance) {
+				$tpl = $appInstance->getQuickyInstance();
+				$tpl->assign($variables);
+				$cb($tpl->PHPtemplateFetch($block['templatePHP']));
+			});
 	}
 	public function onBlockFileChanged($file) {
 		Daemon::log('changed - '.$file);
@@ -66,6 +75,7 @@ class WakePHP extends AppInstance {
 			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
+			'domain' => 'host.tld',
 		);
 	}
 	

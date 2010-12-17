@@ -60,7 +60,7 @@ class Block implements ArrayAccess {
 		if (isset($this->template)) {
 			$this->req->tpl->assign('block',	$this);
 			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
-			$this->html = $this->req->templateFetch($this->templatePHP);
+			$this->html = $this->req->tpl->PHPtemplateFetch($this->templatePHP);
 					
 			++$this->req->jobTotal;
 			$node = $this;
@@ -100,6 +100,7 @@ class Block implements ArrayAccess {
 				)
 			);
 			unset($this->addedBlocksNames);
+			$this->req->tpl->register_function('getblock',array($this->parentNode,'getBlock'));
 		}
 		if ($this->readyBlocks >= $this->numBlocks) {
 			$this->execute();

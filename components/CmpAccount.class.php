@@ -64,18 +64,22 @@ class CmpAccount extends Component {
 					$req->appInstance->accounts->saveAccount(array(
 						'email' => $email = Request::getString($req->attrs->request['email']),
 						'username' => Request::getString($req->attrs->request['username']),
-						'password' => Request::getString($req->attrs->request['password']),
+						'password' => $password = Request::getString($req->attrs->request['password']),
 						'regdate' => time(),
-						'ip' => $req->attrs->servers['REMOTE_ADDR'],
+						'ip' => $req->attrs->server['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
 						'acl' => array(),
 					), function ($lastError) use ($req, $email)
 					{
-						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req) {
+						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req, $password) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
 							}
+							$req->appInstance->outgoingmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
+								'password' => $password
+							));
+																			
 							$req->attrs->session['accountId'] = $account['_id'];
 							$req->updatedSession = true;
 							$req->setResult(array('success' => true));

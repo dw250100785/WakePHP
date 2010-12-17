@@ -12,8 +12,8 @@ class CmpCAPTCHA extends AsyncServer {
 		$this->appInstance = $req->appInstance;
 	}	
 	public static function checkJob() {
-		return function($jobname, $complex) {
-			$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
+		return function($jobname, $job) { 
+			$job->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $job) {
 			 
 				$errors = array();
 				if (!$captchaOK) {
@@ -22,11 +22,11 @@ class CmpCAPTCHA extends AsyncServer {
 					}
 					else {
 						$errors[] = 'Unknown error.';
-						$complex->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
+						$job->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
 					}
 				}
 				
-				$complex->setResult($jobname, $errors);
+				$job->setResult($jobname, $errors);
 			});
 		};
 	}
@@ -77,6 +77,13 @@ class CmpCAPTCHASession extends SocketSession {
 	public $body = '';
 	public $EOL = "\r\n";
 	public function validate($cb) {
+
+		if (empty($this->appInstance->req->attrs->request['recaptcha_challenge_field'])) {
+			$cb(false,'');
+		}
+		if (empty($this->appInstance->req->attrs->request['recaptcha_response_field'])) {
+			$cb(false,'');
+		}
 		$body =  http_build_query(array(
 			'privatekey' => $this->appInstance->req->appInstance->config->captchaprivatekey->value,
 			'remoteip' => $this->appInstance->req->attrs->server['REMOTE_ADDR'],
@@ -87,7 +94,7 @@ class CmpCAPTCHASession extends SocketSession {
 		$this->writeln('Host: www.google.com');
 		$this->writeln('Content-type: application/x-www-form-urlencoded');
 		$this->writeln('Content-length: '.strlen($body));
-		$this->writeln('User-Aegent: reCAPTCHA/phpDaemon');
+		$this->writeln('User-Agent: reCAPTCHA/phpDaemon');
 		$this->writeln('');
 		$this->write($body);
 		$this->onResponse[] = $cb;
