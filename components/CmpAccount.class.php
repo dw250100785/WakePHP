@@ -27,6 +27,10 @@ class CmpAccount extends Component {
 		};
 	}
 	
+	public function getRecentSignupsCount($cb) {
+		$this->appInstance->accounts->getRecentSignupsFromIP($this->req->attrs->server['REMOTE_ADDR'], $cb);
+	}
+	
 	public function UsernameAvailablityCheckController() {
 		$req = $this->req;
 		$username = Request::getString($req->attrs->request['username']);
@@ -58,14 +62,16 @@ class CmpAccount extends Component {
 				if (sizeof($errors) === 0) {
 					
 					$req->appInstance->accounts->saveAccount(array(
-						'username' => $username = Request::getString($req->attrs->request['username']),
+						'email' => $email = Request::getString($req->attrs->request['email']),
+						'username' => Request::getString($req->attrs->request['username']),
 						'password' => Request::getString($req->attrs->request['password']),
-						'email' => Request::getString($req->attrs->request['email']),
+						'regdate' => time(),
+						'ip' => $req->attrs->servers['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
 						'acl' => array(),
-					), function ($lastError) use ($req, $username)
+					), function ($lastError) use ($req, $email)
 					{
-						$req->appInstance->accounts->getAccountByName($username, function ($account) use ($req) {
+						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
@@ -82,65 +88,56 @@ class CmpAccount extends Component {
 				
 			});
 			$req->job->req = $req;
-			
-			$job('captcha', function($jobname, $complex) {
-				$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
-			 
-					$errors = array();
-					if (!$captchaOK) {
-						if ($msg === 'incorrect-captcha-sol') {
-							$errors[] = 'Incorrect CAPTCHA solution.';
-						}
-						else {
-							$errors[] = 'Unknown error.';
-							$complex->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
-						}
+
+			$job('captchaPreCheck', function($jobname, $job) {
+				$job->req->components->Account->getRecentSignupsCount(function($result) use ($job, $jobname) {
+					if ($result['n'] > 0) {
+						$job('captcha', CmpCAPTCHA::checkJob());
 					}
-					
-					$complex->setResult($jobname, $errors);
+					$job->setResult($jobname, array());
 				});
 			});
 			
-			$job('username', function($jobname, $complex) {
+			$job('username', function($jobname, $job) {
 			
-				$username = Request::getString($complex->req->attrs->request['username']);
+				$username = Request::getString($job->req->attrs->request['username']);
 				if ($username === '') {
-					$complex->setResult($jobname,array());
+					$job->setResult($jobname,array());
 					return;
 				}
-				if (($r = $complex->req->components->Account->checkUsernameFormat($username)) !== true) {
-					$complex->setResult($jobname, array($r));
+				if (($r = $job->req->components->Account->checkUsernameFormat($username)) !== true) {
+					$job->setResult($jobname, array($r));
 					return;
 				}
-				$complex->req->appInstance->accounts->getAccountByUnifiedName(
+				$job->req->appInstance->accounts->getAccountByUnifiedName(
 					$username,
-					function($account) use ($jobname, $complex) {
+					function($account) use ($jobname, $job) {
 			 
 					$errors = array();
 					if ($account) {
 						$errors[] = 'Username already taken.';
 					}
 					
-					$complex->setResult($jobname, $errors);
+					$job->setResult($jobname, $errors);
 				});
 			});
 			
 			
-			$job('email', function($jobname, $complex) {
-				if (filter_var(Request::getString($complex->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
-					$complex->setResult($jobname, array('Incorrect E-Mail.'));
+			$job('email', function($jobname, $job) {
+				if (filter_var(Request::getString($job->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
+					$job->setResult($jobname, array('Incorrect E-Mail.'));
 					return;
 				}
-				$complex->req->appInstance->accounts->getAccountByEmail(
-					Request::getString($complex->req->attrs->request['email']),
-					function($account) use ($jobname, $complex) {
+				$job->req->appInstance->accounts->getAccountByEmail(
+					Request::getString($job->req->attrs->request['email']),
+					function($account) use ($jobname, $job) {
 			 
 					$errors = array();
 					if ($account) {
 						$errors[] = 'Another account already registered with this E-Mail.';
 					}
 					
-					$complex->setResult($jobname, $errors);
+					$job->setResult($jobname, $errors);
 				});
 			});
 			

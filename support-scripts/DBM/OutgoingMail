@@ -1,0 +1,8 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* outgoingmail */ 
+$outgoingmail = $db->selectCollection('outgoingmail');
+$outgoingmail->drop();
+$db->createCollection('outgoingmail', true, $s = 1024*1024*30, $s / (5*1024));

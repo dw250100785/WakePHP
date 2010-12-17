@@ -4,7 +4,7 @@ include __DIR__.'/../generic.php';
 
 /* accounts */ 
 $accounts = $db->selectCollection('accounts');
-$accounts->remove();
+$accounts->drop();
 $accounts->ensureIndex(array('email' => 1),array('unique' => true));
 $accounts->ensureIndex(array('username' => 1));
 $accounts->ensureIndex(array('unifiedusername' => 1));

@@ -14,37 +14,51 @@ class AccountsORM extends ORM {
 				'where' =>	array('username' => $username),
 		));
 	}
+	
+	
+	public function getRecentSignupsFromIP($ip, $cb) {
+	
+		$this->accounts->count($cb, array('ip' => $ip, 'regdate' => array('$gt' => time() - 3600)));
+		
+	}
+	
 	public function getAccountByUnifiedName($username, $cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	array('unifiedusername' => $this->unifyUsername($username)),
 		));
 	}
+	
 	public function getAccountByEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	array('email' => $email),
 		));
 	}
+	
 	public function getAccountById($id, $cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	array('_id' => $id),
 		));
 	}
+	
 	public function getAccount($find,	$cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	$find,
 		));
 	}
+	
 	public function getACLgroup($name) {
 		$this->aclgroups->findOne($cb, array(
 				'where' =>	array('name' => $name),
 		));
 	}
+	
 	public function checkPassword($account,$password) {
 		if ($account && !isset($account['password'])) {
 			return true;
 		}
 		return crypt($password,$account['password']) === $account['password'];
 	}
+	
 	public function unifyUsername($username) {
 		static $equals = array(
 			'з3z',	'пn',			'оo0',	'еeё',
@@ -58,6 +72,7 @@ class AccountsORM extends ORM {
 		}, $username),'UTF-8');
 		return $result;
 	}
+	
 	public function saveAccount($account, $cb = null) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'],$this->appInstance->config->cryptsalt->value);
@@ -65,6 +80,7 @@ class AccountsORM extends ORM {
 		$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		$this->accounts->upsert(array('username' => $account['username']), $account, false, $cb);
 	}
+	
 	public function saveACLgroup($group) {
 		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));
 	}

@@ -4,5 +4,5 @@ include __DIR__.'/../generic.php';
 
 /* sessions */ 
 $sessions = $db->selectCollection('sessions');
-$sessions->remove();
+$sessions->drop();
 $sessions->ensureIndex(array('accountId' => 1));

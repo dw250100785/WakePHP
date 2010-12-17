@@ -11,6 +11,25 @@ class CmpCAPTCHA extends AsyncServer {
 		$this->req = $req;
 		$this->appInstance = $req->appInstance;
 	}	
+	public static function checkJob() {
+		return function($jobname, $complex) {
+			$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
+			 
+				$errors = array();
+				if (!$captchaOK) {
+					if ($msg === 'incorrect-captcha-sol') {
+						$errors[] = 'Incorrect CAPTCHA solution.';
+					}
+					else {
+						$errors[] = 'Unknown error.';
+						$complex->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
+					}
+				}
+				
+				$complex->setResult($jobname, $errors);
+			});
+		};
+	}
 	/**
 	 * Establishes connection
 	 * @param string Address
