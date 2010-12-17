@@ -83,7 +83,7 @@ class CmpAccount extends Component {
 			});
 			$req->job->req = $req;
 			
-			$job('captcha',function($jobname, $complex) {
+			$job('captcha', function($jobname, $complex) {
 				$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
 			 
 					$errors = array();
@@ -101,9 +101,13 @@ class CmpAccount extends Component {
 				});
 			});
 			
-			$job('username',function($jobname, $complex) {
+			$job('username', function($jobname, $complex) {
 			
 				$username = Request::getString($complex->req->attrs->request['username']);
+				if ($username === '') {
+					$complex->setResult($jobname,array());
+					return;
+				}
 				if (($r = $complex->req->components->Account->checkUsernameFormat($username)) !== true) {
 					$complex->setResult($jobname, array($r));
 					return;
@@ -122,7 +126,7 @@ class CmpAccount extends Component {
 			});
 			
 			
-			$job('email',function($jobname, $complex) {
+			$job('email', function($jobname, $complex) {
 				if (filter_var(Request::getString($complex->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
 					$complex->setResult($jobname, array('Incorrect E-Mail.'));
 					return;
