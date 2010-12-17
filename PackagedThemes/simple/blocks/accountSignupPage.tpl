@@ -8,7 +8,7 @@
 <input type="text" name="email" size="50" /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Your city</span>:</div><div class="fieldcontrols">
-<input type="text" name="city" size="50" /></div><br class="clearfloat" /><br /><br />
+<input type="text" name="location" size="50"{if isset($req->attrs->server.GEOIP_CITY)} value="{$req->attrs->server.GEOIP_CITY|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div style="display:none"><div class="fieldname"><span class="i18n">CAPTCHA</span>:</div><div class="fieldcontrols"><div class="CAPTCHA"><span class="i18n">Loading CAPTCHA...</span></div></div><br class="clearfloat" /><br /><br />
 </div>

@@ -73,12 +73,18 @@ class AccountsORM extends ORM {
 		return $result;
 	}
 	
-	public function saveAccount($account, $cb = null) {
+	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
-			$account['password'] = crypt($account['password'],$this->appInstance->config->cryptsalt->value);
+			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
 		}
-		$account['unifiedusername'] = $this->unifyUsername($account['username']);
-		$this->accounts->upsert(array('username' => $account['username']), $account, false, $cb);
+		if (isset($account['username'])) {
+			$account['unifiedusername'] = $this->unifyUsername($account['username']);
+		}
+		if ($update) {
+			$this->accounts->update(array('email' => $account['email']), array('$set' => $account), 0, $cb);
+		} else {
+			$this->accounts->upsert(array('email' => $account['email']), $account, false, $cb);
+		}
 	}
 	
 	public function saveACLgroup($group) {
