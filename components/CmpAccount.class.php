@@ -61,17 +61,30 @@ class CmpAccount extends Component {
 				$req = $job->req;
 				if (sizeof($errors) === 0) {
 					
-					$password = Request::getString($req->attrs->request['password'])
 					$req->appInstance->accounts->saveAccount(array(
 						'email' => $email = Request::getString($req->attrs->request['email']),
 						'username' => Request::getString($req->attrs->request['username']),
-						'password' => $password,
+						'location' => $city = Request::getString($req->attrs->request['location']),
+						'password' => $password = Request::getString($req->attrs->request['password']),
 						'regdate' => time(),
 						'ip' => $req->attrs->server['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
 						'acl' => array(),
-					), function ($lastError) use ($req, $email)
+					), function ($lastError) use ($req, $email, $password, $city)
 					{
+						if ($city !== '') {
+						
+							$req->components->GMAPS->geo($city, function ($geo) use ($req, $email) {
+							
+							Daemon::log(isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null);
+								$req->appInstance->accounts->saveAccount(array(
+									'email' => $email,
+									'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
+								), null, true);
+							
+							});
+							
+						}
 						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req, $password) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
