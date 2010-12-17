@@ -61,10 +61,11 @@ class CmpAccount extends Component {
 				$req = $job->req;
 				if (sizeof($errors) === 0) {
 					
+					$password = Request::getString($req->attrs->request['password'])
 					$req->appInstance->accounts->saveAccount(array(
 						'email' => $email = Request::getString($req->attrs->request['email']),
 						'username' => Request::getString($req->attrs->request['username']),
-						'password' => $password = Request::getString($req->attrs->request['password']),
+						'password' => $password,
 						'regdate' => time(),
 						'ip' => $req->attrs->server['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
