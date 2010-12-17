@@ -29,18 +29,20 @@ img {
 	margin-left: 60px;
 }
 
-
-/* core forms */
-
-form h1 {
+h1.heading, form h1 {
  color: #999999;
  margin-bottom: 30px;
 }
-form .fieldname {
+
+/* core forms */
+
+.fieldname {
 	font-weight: bold;
-	float: left;
 }
 form .fieldcontrols {
+ float: left;
+}
+form .fieldvalue {
  float: left;
 }
 
@@ -62,9 +64,8 @@ button {
 /* account */
 
 
-.AccountLoginForm .fieldname {
- float: none;
-}
+
+
 .AccountLoginForm input {
 	font-size: 3em;
 	
@@ -78,7 +79,6 @@ button {
 }
 .AccountSignupForm .fieldname {
 	
-	width: 200px;
 	
 }
 

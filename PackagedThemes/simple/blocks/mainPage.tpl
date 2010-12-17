@@ -1,8 +1,5 @@
 {getBlock name="PageStart"}
 
-{getBlock name="trololo"}
-
-<br /><br />
-text in body
+Hello world!
 
 {getBlock name="PageEnd"}

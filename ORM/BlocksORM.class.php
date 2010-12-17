@@ -31,7 +31,7 @@ class BlocksORM extends ORM {
 				),
 		));
 	}
-	public function saveBlock($block) {
+	public function saveBlock($block, $update = false) {
 		$block['mtime'] = microtime(true);
 		if (!isset($block['locale'])) {$block['locale'] = null;}
 		if (isset($block['_id'])) {
@@ -50,6 +50,6 @@ class BlocksORM extends ORM {
 			$tpl->register_function('getblock',function($args) {});
 			$block['templatePHP'] =	$tpl->_compile_string($block['template'],implode(':',$find));
 		}
-		$this->blocks->upsert($find,array('$set' => $block));
+		$this->blocks->upsert($find,$update ? array('$set' => $block) : $block);
 	}
 }

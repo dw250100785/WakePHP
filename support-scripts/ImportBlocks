@@ -1,0 +1,28 @@
+#!/usr/bin/php -q
+<?php
+include 'generic.php';
+
+/* blocks */ 
+$blocks = $db->selectCollection('blocks');
+$blocks->remove();
+$blocks->ensureIndex(array('name' => 1));
+$blocks->ensureIndex(array('locale' => 1, 'path' => 1));
+
+$decoder = function($json) {
+	static $pairs = array(
+		"\n" => '',
+		"\r" => '',
+		"\t" => '',
+	);
+	return json_decode(strtr($json,$pairs), true);
+};
+foreach (glob('./PackagedThemes/'.$theme.'/blocks/*.obj') as $file) {
+	$block = $decoder(file_get_contents($file));
+	$block['name'] = pathinfo($file,PATHINFO_FILENAME);
+	$tplFilename = dirname($file).'/'.$block['name'].'.tpl';
+	$block['theme'] = $theme;
+	if (file_exists($tplFilename)) {
+		$block['template'] = file_get_contents($tplFilename);
+	}
+	$app->saveBlock($block);
+}

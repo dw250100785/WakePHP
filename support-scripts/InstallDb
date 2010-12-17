@@ -1,67 +1,11 @@
 #!/usr/bin/php -q
 <?php
-$dbname = 'WakePHP'; // Mongo database name 
-$name = ''; // AppInstance name ('test' for "WakePHP test {...")
-$pidfile = '/var/run/phpd.pid';
-$mastersocket = '/tmp/phpDaemon-master-%x.sock';
-$theme = 'simple';
+include 'generic.php';
 
 
-$mongo = new Mongo();
-$db = $mongo->{$dbname};
-chdir(__DIR__.'/..');
-class WakePHP {
-	public $name;
-	public function __construct($path,$name) {
-		$this->name = $name;
-		$this->sock = stream_socket_client($path, $errno, $errstr);
-		if (!$this->sock) {
-			$e = new CouldntConnect;
-			$e->path = $path;
-			throw $e;
-		}
-	}
-	public function sendPacket($p) {
-		fwrite($this->sock,json_encode($p)."\n");
-	}
-	//public function saveBlock($block) {file_put_contents('./PackagedThemes/simple/blocks/'.$block['name'],json_encode($block));}
-	public function __call($m,$a) {
-		$this->sendPacket(array(
-					'op' => 'singleCall',
-					'appfullname' => get_class($this).'-'.$this->name,
-					'method' => $m,
-					'args' => $a
-		));
-	}
-}
-class CouldntConnect extends Exception {}
-
-
-try {
-	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($pidfile)),$name);
-}
-catch (CouldntConnect $e) {
-	exit('Connection failed to '.$e->path.'.');
-}
-
-/* blocks */ 
-$blocks = $db->selectCollection('blocks');
-$blocks->remove();
-$blocks->ensureIndex(array('name' => 1));
-$blocks->ensureIndex(array('locale' => 1, 'path' => 1));
-
-foreach (glob('./PackagedThemes/'.$theme.'/blocks/*.obj') as $file) {
-	$block = json_decode(file_get_contents($file),true);
-	$tplFilename = dirname($file).'/'.pathinfo($file,PATHINFO_FILENAME).'.tpl';
-	if (file_exists($tplFilename)) {
-		$block['template'] = file_get_contents($tplFilename);
-	}
-	$app->saveBlock($block);
-}
+shell_exec(dirname(__FILE__).'/ImportBlocks');
 
 shell_exec(dirname(__FILE__).'/BuildLocales');
-
-return; ///!!!!!
 
 /* sessions */ 
 $sessions = $db->selectCollection('sessions');

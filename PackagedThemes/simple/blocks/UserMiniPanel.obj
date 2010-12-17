@@ -1,1 +1,4 @@
-{"locale":null,"mtime":1290115036.3405,"name":"UserMiniPanel","type":"GenericAuthDep"}
+{
+	"locale": null,
+	"type": "GenericAuthDep"
+}

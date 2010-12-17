@@ -1,3 +1,3 @@
 AWconfig = {
-	"CAPTCHApublickey": "6Leo474SAAAAAIkdKl7uBC9YWjjldMgUXGu0voQu"
+	"CAPTCHApublickey": "6LeirL8SAAAAADIwviglgkVojBSsDiEAXYM3X7qa"
 };

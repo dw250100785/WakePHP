@@ -11,6 +11,7 @@ class WakePHP extends AppInstance {
 	public $sessions;
 	public $db;
 	public $dbname;
+	public $LockClient;
 
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
@@ -21,8 +22,36 @@ class WakePHP extends AppInstance {
 		$appInstance->blocks = new BlocksORM($this);
 		$appInstance->accounts = new AccountsORM($this);
 		$appInstance->sessions = new SessionsORM($this);
+		$appInstance->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
+		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
+		{
+			foreach (glob($appInstance->config->themesdir->value.'*/blocks/*') as $file) {
+				Daemon::$process->fileWatcher->addWatch($file, array($appInstance,'onBlockFileChanged'));
+			}
+		});
 	}
-	
+	public function onBlockFileChanged($file) {
+		Daemon::log('changed - '.$file);
+		$blockName = pathinfo($file, PATHINFO_FILENAME);
+		$ext = pathinfo($file, PATHINFO_EXTENSION);
+		if ($ext === 'obj') {
+			$block = $decoder(file_get_contents($file));
+			$block['name'] = pathinfo($file,PATHINFO_FILENAME);
+			$tplFilename = dirname($file).'/'.$block['name'].'.tpl';
+			$block['theme'] = $theme;
+			if (file_exists($tplFilename)) {
+				$block['template'] = file_get_contents($tplFilename);
+			}
+			$this->blocks->saveBlock($block);
+		}
+		elseif ($ext === 'tpl') {
+			Daemon::log('update');
+			$this->blocks->saveBlock(array(
+				'name' => $blockName,
+				'template' => file_get_contents($file)
+			), true);
+		}
+	}
 	public function getQuickyInstance() {
 		$tpl = new Quicky;
 		$tpl->template_dir = $this->config->templatedir->value;
@@ -34,6 +63,7 @@ class WakePHP extends AppInstance {
 	protected function getConfigDefaults() {
 		return array(
 			'templatedir' => './templates/',
+			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
 		);

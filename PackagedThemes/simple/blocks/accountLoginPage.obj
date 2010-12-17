@@ -1,1 +1,5 @@
-{"locale":"en","mtime":1290115036.3427,"name":"accountLoginPage","path":"\/account\/login","title":"Login"}
+{
+	"locale": "en",
+	"path": "\/account\/login",
+	"title": "Login"
+}
