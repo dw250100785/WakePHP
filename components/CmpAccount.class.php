@@ -58,14 +58,14 @@ class CmpAccount extends Component {
 				if (sizeof($errors) === 0) {
 					
 					$req->appInstance->accounts->saveAccount(array(
-						'username' => $username = Request::getString($req->attrs->request['username']),
+						'email' => $email = Request::getString($req->attrs->request['email']),
+						'username' => Request::getString($req->attrs->request['username']),
 						'password' => Request::getString($req->attrs->request['password']),
-						'email' => Request::getString($req->attrs->request['email']),
 						'aclgroups' => array('Users'),
 						'acl' => array(),
-					), function ($lastError) use ($req, $username)
+					), function ($lastError) use ($req, $email)
 					{
-						$req->appInstance->accounts->getAccountByName($username, function ($account) use ($req) {
+						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
@@ -83,23 +83,7 @@ class CmpAccount extends Component {
 			});
 			$req->job->req = $req;
 			
-			$job('captcha', function($jobname, $complex) {
-				$complex->req->components->CAPTCHA->validate(function($captchaOK, $msg) use ($jobname, $complex) {
-			 
-					$errors = array();
-					if (!$captchaOK) {
-						if ($msg === 'incorrect-captcha-sol') {
-							$errors[] = 'Incorrect CAPTCHA solution.';
-						}
-						else {
-							$errors[] = 'Unknown error.';
-							$complex->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
-						}
-					}
-					
-					$complex->setResult($jobname, $errors);
-				});
-			});
+			$job('captcha', CmpCAPTCHA::checkJob());
 			
 			$job('username', function($jobname, $complex) {
 			

@@ -89,4 +89,15 @@ msgstr "Другая учетная запись уже зарегистриро
 msgid "Incorrect E-Mail."
 msgstr "Некорректная электропочта."
 
+msgid "optional"
+msgstr "необязательно"
+
+msgid "default is %s"
+msgstr "по-умолчанию %s"
+
+msgid "Your city"
+msgstr "Ваш город"
+
+msgid "Manual login information setup"
+msgstr "Вручную установить данные для входа"
 

@@ -29,6 +29,7 @@
 <script src="/js/CmpCAPTCHA.js" type="text/javascript"></script>
 <script src="/js/CmpAccount.js" type="text/javascript"></script>
 
+<script type="text/javascript" src="/js/jquery.easypassgen.js"></script>
 <script type="text/javascript" src="/js/jquery.address-1.3.min.js"></script>
 <script type="text/javascript" src="/js/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/jquery.json.js"></script>

@@ -1,5 +1,13 @@
 $(function() {
 
+	$('.generatePassword').each(function() {
+		$(this).easypassgen({
+			'syllables':        2,
+			'numbers':          Math.round(Math.random()),
+			'specialchars':     Math.round(Math.random())
+		});
+	});
+	
 	$('.AccountLoginForm form').ajaxFormController({
 		success: function (result, statusText, xhr, $form) {
 			if (result.success) {
@@ -31,7 +39,20 @@ $(function() {
 	});
 	
 	
-	$('form.AccountSignupForm').ajaxFormController({
+	$('form.AccountSignupForm').each(function() {
+		var $form = $(this);
+		$form.find('.additionalFieldsButton').click(function() {
+			$form.find('.additionalFields').show();
+			$(this).hide();
+		});
+	}).ajaxFormController({
+		beforeSubmit: function(arr, $form, options) {
+			$.each(arr, function(index, el) {
+				if ((el.name == 'password') && (el.value == '')) {
+					el.value = $form.find('.generatePassword').text();
+				}
+			});
+		},
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
 			$('form.AccountSignupForm .CAPTCHA').html(_('Testing not required.'));
@@ -44,15 +65,21 @@ $(function() {
 					location.href = '/';
 				}
 			} else {
-				$('form.AccountSignupForm .CAPTCHA').captcha();
 				for (var field in result.errors) {
 				
 					if (field == 'captcha') {
-						$('form.AccountSignupForm .CAPTCHA').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+						var captchaDiv = $('form.AccountSignupForm .CAPTCHA');
+						if (captchaDiv.parent().parent().is(':visible')) {
+							captchaDiv.after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+						}
+						else {
+							captchaDiv.parent().parent().show();
+						}
 					} else {
 						$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
 					}			
 				}
+				$('form.AccountSignupForm .CAPTCHA').captcha();
 				$('.usernameAvailability').html('');
 				$("form.AccountSignupForm input[name='username']").change();
 			}
