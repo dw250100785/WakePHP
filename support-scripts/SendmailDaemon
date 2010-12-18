@@ -25,10 +25,17 @@ while (true) {
 		continue;
 	}
 	try {
-		$outgoingmail->update(array('_id' => $mail['_id']), array('$set' => array('status' => 'acquired')), array('safe' => true));
+		$outgoingmail->update(array('_id' => $mail['_id'], 'status' => 'vacant'), array('$set' => array('status' => 'acquired')), array('safe' => true));
 	} catch (MongoCursorException $e) {
+		echo "Caught exception trying to acquire ".$mail['_id'].": ".$e->getMessage()."\n";
 		continue;
 	}
+	echo "Sending ".$mail['_id']." ... ";
 	$success = call_user_func_array('mail', $mail['args']);
-	$outgoingmail->update(array('_id' => $mail['_id']), array('$set' => array('status' => $success ? 'succeed' : 'failed')), array('safe' => true));
+	echo ($success ? 'OK' : 'FAILED') . "\n";
+	try {
+		$outgoingmail->update(array('_id' => $mail['_id']), array('$set' => array('status' => $success ? 'succeed' : 'failed')), array('safe' => true));
+	} catch (MongoCursorException $e) {
+		echo "Caught exception trying to set status of ".$mail['_id']."\n";
+	}
 }
