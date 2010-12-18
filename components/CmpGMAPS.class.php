@@ -32,7 +32,7 @@ class CmpGMAPS extends AsyncServer {
 			$e[1] = 80;
 		}
 		$connId = $this->connectTo($e[0], (int) $e[1]);
-
+		
 		$this->sessions[$connId] = new CmpGMAPSSession($connId, $this);
 		$this->sessions[$connId]->addr = $addr;
 		$this->servConn[$addr][$connId] = $connId;
