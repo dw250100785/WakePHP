@@ -73,6 +73,11 @@ class AccountsORM extends ORM {
 		return $result;
 	}
 	
+	public function confirmAccount($account, $cb = null) {
+		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
+	}
+	
+	
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
