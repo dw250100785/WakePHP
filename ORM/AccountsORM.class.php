@@ -81,7 +81,11 @@ class AccountsORM extends ORM {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		}
 		if ($update) {
+<<<<<<< HEAD
 			$this->accounts->update(array('email' => $account['email']), array('$set' => $account), 0, $cb);
+=======
+			$this->accounts->update(array('email' => $account['email']), $account, 0, $cb);
+>>>>>>> 44ebee1d0dadfcafc831afdab604c4fa7708716a
 		} else {
 			$this->accounts->upsert(array('email' => $account['email']), $account, false, $cb);
 		}

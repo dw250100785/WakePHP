@@ -58,17 +58,22 @@ class CmpCAPTCHASession extends SocketSession {
 	public $contentLength = 0;
 	public $body = '';
 	public $EOL = "\r\n";
-	public function geo($q, $cb) {   
-		$this->writeln('GET /maps/geo?'.http_build_query(array(
+	public function geo($q, $cb) {
+
+		$query = http_build_query(array(
 			'q'				=> $q,
 			'output'	=> 'json',
 			'oe'			=> 'utf8',
 			'sensor'	=> 'false',
 			'key'			=> $this->appInstance->appInstance->config->googleapikey->value,
-    )).' HTTP/1.0');
+    ));
+       
+    
+		$this->writeln('GET /maps/geo?'.http_build_query($query).' HTTP/1.0');
 		$this->writeln('Host: maps.google.com');
 		$this->writeln('User-Agent: GMAPS/phpDaemon');
 		$this->writeln('');
+		$this->write($body);
 		$this->onResponse[] = $cb;
 	}
 	public function writeln($s) {
@@ -109,7 +114,6 @@ class CmpCAPTCHASession extends SocketSession {
 		body:
 		$this->body .= $this->buf;
 		if (strlen($this->body) >= $this->contentLength) {
-		Daemon::log(array($this->body));
 			$result = json_decode(trim($this->body), true);
 
 			$f = array_shift($this->onResponse);
