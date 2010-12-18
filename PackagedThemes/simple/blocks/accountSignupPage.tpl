@@ -1,5 +1,5 @@
 {getBlock name="PageStart"}
-
+<script type="text/javascript" src="/js/CmpAccountSignup.js"></script>
 <form action="Account/Signup" class="AccountSignupForm" method="post">
 
 <h1 class="i18n">Account Registration</h1>

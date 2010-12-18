@@ -1,3 +1,16 @@
+$(function() {
+
+/* logout */
+$('.logoutButton').click(function() {
+	$.queryController('Account/Logout',function (result, statusText, xhr, $form) {
+		if (result.success) {
+			location.reload();
+		}
+	});
+});
+
+});
+/* core */
 jQuery.fn.ajaxFormController = function(options) {
 	if (!this.length) {
 		return this;
