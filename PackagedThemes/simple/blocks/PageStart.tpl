@@ -9,7 +9,7 @@
 <link href="/css/main.css" rel="stylesheet" type="text/css" /> 
 <link href="/favicon.ico" rel="icon" type="image/x-icon" /> 
 <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
-{if $req->locale != $req->appInstance->config->defaultlocale->value}
+{if $req->locale != 'en'}
 <link href="/locale/{$req->locale}/Account.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/Blocks.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/MUChat.json" lang="{$req->locale}" rel="gettext"/>

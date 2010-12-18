@@ -117,4 +117,4 @@ msgid "Incorrect code."
 msgstr "Неверный код."
 
 msgid "Account not found. Please register again."
-msgstr "Учетная запись не найден. Пожалуйста, зарегистрируйтесь снова."
+msgstr "Учетная запись не найдена. Пожалуйста, зарегистрируйтесь снова."

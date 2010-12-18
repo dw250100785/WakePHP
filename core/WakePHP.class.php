@@ -54,6 +54,14 @@ class WakePHP extends AppInstance {
 		Daemon::log('changed - '.$file);
 		$blockName = pathinfo($file, PATHINFO_FILENAME);
 		$ext = pathinfo($file, PATHINFO_EXTENSION);
+		$decoder = function($json) {
+			static $pairs = array(
+				"\n" => '',
+				"\r" => '',
+				"\t" => '',
+			);
+			return json_decode(strtr($json,$pairs), true);
+		};
 		if ($ext === 'obj') {
 			$block = $decoder(file_get_contents($file));
 			$block['name'] = pathinfo($file,PATHINFO_FILENAME);

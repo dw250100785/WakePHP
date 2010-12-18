@@ -6,7 +6,7 @@ class BlockAccountConfirmation extends Block {
 		$block = $this;
 		$block->req->components->Account->onAuth(function($result) use ($block) {
 			if (isset($block->req->attrs->request['email'])) {
-				$email = Request::getString($block->req->attrs->request['code']);
+				$email = Request::getString($block->req->attrs->request['email']);
 			}
 			else {
 				if (!$block->req->account['logged']) {
