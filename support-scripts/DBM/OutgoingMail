@@ -6,4 +6,4 @@ include __DIR__.'/../generic.php';
 $outgoingmail = $db->selectCollection('outgoingmail');
 $outgoingmail->drop();
 $db->createCollection('outgoingmail', true, $s = 1024*1024*30, $s / (5*1024));
-$db->ensureIndex(array('status' => 1));
+$outgoingmail->ensureIndex(array('status' => 1));
