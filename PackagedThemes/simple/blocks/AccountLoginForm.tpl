@@ -1,4 +1,4 @@
-<script type="text/javascript" src="/js/CmpAccountLogin.js" />
+<script type="text/javascript" src="/js/CmpAccountLogin.js"></script>
 <form action="Account/Authentication" method="post">
 <h1 class="i18n">Authentication</h1>
 {if $req->account.logged}<div class="i18n">You're logged as <strong class="i18nArg">{$req->account.username|escape}</strong>.</div><br />{/if}

@@ -33,7 +33,7 @@ class CmpGMAPS extends AsyncServer {
 		}
 		$connId = $this->connectTo($e[0], (int) $e[1]);
 
-		$this->sessions[$connId] = new	CmpCAPTCHASession($connId, $this);
+		$this->sessions[$connId] = new CmpGMAPSSession($connId, $this);
 		$this->sessions[$connId]->addr = $addr;
 		$this->servConn[$addr][$connId] = $connId;
 
@@ -47,7 +47,7 @@ class CmpGMAPS extends AsyncServer {
 	}
 }
 
-class CmpCAPTCHASession extends SocketSession {
+class CmpGMAPSSession extends SocketSession {
 
 	const PSTATE_FIRSTLINE = 1;
 	const PSTATE_HEADERS = 2;
