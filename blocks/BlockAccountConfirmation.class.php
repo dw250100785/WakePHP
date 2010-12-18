@@ -31,7 +31,7 @@ class BlockAccountConfirmation extends Block {
 				else {
 					$block->req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($block) {
 						
-						$block->assign('status', isset($account['confirmationcode']) ? 'incorrectCode' : 'alreadyConfirmed');
+						$block->assign('status', isset($account['confirmationcode']) ? 'incorrectCode' : ($account ? 'alreadyConfirmed' : 'accountNotFound'));
 						$block->runTemplate();
 						
 					});

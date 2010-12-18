@@ -7,6 +7,7 @@
 <input type="text" name="code" class="biginput" size="6" maxlength="6" /></div><br class="clearfloat" />
 {if $status == 'incorrectCode'}<div class="errorMessage i18n">Incorrect code.</div>
 {elseif $status == 'alreadyConfirmed'}<div class="errorMessage i18n">Your account already confirmed.</div>
+{elseif $status == 'accountNotFound'}<div class="errorMessage i18n">Account not found. Please register again.</div>
 {/if}<br /><br />
 
 <br /><button type="submit" class="i18n">Confirm my account.</button>
