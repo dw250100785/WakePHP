@@ -22,7 +22,6 @@ $(function() {
 		},
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
-			$('form.AccountSignupForm .CAPTCHA').html(_('Testing not required.'));
 			if (result.success) {
 				var backUrl = $.urlParam('backUrl');
 				if (backUrl != null) {
@@ -32,21 +31,29 @@ $(function() {
 					location.href = '/';
 				}
 			} else {
+				var hasCaptchaError = false;
+				var captchaDiv = $('form.AccountSignupForm .CAPTCHA');
+				
 				for (var field in result.errors) {
 				
 					if (field == 'captcha') {
-						var captchaDiv = $('form.AccountSignupForm .CAPTCHA');
+						hasCaptchaError = true;
 						if (captchaDiv.parent().parent().is(':visible')) {
 							captchaDiv.after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
 						}
 						else {
 							captchaDiv.parent().parent().show();
+							captchaDiv.captcha();
 						}
 					} else {
 						$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
 					}			
 				}
-				$('form.AccountSignupForm .CAPTCHA').captcha();
+				if (hasCaptchaError) {
+					captchaDiv.captcha();
+				} else {
+					captchaDiv.parent().parent().hide();
+				}
 				$('.usernameAvailability').html('');
 				$("form.AccountSignupForm input[name='username']").change();
 			}

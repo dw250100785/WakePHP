@@ -80,9 +80,11 @@ class CmpCAPTCHASession extends SocketSession {
 
 		if (empty($this->appInstance->req->attrs->request['recaptcha_challenge_field'])) {
 			$cb(false,'');
+			return;
 		}
 		if (empty($this->appInstance->req->attrs->request['recaptcha_response_field'])) {
-			$cb(false,'');
+			$cb(false,'incorrect-captcha-sol');
+			return;
 		}
 		$body =  http_build_query(array(
 			'privatekey' => $this->appInstance->req->appInstance->config->captchaprivatekey->value,
