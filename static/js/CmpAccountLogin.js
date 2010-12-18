@@ -19,7 +19,7 @@ $(function() {
 			$form.find('.errorMessage').remove();
 			for (var field in result.errors) {
 				
-				$form.find('input[name="'+field+'"]').after('<div class="errorMessage">'+_(result.errors[field])+'</div>');;
+				$form.find('input[name="'+field+'"]').after('<div class="errorMessage">'+_(result.errors[field])+'</div>');
 			
 			}
 				

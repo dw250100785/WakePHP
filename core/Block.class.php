@@ -56,9 +56,13 @@ class Block implements ArrayAccess {
 	public function init() {
 		$this->runTemplate();
 	}
+	public function assign() {
+		// @TODO: local assignation?
+		call_user_func_array(array($this->req->tpl, 'assign'), func_get_args());
+	}
 	public function runTemplate() {
 		if (isset($this->template)) {
-			$this->req->tpl->assign('block',	$this);
+			$this->assign('block',	$this);
 			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
 			$this->html = $this->req->tpl->PHPtemplateFetch($this->templatePHP);
 					

@@ -109,3 +109,9 @@ msgstr "Код"
 
 msgid "Account Confirmation"
 msgstr "Подтверждение учетной записи"
+
+msgid "Your account already confirmed."
+msgstr "Ваша учетная запись уже была подтверждена."
+
+msgid "Incorrect code."
+msgstr "Неверный код."
