@@ -10,6 +10,7 @@ $accounts->ensureIndex(array('username' => 1));
 $accounts->ensureIndex(array('unifiedusername' => 1));
 $app->saveAccount(array(
 				'username' => 'Guest',
+				'email' => 'guest@guest.tld',
 				'aclgroups' => array('Guests'),
 				'acl' => array(),
 ));
