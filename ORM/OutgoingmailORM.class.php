@@ -17,12 +17,14 @@ class OutgoingMailORM extends ORM {
 			$result = str_replace("\r", '', $result);
 			$e = explode("\n\n", $result, 2);
 			$e[0] = str_replace("\n", "\r\n", $e[0]);
-			$appInstance->outgoingmail->mail($email, null, $e[1], $e[0]);
+			
+			$subject = preg_match('~^Subject: (.*)$~mi',  $e[0], $m) ? $m[1] : '';
+			$appInstance->outgoingmail->mail($email, $subject, $e[1], $e[0]);
 		});
 	}
 	public function mail() {
 		
-		$this->outgoingmail->insert(array('ts' => microtime(), 'status' => 'vacant', 'args' => func_get_args()));
+		$this->outgoingmail->insert(array('ts' => microtime(true), 'status' => 'vacant', 'args' => func_get_args()));
 				
 	}
 }
