@@ -23,13 +23,7 @@ $(function() {
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
 			if (result.success) {
-				var backUrl = $.urlParam('backUrl');
-				if (backUrl != null) {
-					location.href = backUrl;
-				}
-				else {
-					location.href = '/';
-				}
+				location.href = '/'.$('html').attr('lang').'/account/confirm';
 			} else {
 				var hasCaptchaError = false;
 				var captchaDiv = $('form.AccountSignupForm .CAPTCHA');
@@ -52,7 +46,9 @@ $(function() {
 				if (hasCaptchaError) {
 					captchaDiv.captcha();
 				} else {
-					captchaDiv.parent().parent().hide();
+					//captchaDiv.parent().parent().hide();
+					captchaDiv.captcha();
+					// @TODO
 				}
 				$('.usernameAvailability').html('');
 				$("form.AccountSignupForm input[name='username']").change();

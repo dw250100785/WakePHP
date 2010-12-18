@@ -66,6 +66,7 @@ class CmpAccount extends Component {
 						'username' => Request::getString($req->attrs->request['username']),
 						'location' => $city = Request::getString($req->attrs->request['location']),
 						'password' => $password = Request::getString($req->attrs->request['password']),
+						'confirmationcode' => substr(md5($req->attrs->request['email'] . "\x00" . microtime(true)."\x00".mt_rand(0, mt_getrandmax()), 0, 6))
 						'regdate' => time(),
 						'ip' => $req->attrs->server['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
