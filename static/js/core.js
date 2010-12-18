@@ -1,5 +1,11 @@
 $(function() {
-
+	if (jQuery.fn.capslock != null) {
+		$(document).capslock({
+			caps_lock_on: function() {$('.capslock').show();},
+			caps_lock_off: function() {$('.capslock').hide();}
+		});
+	}
+	
 /* logout */
 $('.logoutButton').click(function() {
 	$.queryController('Account/Logout',function (result, statusText, xhr, $form) {

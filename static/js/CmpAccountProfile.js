@@ -1,12 +1,25 @@
 $(function() {
 	
-	$('form.AccountSignupForm').each(function() {
+	$('form.AccountProfileForm').each(function() {
 		var $form = $(this);
 		$form.find('input[name="location"]').autocomplete({source: ["Москва", "Находка", "Санкт-Петербург"]});
-		$form.find('.generatePassword').easypassgen({
-		'syllables':        2,
-		'numbers':          Math.round(Math.random()),
-		'specialchars':     Math.round(Math.random())
+		$form.find('.buttonGeneratePassword').click(function() {
+			$form.find('.containerGeneratedPassword').easypassgen({
+				'syllables':        2,
+				'numbers':          Math.round(Math.random()),
+				'specialchars':     Math.round(Math.random())
+			}).parent().show();
+			return false;
+		});
+		
+		$form.find('input[name="birthdate"]').datepicker({
+				changeMonth: true,
+				changeYear: true,
+				yearRange: "-100:-5"
+		});
+
+		$form.find('.containerGeneratedPassword').click(function() {
+			$form.find('input[name="password"]').val($(this).text());
 		});
 		$form.find('.additionalFieldsButton').click(function() {
 			$form.find('.additionalFields').show();
@@ -27,7 +40,7 @@ $(function() {
 				location.href = '/' + $('html').attr('lang') + '/account/confirm';
 			} else {
 				var hasCaptchaError = false;
-				var captchaDiv = $('form.AccountSignupForm .CAPTCHA');
+				var captchaDiv = $('form.AccountProfileForm .CAPTCHA');
 				
 				for (var field in result.errors) {
 				
@@ -52,17 +65,17 @@ $(function() {
 					// @TODO
 				}
 				$('.usernameAvailability').html('');
-				$("form.AccountSignupForm input[name='username']").change();
+				$("form.AccountProfileForm input[name='username']").change();
 			}
 		}
 	}).find('button[disabled]').removeAttr('disabled');
 	
 	
-	$("form.AccountSignupForm input[name='username']").change(function() {
+	$("form.AccountProfileForm input[name='username']").change(function() {
 		if ($(this).val().length > 3) {
 			$.queryController('Account/UsernameAvailablityCheck', function(data) {
 				if (data.success) {
-					$('form.AccountSignupForm .errorMessageUsername').remove();
+					$('form.AccountProfileForm .errorMessageUsername').remove();
 					var div = $('.usernameAvailability');
 					if (data.error == null) {
 						div.html(_('Username available.'));

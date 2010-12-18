@@ -77,6 +77,9 @@ msgstr "Условия предоставления услуг"
 msgid "By clicking on 'I accept' below you are agreeing to the Terms of Service above and the Privacy Policy."
 msgstr "Нажимая расположенную ниже кнопку \"Принимаю\", вы принимаете Условия использования, изложенные выше, а также Политику конфиденциальности."
 
+msgid "By clicking on 'Saves the changes' below you are agreeing to the Terms of Service above and the Privacy Policy."
+msgstr "Нажимая расположенную ниже кнопку \"Сохранить изменения\", вы принимаете Условия использования, изложенные выше, а также Политику конфиденциальности."
+
 msgid "Username available."
 msgstr "Имя доступно."
 
@@ -118,3 +121,40 @@ msgstr "Неверный код."
 
 msgid "Account not found. Please register again."
 msgstr "Учетная запись не найдена. Пожалуйста, зарегистрируйтесь снова."
+
+msgid "Save the changes"
+msgstr "Сохранить изменения"
+
+msgid "Change a password"
+msgstr "Изменить пароль"
+
+msgid "Generate password"
+msgstr "Сгенерировать пароль"
+
+msgid "Current password"
+msgstr "Текущий пароль"
+
+msgid "First name"
+msgstr "Имя"
+
+msgid "Last name"
+msgstr "Фамилия"
+
+msgid "Gender"
+msgstr "Пол"
+
+msgid "Birthdate"
+msgstr "Дата рождения"
+
+msgid "Subcription"
+msgstr "Подписка"
+
+msgid "Male"
+msgstr "Мужской"
+
+msgid "Female"
+msgstr "Женщина"
+
+msgid "Not specified"
+msgstr "Не указано"
+

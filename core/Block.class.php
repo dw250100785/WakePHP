@@ -61,6 +61,7 @@ class Block implements ArrayAccess {
 		call_user_func_array(array($this->req->tpl, 'assign'), func_get_args());
 	}
 	public function runTemplate() {
+		$this->req->onWakeup();
 		if (isset($this->template)) {
 			$this->assign('block',	$this);
 			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
@@ -109,6 +110,7 @@ class Block implements ArrayAccess {
 		if ($this->readyBlocks >= $this->numBlocks) {
 			$this->execute();
 		}
+		$this->req->onSleep();
 	}
 	public function getBlock($block) {
 		$block['tag'] = (string) new MongoId;
