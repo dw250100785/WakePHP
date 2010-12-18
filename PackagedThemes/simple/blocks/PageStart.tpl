@@ -7,11 +7,13 @@
 <link href="/css/jquery.tabs.css" rel="stylesheet" type="text/css" />
 <link href="/css/jquery.contextMenu.css" rel="stylesheet" type="text/css" /> 
 <link href="/css/main.css" rel="stylesheet" type="text/css" /> 
-<link href="favicon.ico" rel="icon" type="image/x-icon" /> 
-<link href="favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
+<link href="/favicon.ico" rel="icon" type="image/x-icon" /> 
+<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" /> 
+{if $req->locale != $req->appInstance->config->defaultlocale->value}
 <link href="/locale/{$req->locale}/Account.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/Blocks.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/MUChat.json" lang="{$req->locale}" rel="gettext"/>
+{/if}
 <meta name="description" content="WakePHP — PHP that never sleeps" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
 {?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}

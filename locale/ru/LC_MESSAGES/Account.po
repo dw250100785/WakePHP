@@ -101,3 +101,11 @@ msgstr "Ваш город"
 msgid "Manual login information setup"
 msgstr "Вручную установить данные для входа"
 
+msgid "Confirm my account."
+msgstr "Подтвердить мою учетную запись."
+
+msgid "Code"
+msgstr "Код"
+
+msgid "Account Confirmation"
+msgstr "Подтверждение учетной записи"

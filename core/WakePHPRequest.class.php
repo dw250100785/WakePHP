@@ -98,6 +98,11 @@ class WakePHPRequest extends HTTPRequest {
 		else {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
+				$this->finish();
+				return;
+			}
 		}
 		
 		++$this->jobTotal;
@@ -163,7 +168,7 @@ class WakePHPRequest extends HTTPRequest {
 		}
 	}
 	public function onDestruct() {
-	 Daemon::log('destruct');
+	 Daemon::log('destruct - '.$this->attrs->server['REQUEST_URI']);
 	}
 }
 

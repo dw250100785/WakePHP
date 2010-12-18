@@ -31,6 +31,8 @@ jQuery.queryOptions = function(method, success, data, dataType) {
 	if (dataType == null) {
 		dataType = 'json';
 	}
+	if (data == null) {data = {};}
+	data.LC = $('html').attr('lang');
 	var options = {
 		type: "POST",
 		url: "/component/"+method+"/"+dataType,

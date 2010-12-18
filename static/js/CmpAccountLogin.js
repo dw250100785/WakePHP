@@ -3,6 +3,10 @@ $(function() {
 	$('.AccountLoginForm form').ajaxFormController({
 		success: function (result, statusText, xhr, $form) {
 			if (result.success) {
+				if ((result.needConfirm != null) && result.needConfirm) {
+					location.href = '/' +  $('html').attr('lang') + '/account/confirm';
+					return;
+				}
 				var backUrl = $.urlParam('backUrl');
 				if (backUrl != null) {
 				location.href = backUrl;

@@ -12,6 +12,7 @@ class WakePHP extends AppInstance {
 	public $db;
 	public $dbname;
 	public $LockClient;
+	public $locales;
 
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
@@ -30,6 +31,16 @@ class WakePHP extends AppInstance {
 				Daemon::$process->fileWatcher->addWatch($file, array($appInstance,'onBlockFileChanged'));
 			}
 		});
+		$this->locales = array_map('basename', glob($appInstance->config->localedir->value.'*', GLOB_ONLYDIR));
+		if (!in_array($this->config->defaultlocale->value, $this->locales, true)) {
+			$this->locales[] = $this->config->defaultlocale->value;
+		}
+	}
+	public function getLocaleName($lc) {
+		if (!in_array($lc, $this->locales, true)) {
+			return $this->config->defaultlocale->value;
+		}
+		return $lc;
 	}
 	public function renderBlock($blockname, $variables, $cb) {
 			$appInstance = $this;
@@ -73,6 +84,7 @@ class WakePHP extends AppInstance {
 		return array(
 			'templatedir' => './templates/',
 			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
+			'localedir' =>	dirname(__DIR__).'/locale/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
 			'domain' => 'host.tld',

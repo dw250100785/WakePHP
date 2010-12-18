@@ -23,7 +23,7 @@ $(function() {
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
 			if (result.success) {
-				location.href = '/'.$('html').attr('lang').'/account/confirm';
+				location.href = '/' + $('html').attr('lang') + '/account/confirm';
 			} else {
 				var hasCaptchaError = false;
 				var captchaDiv = $('form.AccountSignupForm .CAPTCHA');

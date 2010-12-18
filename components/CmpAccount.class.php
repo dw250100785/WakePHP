@@ -66,18 +66,17 @@ class CmpAccount extends Component {
 						'username' => Request::getString($req->attrs->request['username']),
 						'location' => $city = Request::getString($req->attrs->request['location']),
 						'password' => $password = Request::getString($req->attrs->request['password']),
-						'confirmationcode' => substr(md5($req->attrs->request['email'] . "\x00" . microtime(true)."\x00".mt_rand(0, mt_getrandmax())), 0, 6)),
+						'confirmationcode' => $code = substr(md5($req->attrs->request['email'] . "\x00" . microtime(true)."\x00".mt_rand(0, mt_getrandmax())), 0, 6),
 						'regdate' => time(),
 						'ip' => $req->attrs->server['REMOTE_ADDR'],
 						'aclgroups' => array('Users'),
 						'acl' => array(),
-					), function ($lastError) use ($req, $email, $password, $city)
+					), function ($lastError) use ($req, $email, $password, $city, $code)
 					{
 						if ($city !== '') {
 						
 							$req->components->GMAPS->geo($city, function ($geo) use ($req, $email) {
 							
-							Daemon::log(isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null);
 								$req->appInstance->accounts->saveAccount(array(
 									'email' => $email,
 									'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
@@ -86,13 +85,16 @@ class CmpAccount extends Component {
 							});
 							
 						}
-						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req, $password) {
+						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req, $email, $password, $code) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
 							}
 							$req->appInstance->outgoingmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
-								'password' => $password
+								'email' => $email,
+								'password' => $password,
+								'code' => $code,
+								'locale' => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
 							));
 																			
 							$req->attrs->session['accountId'] = $account['_id'];
@@ -201,7 +203,11 @@ class CmpAccount extends Component {
 				elseif ($req->appInstance->accounts->checkPassword($account, Request::getString($req->attrs->request['password']))) {
 					$req->attrs->session['accountId'] = $account['_id'];
 					$req->updatedSession = true;
-					$req->setResult(array('success' => true));
+					$r = array('success' => true);
+					if (isset($account['confirmationcode'])) {
+						$r['needConfirm'] = true;
+					}
+					$req->setResult($r);
 				}
 				else {
 					$req->setResult(array('success' => false, 'errors' => array(

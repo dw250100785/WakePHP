@@ -1,0 +1,5 @@
+{
+	"path": "\/account\/confirm",
+	"title": "Account confirmation",
+	"type": "AccountConfirmation"
+}
