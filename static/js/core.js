@@ -5,7 +5,7 @@ $(function() {
 			caps_lock_off: function() {$('.capslock').hide();}
 		});
 	}
-	$('input[name="location"]').autocomplete({source: ["Москва", "Находка", "Санкт-Петербург"], autofill: true});
+	$('input[name="location"]').autocomplete({source: ["РњРѕСЃРєРІР°", "РќР°С…РѕРґРєР°", "РЎР°РЅРєС‚-РџРµС‚РµСЂР±СѓСЂРі"], autofill: true});
 	
 /* logout */
 $('.logoutButton').click(function() {
