@@ -101,7 +101,7 @@ class AccountsORM extends ORM {
 		);
 		$email = mb_strtolower($email, 'UTF-8');
 		
-		list ($name, $host) = explode('@', $email, 2);
+		list ($name, $host) = explode('@', $email . '@');
 		if (($p = strpos($name, '+')) !== false) {
 			$name = substr($name, 0, $p);
 		}
