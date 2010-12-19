@@ -40,7 +40,7 @@ class BlockAccountConfirmation extends Block {
 		});
 	}
 	public function success() {
-		$this->req->header('Location: /'.$this->req->locale.'/welcome');
+		$this->req->header('Location: /'.$this->req->locale.'/account/profile');
 		$this->req->finish();
 	}
 

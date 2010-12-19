@@ -34,7 +34,7 @@ class AccountsORM extends ORM {
 	
 	public function getRecentSignupsFromIP($ip, $cb) {
 	
-		$this->accounts->count($cb, array('ip' => $ip, 'regdate' => array('$gt' => time() - 3600)));
+		$this->accounts->count($cb, array('where' => array('ip' => $ip, 'regdate' => array('$gt' => time() - 3600))));
 		
 	}
 	
