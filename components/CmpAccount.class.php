@@ -391,13 +391,18 @@ class CmpAccount extends Component {
 				return;
 			}
 			$accountId = Request::getString($req->attrs->request['accountId']);
-			$accountId = '123';
 			$req->appInstance->accounts->deleteAccount(array('_id' => $accountId), function($lastError) use ($req)  {
 				
-				Daemon::log(array('lastError',$lastError));
-				$req->setResult(array(
-					'success' => true,
-				));	
+				if ($lastError['n'] > 0) {
+					$req->setResult(array(
+						'success' => true,
+					));	
+				} else {
+					$req->setResult(array(
+						'success' => false,
+						'error' => 'Account not found.'
+					));	
+				}
 			});
 
 		});

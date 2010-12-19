@@ -56,3 +56,8 @@ msgstr "Послед."
 msgid "Loading data from server..."
 msgstr "Идет загрузка данных с сервера..."
 
+msgid "Are you sure?"
+msgstr "Вы уверены?"
+
+msgid "Account not found."
+msgstr "Учетная запись не найдена."

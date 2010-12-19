@@ -25,6 +25,9 @@ class AccountsORM extends ORM {
 	
 	public function deleteAccount($cond = array(), $cb = null) {
 		if (sizeof($cond)) {
+			if (isset($cond['_id']) && is_string($cond['_id'])) {
+				$cond['_id'] = new MongoId($cond['_id']);
+			}
 			$this->accounts->remove($cond, $cb);
 		}
 	}	
