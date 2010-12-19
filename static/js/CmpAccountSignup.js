@@ -2,7 +2,6 @@ $(function() {
 	
 	$('form.AccountSignupForm').each(function() {
 		var $form = $(this);
-		$form.find('input[name="location"]').autocomplete({source: ["Москва", "Находка", "Санкт-Петербург"]});
 		$form.find('.generatePassword').easypassgen({
 		'syllables':        2,
 		'numbers':          Math.round(Math.random()),

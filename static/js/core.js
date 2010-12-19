@@ -5,6 +5,7 @@ $(function() {
 			caps_lock_off: function() {$('.capslock').hide();}
 		});
 	}
+	$('input[name="location"]').autocomplete({source: ["Москва", "Находка", "Санкт-Петербург"], autofill: true});
 	
 /* logout */
 $('.logoutButton').click(function() {

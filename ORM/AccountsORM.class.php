@@ -44,6 +44,12 @@ class AccountsORM extends ORM {
 		));
 	}
 	
+	public function getAccountByUnifiedEmail($email, $cb) {
+		$this->accounts->findOne($cb, array(
+				'where' =>	array('unifiedemail' => $this->unifyEmail($email)),
+		));
+	}
+	
 	public function getAccountByEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	array('email' => $email),
@@ -85,8 +91,22 @@ class AccountsORM extends ORM {
 		);
 		$result = mb_strtolower(preg_replace_callback('~(['.implode('])|([',$equals).'])~u', function ($m) use ($equals) {
 			return '['.$equals[max(array_keys($m))-1].']';
-		}, $username),'UTF-8');
+		}, $username), 'UTF-8');
 		return $result;
+	}
+	
+	public function unifyEmail($email) {
+		static $domains = array(
+			'googlemail.com' => 'gmail.com'
+		);
+		$email = mb_strtolower($email, 'UTF-8');
+		$email = str_replace('.', '', $email);
+		list ($name, $host) = explode('@', $email, 2);
+		if (($p = strpos($name, '+')) !== false) {
+			$name = substr($name, 0, $p);
+		}
+		$email = $name . '@' . $email;
+		return $email;
 	}
 	
 	public function confirmAccount($account, $cb = null) {
@@ -100,6 +120,9 @@ class AccountsORM extends ORM {
 		}
 		if (isset($account['username'])) {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
+		}
+		if (isset($account['email'])) {
+			$account['unifiedemail'] = $this->unifyEmail($account['email']);
 		}
 		if (isset($account['_id'])) {
 			if (is_string($account['_id'])) {

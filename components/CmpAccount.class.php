@@ -87,7 +87,7 @@ class CmpAccount extends Component {
 							});
 							
 						}
-						$req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($req, $email, $password, $code) {
+						$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $email, $password, $code) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
@@ -151,7 +151,7 @@ class CmpAccount extends Component {
 					$job->setResult($jobname, array('email' => 'Incorrect E-Mail.'));
 					return;
 				}
-				$job->req->appInstance->accounts->getAccountByEmail(
+				$job->req->appInstance->accounts->getAccountByUnifiedEmail(
 					Request::getString($job->req->attrs->request['email']),
 					function($account) use ($jobname, $job) {
 			 
@@ -439,7 +439,7 @@ class CmpAccount extends Component {
 		$this->onSessionStart(function($sessionEvent) use ($req) {
 			$req->appInstance->accounts->getAccount(array('$or' => array(
 				array('username' => Request::getString($req->attrs->request['username'])),
-				array('email' => Request::getString($req->attrs->request['username']))
+				array('unifiedemail' => $req->appInstance->accounts->unifyEmail(Request::getString($req->attrs->request['username'])))
 			))
 			,function ($account) use ($req) {
 				if (!$account) {
