@@ -6,7 +6,6 @@
 
 <h1 class="i18n">Profile</h1>
 
-
 <div class="fieldname"><span class="i18n">Your city</span>:</div><div class="fieldcontrols">
 <input type="text" name="location" size="50"{if isset($req->account.location)} value="{$req->account.location|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
@@ -18,10 +17,10 @@
 
 <div class="fieldname"><span class="i18n">Gender</span>:</div><div class="fieldcontrols">
 
-<input type="radio" name="gender" id="gender_male" value="male"{if isset($req->account.gender) && $req->account.gender == 'male'} checked{/if} />
+<input type="radio" name="gender" id="gender_male" value="m"{if isset($req->account.gender) && $req->account.gender == 'm'} checked{/if} />
 <label for="gender_male" class="i18n">Male</label>
 
-<input type="radio" name="gender" id="gender_female" value="female"{if isset($req->account.gender) && $req->account.gender == 'female'} checked{/if} />
+<input type="radio" name="gender" id="gender_female" value="f"{if isset($req->account.gender) && $req->account.gender == 'f'} checked{/if} />
 <label for="gender_female" class="i18n">Female</label>
 
 <input type="radio" name="gender" id="gender_na" value="" {if !isset($req->account.gender) || $req->account.gender == ''} checked{/if} />
@@ -30,14 +29,14 @@
 </div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Birthdate</span>:</div><div class="fieldcontrols">
-<input type="text" name="birthdate" size="20"{if isset($req->account.bithdate)} value="{$req->account.birthdate|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
+<input type="text" name="birthdate" size="20"{if isset($req->account.birthdate)} value="{$req->account.birthdate|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Subscription</span>:</div><div class="fieldcontrols">
 
-<input type="radio" name="subscription" id="subscription_daily" value="male"{if isset($req->account.gender) && $req->account.gender == 'male'} checked{/if} />
+<input type="radio" name="subscription" id="subscription_daily" value="daily"{if isset($req->account.gender) && $req->account.gender == 'male'} checked{/if} />
 <label for="subscription_daily" class="i18n">Daily digest</label>
 
-<input type="radio" name="subscription" id="subscription_thematic" value="female"{if isset($req->account.gender) && $req->account.subscription == 'thematic'} checked{/if} />
+<input type="radio" name="subscription" id="subscription_thematic" value="thematic"{if isset($req->account.gender) && $req->account.subscription == 'thematic'} checked{/if} />
 <label for="subscription_thematic" class="i18n">Thematic</label>
 
 <input type="radio" name="subscription" id="subscription_nothing" value="" {if !isset($req->account.subscription) || $req->account.subscription == ''} checked{/if} />
