@@ -55,7 +55,9 @@ form .fieldvalue {
 form .errorMessage {
 	color: red;
 }
-
+input {
+	padding: 3px;
+}
 button {
 	font-size: 20px;
 	padding: 5px;

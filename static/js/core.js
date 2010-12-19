@@ -5,7 +5,14 @@ $(function() {
 			caps_lock_off: function() {$('.capslock').hide();}
 		});
 	}
-	$('input[name="location"]').autocomplete({source: ["Москва", "Находка", "Санкт-Петербург"], autofill: true});
+	$('input[name="location"]').autocomplete2Array(["Москва", "Находка", "Санкт-Петербург"],{
+		delay:10,
+		minChars:1,
+		matchSubset:1,
+		autoFill:true,
+		maxItemsToShow:10
+	});
+
 	
 /* logout */
 $('.logoutButton').click(function() {
