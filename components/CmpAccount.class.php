@@ -282,6 +282,10 @@ class CmpAccount extends Component {
 				$accountId = Request::getString($req->attrs->request['accountId']);
 				$value = Request::getString($req->attrs->request['value']);
 				
+				if ($column == 'regdate') {
+					$val = strtotime($val);
+				}
+				
 				$req->appInstance->accounts->saveAccount(array('_id' => $accountId, $column => $value), function ($lastError) use ($req, $value)	{
 						Daemon::log(array('lasterror',$lastError));
 						if ($lastError['updatedExisting']) {
@@ -379,16 +383,22 @@ class CmpAccount extends Component {
 		});
 	}
 	
-	public function DeleteAccountsController() {
+	public function DeleteAccountController() {
 		$req = $this->req;
 		$this->onAuth(function($result) use ($req) {
 			if (!in_array('Superusers', $req->account['aclgroups'], true)) {
 				$req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
-			$req->setResult(array(
-				'success' => true,
-			));	
+			$accountId = Request::getString($req->attrs->request['accountId']);
+			$accountId = '123';
+			$req->appInstance->accounts->deleteAccount(array('_id' => $accountId), function($lastError) use ($req)  {
+				
+				Daemon::log(array('lastError',$lastError));
+				$req->setResult(array(
+					'success' => true,
+				));	
+			});
 
 		});
 	}

@@ -23,6 +23,12 @@ class AccountsORM extends ORM {
 		$this->accounts->count($cb, $cond);
 	}	
 	
+	public function deleteAccount($cond = array(), $cb = null) {
+		if (sizeof($cond)) {
+			$this->accounts->remove($cond, $cb);
+		}
+	}	
+	
 	public function getRecentSignupsFromIP($ip, $cb) {
 	
 		$this->accounts->count($cb, array('ip' => $ip, 'regdate' => array('$gt' => time() - 3600)));

@@ -29,14 +29,14 @@ $(function() {$.ongt(function() {
 					$(oTable.fnGetNodes()).each(function(i, el) {
 						var id = $('td:last', el).text();
 						$(el).attr('id', id);
-						$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').click(function() {
+						$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('accountId', id).click(function() {
 							if (confirm(_("Are you sure?"))) {
 								$.queryController('Account/DeleteAccount', function(data) {
 									if (!data.success) {alert(_(data.error));}
 									else {
 										oTable.fnDeleteRow();
 									}									
-								});
+								}, {accountId: $(this).data('accountId')});
 							}
 							return false;
 						});
