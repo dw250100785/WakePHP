@@ -1,4 +1,22 @@
-Subject: Your account confirmation
+{if $locale == 'ru'}Subject: [{$domain|escape}] Подтверждение учетной записи
+From: {$domain} <no-reply@{$domain}>
+MIME-Version: 1.0
+Content-type: text/html; charset=utf-8
+
+Добрый день!<br /><br />
+
+Вы зарегистрировались на {$domain|escape}, Ваш код подтверждения: {$code|escape}<br /><br />
+
+Введите его в форму подтверждения или нажмите на <a href="http://{$domain|escape}/{$locale|escape}/account/confirm?email={$email|escape:'url'}&code={$code|escape:'url'}">ссылку</a>.<br /><br />
+
+Ваш пароль: {$password|escape}<br /><br /><br />
+
+
+С наилучшими пожеланиями,<br /><br />
+
+Команда {$domain|escape}
+
+{else}Subject: [{$domain|escape}] Your account confirmation
 From: {$domain} <no-reply@{$domain}>
 MIME-Version: 1.0
 Content-type: text/html; charset=utf-8
@@ -14,5 +32,6 @@ Your password is: {$password|escape}<br /><br /><br />
 
 Best regards,<br /><br />
 
-{$domain|escape}
+{$domain|escape} team
 
+{/if}
