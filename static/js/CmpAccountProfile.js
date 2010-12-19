@@ -37,7 +37,8 @@ $(function() {
 		success: function (result, statusText, xhr, $form) {
 			$form.find('.errorMessage').remove();
 			if (result.success) {
-				location.href = '/' + $('html').attr('lang') + '/account/confirm';
+				$form.find('.popupMsg').text(_('Thanks! We will remember ;-)'))
+					.slideDown(300, function() {$(this).delay(2000).hide(1000);});
 			} else {
 				var hasCaptchaError = false;
 				var captchaDiv = $('form.AccountProfileForm .CAPTCHA');

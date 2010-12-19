@@ -53,9 +53,9 @@ class CmpAccount extends Component {
 		$this->onSessionStart(function($sessionEvent) use ($req) {
 			$job = $req->job = new ComplexJob(function($job) {
 				$errors = array();
-				foreach ($job->results as $name => $result) {
+				foreach ($job->results as $result) {
 					if (sizeof($result) > 0) {
-						$errors[$name] = $result;
+						$errors = array_merge_recursive($errors, $result);
 					}
 				}
 				$req = $job->req;
@@ -64,18 +64,20 @@ class CmpAccount extends Component {
 					$req->appInstance->accounts->saveAccount(array(
 						'email' => $email = Request::getString($req->attrs->request['email']),
 						'username' => Request::getString($req->attrs->request['username']),
-						'location' => $city = Request::getString($req->attrs->request['location']),
+						'location' => $location = Request::getString($req->attrs->request['location']),
 						'password' => $password = Request::getString($req->attrs->request['password']),
 						'confirmationcode' => $code = substr(md5($req->attrs->request['email'] . "\x00" . microtime(true)."\x00".mt_rand(0, mt_getrandmax())), 0, 6),
 						'regdate' => time(),
+						'etime' => time(),
 						'ip' => $req->attrs->server['REMOTE_ADDR'],
+						'subscription' => 'daily',
 						'aclgroups' => array('Users'),
 						'acl' => array(),
-					), function ($lastError) use ($req, $email, $password, $city, $code)
+					), function ($lastError) use ($req, $email, $password, $location, $code)
 					{
-						if ($city !== '') {
+						if ($location !== '') {
 						
-							$req->components->GMAPS->geo($city, function ($geo) use ($req, $email) {
+							$req->components->GMAPS->geo($location, function ($geo) use ($req, $email) {
 							
 								$req->appInstance->accounts->saveAccount(array(
 									'email' => $email,
@@ -136,7 +138,7 @@ class CmpAccount extends Component {
 			 
 					$errors = array();
 					if ($account) {
-						$errors[] = 'Username already taken.';
+						$errors['username'] = 'Username already taken.';
 					}
 					
 					$job->setResult($jobname, $errors);
@@ -155,7 +157,7 @@ class CmpAccount extends Component {
 			 
 					$errors = array();
 					if ($account) {
-						$errors[] = 'Another account already registered with this E-Mail.';
+						$errors['email'] = 'Another account already registered with this E-Mail.';
 					}
 					
 					$job->setResult($jobname, $errors);
@@ -167,6 +169,91 @@ class CmpAccount extends Component {
 		});
 	}
 	
+	public function ProfileController() {
+		$req = $this->req;
+		$this->onAuth(function($result) use ($req) {
+			if (!$req->account['logged']) {
+				$req->setResult(array('success' => false, 'goLoginPage' => true));
+				return;
+			}
+			$job = $req->job = new ComplexJob(function($job) {
+				$errors = array();
+				foreach ($job->results as $result) {
+									Daemon::log($result);
+					if (sizeof($result) > 0) {
+						$errors = array_merge_recursive($errors, $result);
+					}
+				}
+				$req = $job->req;
+				if (sizeof($errors) === 0) {
+					
+					$update = array(
+						'email' => $req->account['email'],
+						'location' => $location = Request::getString($req->attrs->request['location']),
+						'firstname' =>  Request::getString($req->attrs->request['firstname']),
+						'lastname' => Request::getString($req->attrs->request['lastname']),
+						'gender' => Request::getString($req->attrs->request['gender'], array('', 'm', 'f')),
+						'birthdate' => Request::getString($req->attrs->request['birthdate']),
+						'subscription' => Request::getString($req->attrs->request['subscription'], array('', 'daily', 'thematic')),
+						'etime' => time(),
+					);
+					if (($password = Request::getString($req->attrs->request['password'])) !== '') {
+						$update['password'] = $password;
+					}
+					$req->appInstance->accounts->saveAccount($update, function ($lastError) use ($req, $password, $location)
+					{
+						if ($location !== '') {
+						
+							$req->components->GMAPS->geo($location, function ($geo) use ($req) {
+							
+								$req->appInstance->accounts->saveAccount(array(
+									'email' => $req->account['email'],
+									'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
+								), null, true);
+							
+							});
+							
+						}
+						$req->setResult(array('success' => true));
+					}, true);
+				}
+				else {
+					$req->setResult(array('success' => false, 'errors' => $errors));
+				}
+				
+			});
+			$req->job->req = $req;	
+			
+			$job('password', function($jobname, $job) {
+				$errors = array();
+				$req = $job->req;
+				if (($curpassword = Request::getString($req->attrs->request['currentpassword'])) !== '') {
+					if (!$req->appInstance->accounts->checkPassword($job->req->account, $curpassword)) {
+						$errors['currentpassword'] = 'Incorrect current password.';
+					}
+				}
+				if (($password = Request::getString($req->attrs->request['password'])) !== '') {
+					if (Request::getString($req->attrs->request['currentpassword']) == '') {
+						$errors['currentpassword'] = 'Incorrect current password.';
+					}
+					if (($r = $req->components->Account->checkPasswordFormat($password)) !== true) {
+						$errors['password'] = $r;
+					}
+				}
+				$job->setResult($jobname, $errors);
+			});
+			
+			
+			$job();
+		});
+	}
+	
+	public function checkPasswordFormat($password) {
+		if (strlen($password) < 4) {
+			return 'The chosen password is too short.';
+		}
+		return true;		
+	}
 	public function checkUsernameFormat($username) {
 		if (preg_match('~^(?![\-_\x20])[A-Za-z\d_\-А-Яа-яёЁ\x20]{2,25}(?<![\-_\x20])$~u',$username) == 0) {
 			return 'Incorrect username format.';

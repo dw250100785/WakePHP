@@ -158,3 +158,21 @@ msgstr "Женщина"
 msgid "Not specified"
 msgstr "Не указано"
 
+msgid "Subscription"
+msgstr "Подписка"
+
+msgid "Daily digest"
+msgstr "Ежедневная подборка"
+
+msgid "Thematic"
+msgstr "Тематическая"
+
+msgid "Nothing"
+msgstr "Ничего"
+
+msgid "Thanks! We will remember ;-)"
+msgstr "Спасибо! Мы вас запомнили ;-)"
+
+msgid "Incorrect current password."
+msgstr "Неверный текущий пароль."
+

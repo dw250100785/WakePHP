@@ -77,6 +77,16 @@ button {
 	
 }
 
+.popupMsg {
+	font-size: 25px;
+	font-weight: bold;
+	margin-top: 18px;
+}
+
+.AccountProfileForm .popupMsg {
+	color: green;
+}
+
 /* UserMiniPanel */
 
 .UserMiniPanel {

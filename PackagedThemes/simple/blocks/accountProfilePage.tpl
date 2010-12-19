@@ -11,10 +11,10 @@
 <input type="text" name="location" size="50"{if isset($req->account.location)} value="{$req->account.location|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">First name</span>:</div><div class="fieldcontrols">
-<input type="text" name="location" size="50"{if isset($req->account.firstname)} value="{$req->account.firstname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
+<input type="text" name="firstname" size="50"{if isset($req->account.firstname)} value="{$req->account.firstname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Last name</span>:</div><div class="fieldcontrols">
-<input type="text" name="location" size="50"{if isset($req->account.lastname)} value="{$req->account.lastname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
+<input type="text" name="lastname" size="50"{if isset($req->account.lastname)} value="{$req->account.lastname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Gender</span>:</div><div class="fieldcontrols">
 
@@ -35,13 +35,13 @@
 <div class="fieldname"><span class="i18n">Subscription</span>:</div><div class="fieldcontrols">
 
 <input type="radio" name="subscription" id="subscription_daily" value="male"{if isset($req->account.gender) && $req->account.gender == 'male'} checked{/if} />
-<label for="subscription_daily" class="i18n">Daily</label>
+<label for="subscription_daily" class="i18n">Daily digest</label>
 
 <input type="radio" name="subscription" id="subscription_thematic" value="female"{if isset($req->account.gender) && $req->account.subscription == 'thematic'} checked{/if} />
 <label for="subscription_thematic" class="i18n">Thematic</label>
 
-<input type="radio" name="subscription" id="subscription_never" value="" {if !isset($req->account.subscription) || $req->account.subscription == ''} checked{/if} />
-<label for="subscription_never" class="i18n">Never</label>
+<input type="radio" name="subscription" id="subscription_nothing" value="" {if !isset($req->account.subscription) || $req->account.subscription == ''} checked{/if} />
+<label for="subscription_nothing" class="i18n">Nothing</label>
 
 </div><br class="clearfloat" /><br /><br />
 
@@ -62,6 +62,7 @@
 <div class="i18n">By clicking on 'Saves the changes' below you are agreeing to the Terms of Service above and the Privacy Policy.</div>
 
 <br /><button type="submit" class="i18n" disabled="disabled">Save the changes</button>
+<div class="popupMsg" style="display:none"></div>
 </form>
 <br />
 

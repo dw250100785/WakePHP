@@ -7,24 +7,20 @@ $(function() {
 					location.href = '/' +  $('html').attr('lang') + '/account/confirm';
 					return;
 				}
-				var backUrl = $.urlParam('backUrl');
+				var backUrl = $.urlParam('backurl');
 				if (backUrl != null) {
-				location.href = backUrl;
+					location.href = backUrl;
+				} else {
+					location.href = '/' +  $('html').attr('lang') + '/';
+				}
+			}	else {
+				$form.find('.errorMessage').remove();
+				for (var field in result.errors) {
+					$form.find('input[name="'+field+'"]').after('<div class="errorMessage">'+_(result.errors[field])+'</div>');
+				}
 			}
-			else {
-				location.reload();
-			}
-		} else {
-			
-			$form.find('.errorMessage').remove();
-			for (var field in result.errors) {
-				
-				$form.find('input[name="'+field+'"]').after('<div class="errorMessage">'+_(result.errors[field])+'</div>');
-			
-			}
-				
 		}
-	}});
+	});
 	$('.AccountLoginForm form').find('button[disabled]').removeAttr('disabled');
 		
 });

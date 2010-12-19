@@ -53,7 +53,7 @@ jQuery.queryOptions = function(method, success, data, dataType) {
 jQuery.urlParam = function(name){
 	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
 	if (!results) { return null; }
-	return results[1] || null;
+	return jQuery.urldecode(results[1]) || null;
 };
 
 jQuery.xmlescape = function (string) {
