@@ -14,13 +14,13 @@
 		<tr>
 		{capture name="fields"}
 			<th width="20%" class="i18n">E-Mail</th> 
-			<th width="25%" class="i18n">Username</th> 
-			<th width="25%" class="i18n">Reg. date</th> 
-			<th width="15%" class="i18n">IP address</th> 
-			<th width="15%" class="i18n">First name</th> 
-			<th width="15%" class="i18n">Last name</th> 
-			<th width="15%" class="i18n">Location</th> 
-			<th width="15%" class="i18n sorting_disabled"></th> 
+			<th width="10%" class="i18n">Username</th> 
+			<th class="i18n">Reg. date</th> 
+			<th class="i18n">IP address</th> 
+			<th class="i18n">First name</th> 
+			<th class="i18n">Last name</th> 
+			<th class="i18n">Location</th> 
+			<th class="i18n sorting_disabled"></th> 
 		{/capture}{$quicky.capture.fields}
 		</tr> 
 	</thead> 
