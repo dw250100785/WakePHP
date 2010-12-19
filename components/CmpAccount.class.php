@@ -148,7 +148,7 @@ class CmpAccount extends Component {
 			
 			$job('email', function($jobname, $job) {
 				if (filter_var(Request::getString($job->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
-					$job->setResult($jobname, array('Incorrect E-Mail.'));
+					$job->setResult($jobname, array('email' => 'Incorrect E-Mail.'));
 					return;
 				}
 				$job->req->appInstance->accounts->getAccountByEmail(
