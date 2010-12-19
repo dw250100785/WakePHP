@@ -66,7 +66,7 @@ class WakePHP extends AppInstance {
 			$block = $decoder(file_get_contents($file));
 			$block['name'] = pathinfo($file,PATHINFO_FILENAME);
 			$tplFilename = dirname($file).'/'.$block['name'].'.tpl';
-			$block['theme'] = $theme;
+			$block['theme'] = basename(dirname($file));
 			if (file_exists($tplFilename)) {
 				$block['template'] = file_get_contents($tplFilename);
 			}

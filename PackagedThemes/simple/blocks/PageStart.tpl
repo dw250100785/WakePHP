@@ -13,7 +13,8 @@
 <link href="/locale/{$req->locale}/Account.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/Blocks.json" lang="{$req->locale}" rel="gettext"/>
 <link href="/locale/{$req->locale}/MUChat.json" lang="{$req->locale}" rel="gettext"/>
-{/if}
+{if in_array('Superusers',$req->account.aclgroups)}<link href="/locale/{$req->locale}/ACP.json" lang="{$req->locale}" rel="gettext"/>
+{/if}{/if}
 <meta name="description" content="WakePHP — PHP that never sleeps" /> 
 <meta name="keywords" content="phpDaemon, php" /> 
 {?$libs = "https://ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}

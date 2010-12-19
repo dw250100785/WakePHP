@@ -110,7 +110,7 @@ class CmpAccount extends Component {
 				}
 				
 			});
-			$req->job->req = $req;
+			$job->req = $req;
 
 			$job('captchaPreCheck', function($jobname, $job) {
 				$job->req->components->Account->getRecentSignupsCount(function($result) use ($job, $jobname) {
@@ -179,7 +179,6 @@ class CmpAccount extends Component {
 			$job = $req->job = new ComplexJob(function($job) {
 				$errors = array();
 				foreach ($job->results as $result) {
-									Daemon::log($result);
 					if (sizeof($result) > 0) {
 						$errors = array_merge_recursive($errors, $result);
 					}
@@ -200,8 +199,7 @@ class CmpAccount extends Component {
 					if (($password = Request::getString($req->attrs->request['password'])) !== '') {
 						$update['password'] = $password;
 					}
-					$req->appInstance->accounts->saveAccount($update, function ($lastError) use ($req, $password, $location)
-					{
+					$req->appInstance->accounts->saveAccount($update, function ($lastError) use ($req, $password, $location)	{
 						if ($location !== '') {
 						
 							$req->components->GMAPS->geo($location, function ($geo) use ($req) {
@@ -222,9 +220,9 @@ class CmpAccount extends Component {
 				}
 				
 			});
-			$req->job->req = $req;	
+			$job->req = $req;	
 			
-			$job('password', function($jobname, $job) {
+			$job('password', function ($jobname, $job) {
 				$errors = array();
 				$req = $job->req;
 				if (($curpassword = Request::getString($req->attrs->request['currentpassword'])) !== '') {
@@ -245,6 +243,153 @@ class CmpAccount extends Component {
 			
 			
 			$job();
+		});
+	}
+	
+	public function ManageAccountsController() {
+		$req = $this->req;
+		$this->onAuth(function($result) use ($req) {
+			if (!in_array('Superusers', $req->account['aclgroups'], true)) {
+				$req->setResult(array('success' => false, 'goLoginPage' => true));
+				return;
+			}
+			
+			static $fields = array(
+				'email'			=> 1,
+				'username'	=> 1,
+				'regdate'		=> 1,
+				'ip'				=> 1,
+				'firstname'	=> 1,
+				'lastname'	=> 1,
+				'location'	=> 1,
+				'_id'				=> 1,
+			);
+			$fieldNames = array_keys($fields);
+			$field = function($n) use ($fieldNames) {
+				if (!isset($fieldNames[$n])) {
+					return null;
+				}
+				return $fieldNames[$n];
+			};
+			
+			$action = Request::getString($req->attrs->request['action']);
+			if ($action === 'EditAccountColumn') {
+				$column = $field(Request::getInteger($req->attrs->request['column']));
+				if ($column === null) {
+					$req->setResult(array('success' => false, 'error' => 'Column not found.'));
+					return;
+				}
+				$accountId = Request::getString($req->attrs->request['accountId']);
+				$value = Request::getString($req->attrs->request['value']);
+				
+				$req->appInstance->accounts->saveAccount(array('_id' => $accountId, $column => $value), function ($lastError) use ($req, $value)	{
+						Daemon::log(array('lasterror',$lastError));
+						if ($lastError['updatedExisting']) {
+							$req->setResult(array('success' => true, 'value' => $value));
+						}
+						else {
+							$req->setResult(array('success' => false, 'error' => 'Account not found.'));
+						}
+					}, true);
+					
+				return;
+			}
+			
+			$where = array();
+			$sort = array();
+			$sortDir = array();
+	
+			foreach ($req->attrs->request as $k => $value) {
+				list ($type, $index) = explode('_', $k . '_');
+				if ($type === 'iSortCol') {
+					$sort[$field($value)] = Request::getString($req->attrs->request['sSortDir_'.$index]) == 'asc'? 1 : -1;
+				}
+			}
+			unset($sort[null]);
+			
+			$offset = Request::getInteger($req->attrs->request['iDisplayStart']);
+			$limit = Request::getInteger($req->attrs->request['iDisplayLength']);
+				
+			$job = $req->job = new ComplexJob(function($job) {
+				
+				$job->req->setResult(array(
+					'success' => true,
+					'sEcho' => (int) Request::getString($job->req->attrs->request['sEcho']),
+					'iTotalRecords' => $job->results['countTotal'],
+					'iTotalDisplayRecords' => $job->results['countFiltered'],
+					'aaData' => $job->results['find'],
+				));
+				
+			});
+			
+			$job('countTotal', function($jobname, $job) {
+				$job->req->appInstance->accounts->countAccounts(function($result) use ($job, $jobname) {
+					$job->setResult($jobname, $result['n']);
+				});
+			});
+			
+			$job('countFiltered', function($jobname, $job) use ($where, $limit) {
+				$job->req->appInstance->accounts->countAccounts(function($result) use ($job, $jobname, $where) {
+					$job->setResult($jobname, $result['n']);
+				}, array(
+					'where' => $where,
+				));
+			});
+			
+			$job('find', function($jobname, $job) use ($where, $sort, $fields, $fieldNames, $field, $offset, $limit) {
+				$job->req->appInstance->accounts->findAccounts(function ($cursor) use ($jobname, $job, $fieldNames, $offset, $limit) {
+			
+					$accounts = array();
+					foreach ($cursor->items as $item) {
+						$account = array();
+						foreach ($fieldNames as $k) {
+							if (!isset($item[$k])) {
+								$val = null;
+							} else {
+								$val = $item[$k];
+								if ($k === 'regdate') {
+									$val = date('r', $val);
+								}
+								elseif ($k === '_id') {
+									$val = (string) $val;
+								}
+								else {
+									$val = htmlspecialchars($val);
+								}
+							}
+							$account[] = $val;
+						}
+						$accounts[] = $account;
+					}
+					$cursor->destroy();
+					$job->setResult($jobname, $accounts);
+				}, array(
+					'fields'	=> $fields,
+					'sort'		=> $sort,
+					'offset' => $offset,
+					'limit' => -abs($limit),
+				));
+			
+			});
+			
+			$job->req = $req;	
+			
+			$job();
+
+		});
+	}
+	
+	public function DeleteAccountsController() {
+		$req = $this->req;
+		$this->onAuth(function($result) use ($req) {
+			if (!in_array('Superusers', $req->account['aclgroups'], true)) {
+				$req->setResult(array('success' => false, 'goLoginPage' => true));
+				return;
+			}
+			$req->setResult(array(
+				'success' => true,
+			));	
+
 		});
 	}
 	

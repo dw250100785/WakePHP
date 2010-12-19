@@ -1,0 +1,19 @@
+.ACP ul {
+	margin-left: 50px;
+}
+
+.ACP ul li {
+	font-size: 1.5em;
+}
+
+.AccountACPaccounts .tableWrapper {
+	width: 80%;
+}
+
+.AccountACPaccounts .editableInputForm input  {
+	padding: 2px;
+}
+
+.AccountACPaccounts .editableInputForm {
+	padding 0px;
+}

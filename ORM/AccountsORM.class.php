@@ -15,6 +15,13 @@ class AccountsORM extends ORM {
 		));
 	}
 	
+	public function findAccounts($cb, $cond = array()) {
+		$this->accounts->find($cb, $cond);
+	}
+	
+	public function countAccounts($cb, $cond = array()) {
+		$this->accounts->count($cb, $cond);
+	}	
 	
 	public function getRecentSignupsFromIP($ip, $cb) {
 	
@@ -85,10 +92,20 @@ class AccountsORM extends ORM {
 		if (isset($account['username'])) {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		}
+		if (isset($account['_id'])) {
+			if (is_string($account['_id'])) {
+				$account['_id'] = new MongoId($account['_id']);
+			}
+			$cond = array('_id' => $account['_id']);
+		}
+		else {
+			$cond = array('email' => $account['email']);
+		}
 		if ($update) {
-			$this->accounts->update(array('email' => $account['email']), array('$set' => $account), 0, $cb);
+			unset($account['_id']);
+			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		} else {
-			$this->accounts->upsert(array('email' => $account['email']), $account, false, $cb);
+			$this->accounts->upsert($cond, $account, false, $cb);
 		}
 	}
 	

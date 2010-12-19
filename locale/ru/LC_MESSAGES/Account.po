@@ -176,3 +176,5 @@ msgstr "Спасибо! Мы вас запомнили ;-)"
 msgid "Incorrect current password."
 msgstr "Неверный текущий пароль."
 
+msgid "Location"
+msgstr "Местонахождение"

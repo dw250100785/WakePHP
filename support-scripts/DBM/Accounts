@@ -18,6 +18,6 @@ $app->saveAccount(array(
 				'username' => 'admin',
 				'password' => 'passphrase',
 				'email' => 'admin@admin.tld',
-				'aclgroups' => array('Superusers'),
+				'aclgroups' => array('Superusers', 'Users'),
 				'acl' => array(),
 ));

@@ -1,5 +1,5 @@
 {
-	"locale": null,
 	"path": "\/ACP",
-	"type": "ACP"
+	"type": "ACP",
+	"title": "Admin CP"
 }

@@ -1,0 +1,56 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WakePHP 0.1-alpha \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Admin CP"
+msgstr "Панель администратора"
+
+msgid "Manage Accounts"
+msgstr "Управление Учетными записями"
+
+msgid "Reg. date"
+msgstr "Дата регистрации"
+
+msgid "IP address"
+msgstr "IP адрес"
+
+msgid "Delete"
+msgstr "Удалить"
+
+msgid "Processing..."
+msgstr "Идет обработка..."
+
+msgid "Show _MENU_ entries"
+msgstr "Показывать по _MENU_"
+
+msgid "No matching records found"
+msgstr "Нет данных"
+
+msgid "Showing _START_ to _END_ of _TOTAL_ entries"
+msgstr "Отображается с _START_ по _END_ из _TOTAL_"
+
+msgid "Showing 0 to 0 of 0 entries"
+msgstr  "Отображается с 0 до 0 из 0" 
+
+msgid "(filtered from _MAX_ total entries)"
+msgstr "(отфильтровано из _MAX_)"
+
+msgid "Search:"
+msgstr "Поиск:"
+
+msgid "First"
+msgstr "Перв."
+
+msgid "Previous"
+msgstr "Пред."
+
+msgid "Next"
+msgstr "След."
+
+msgid "Last"
+msgstr "Послед."
+
+
