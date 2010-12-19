@@ -47,8 +47,15 @@
  *       helpful when your application is big and you have hundreds of strings
  */
 (function($) {
+	$.ongt = function(cb) {
+		if ($.gt.loadedLinks >= $('link[rel=gettext]').size()) {
+			setTimeout(cb, 0);
+		}
+		else {
+			$('body').bind('onreadygettext', cb);
+		}
+	};
 	$.gt = $.gt || {};
-
 	$.extend($.gt, {
 		messages: {},
 		lang: 'C',
@@ -91,6 +98,9 @@
 					}
 				});
 			});
+			if ($.gt.loadedLinks >= $('link[rel=gettext]').size()) {
+				$('body').trigger('onreadygettext');
+			}
 			$.gt.setLang($('html').attr('lang'));
 		},
 		gettext: function(msgstr) {
@@ -139,7 +149,7 @@
 		}
 	});
 
-	$('document').ready($.gt.load);
+	$($.gt.load);
 })(jQuery);
 
 if(typeof _ == 'undefined') {

@@ -30,7 +30,6 @@ if ($(this).hasClass('.i18n')) {process($(this));}
 $(this).find('.i18n').each(function(index) {process($(this));});
 return this;
 }});
-$.ongt = function(cb) {$('body').bind('onreadygettext',cb);};
 $.fn.outerHTML = function() {return $('<div></div>').append( this.clone() ).html();}
 $(function() {$.ongt(function(e) {$(this).i18n();});});
 })(jQuery);

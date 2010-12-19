@@ -35,6 +35,9 @@ class WakePHP extends AppInstance {
 		if (!in_array($this->config->defaultlocale->value, $this->locales, true)) {
 			$this->locales[] = $this->config->defaultlocale->value;
 		}
+		if (!in_array('en', $this->locales, true)) {
+			$this->locales[] = 'en';
+		}
 	}
 	public function getLocaleName($lc) {
 		if (!in_array($lc, $this->locales, true)) {

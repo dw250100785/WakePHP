@@ -53,4 +53,6 @@ msgstr "След."
 msgid "Last"
 msgstr "Послед."
 
+msgid "Loading data from server..."
+msgstr "Идет загрузка данных с сервера..."
 

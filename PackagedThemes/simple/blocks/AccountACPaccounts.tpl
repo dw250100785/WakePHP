@@ -26,7 +26,7 @@
 	</thead> 
 	<tbody> 
 		<tr> 
-			<td colspan="5" class="dataTables_empty">Loading data from server</td> 
+			<td colspan="5" class="dataTables_empty i18n">Loading data from server...</td> 
 		</tr> 
 	</tbody> 
 	<tfoot> 
