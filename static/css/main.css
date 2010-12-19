@@ -69,9 +69,6 @@ button {
 
 /* account */
 
-
-
-
 .AccountLoginForm input, .biginput {
 	font-size: 3em;
 	
@@ -101,6 +98,9 @@ button {
 	line-height: 25px;
 	border-bottom: 1px solid grey;
 	margin-bottom: 10px;
+}
+.UserMiniPanel .rightMargin {
+	margin-right: 15px;
 }
 .UserMiniPanel a {
 	color: white;
