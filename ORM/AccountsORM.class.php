@@ -96,17 +96,23 @@ class AccountsORM extends ORM {
 	}
 	
 	public function unifyEmail($email) {
-		static $domains = array(
+		static $hosts = array(
 			'googlemail.com' => 'gmail.com'
 		);
 		$email = mb_strtolower($email, 'UTF-8');
-		$email = str_replace('.', '', $email);
+		
 		list ($name, $host) = explode('@', $email, 2);
 		if (($p = strpos($name, '+')) !== false) {
 			$name = substr($name, 0, $p);
 		}
-		$email = $name . '@' . $email;
-		return $email;
+		
+		$name = str_replace('.', '', $name);
+		$host = rtrim(str_replace('..', '.', $host), '.');
+		if (isset($hosts[$host])) {
+			$host = $hosts[$host];
+		}
+		
+		return $name . '@' . $host;
 	}
 	
 	public function confirmAccount($account, $cb = null) {
