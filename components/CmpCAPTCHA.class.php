@@ -18,10 +18,10 @@ class CmpCAPTCHA extends AsyncServer {
 				$errors = array();
 				if (!$captchaOK) {
 					if ($msg === 'incorrect-captcha-sol') {
-						$errors[] = 'Incorrect CAPTCHA solution.';
+						$errors['captcha'] = 'Incorrect CAPTCHA solution.';
 					}
 					else {
-						$errors[] = 'Unknown error.';
+						$errors['captcha'] = 'Unknown error.';
 						$job->req->appInstance->log('CmpCaPTCHA: error: '.$msg);
 					}
 				}
