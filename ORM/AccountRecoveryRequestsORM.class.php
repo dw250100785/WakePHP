@@ -10,7 +10,7 @@ class AccountRecoveryRequestsORM extends ORM {
 	}
 	public function getLastCodeByEmail($email, $cb) {
 		$this->accountRecoveryRequests->findOne($cb, array(
-				'where' =>	array('email' => (string) $email),
+				'where' =>	array('email' => (string) $email, 'used' => 0),
 				'sort' => array('ts' => -1),
 				'limit' => 1,
 		));
@@ -32,13 +32,14 @@ class AccountRecoveryRequestsORM extends ORM {
 		), array('$set' => array('used' => 1)), 0, $cb);
 	}
 
-	public function addRecoveryCode($email, $ip) {
+	public function addRecoveryCode($email, $ip, $password) {
 		
 		$this->accountRecoveryRequests->insert(array(
 			'email' => (string) $email,
-			'ts' => microtime(true),
+			'ts' => time(),
 			'used' => 0,
 			'ip' => $ip,
+			'password' => $password,
 			'code' => $code = substr(md5(
 																			$email . "\x00"
 																		. $this->appInstance->config->cryptsalt->value . "\x00"

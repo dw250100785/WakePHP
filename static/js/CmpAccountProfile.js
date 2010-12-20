@@ -1,4 +1,4 @@
-$(function() {
+$(function() {$.ongt(function() {
 	
 	$('form.AccountProfileForm').each(function(i, form) {
 		var $form = $(form);
@@ -37,7 +37,8 @@ $(function() {
 			success: function (result, statusText, xhr, $form) {
 				$('.errorMessage', $form).remove();
 				if (result.success) {
-					$('.popupMsg', $form).text(_('Thanks! We will remember ;-)'))
+					$('.popupMsg', $form).removeClass('denyMsg').addClass('allowMsg')
+						.text(_('Thanks! We will remember ;-)'))
 						.slideDown(300, function() {$(this).delay(2000).hide(1000);});
 				} else {
 					var hasCaptchaError = false;
@@ -72,7 +73,11 @@ $(function() {
 		});
 		
 		$('button[disabled]', $form).removeAttr('disabled');
-	
+
+		$('.forgotPasswordButton', $form).click(function() {
+			location.href = $(this).attr('href') + '?backurl='+$.urlencode(location.pathname);
+			return false;
+		});
 	
 		$("input[name='username']", $form).change(function() {
 			if ($(this).val().length > 3) {
@@ -98,4 +103,4 @@ $(function() {
 
 	});
 
-});
+});});

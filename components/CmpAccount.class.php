@@ -484,13 +484,23 @@ class CmpAccount extends Component {
 						if ($lastError['n'] > 0) {
 							
 							$req->appInstance->accountRecoveryRequests->getCode(function($result) use ($req) {
+								Daemon::log($result);
+								if (!$result) {
+									$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+									return;
+								}
 								
 								$req->appInstance->accounts->saveAccount(array(
-									'email' => $email,
-									'password' => $code,
-								), function ($lastError) use ($req) {
+									'email' => $result['email'],
+									'password' => $result['password'],
+								), function ($lastError) use ($req, $email) {
 									if ($lastError['updatedExisting']) {
-										$req->setResult(array('success' => true));
+										$req->setResult(array('success' => true, 'status' => 'recovered'));
+										
+										$req->appInstance->accounts->confirmAccount(array(
+											'email' => $email,
+										));
+										
 									} else {
 										$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
 									}
@@ -499,26 +509,39 @@ class CmpAccount extends Component {
 							}, $email, $code);
 							
 						} else {
-							$req->setResult(array('success' => false, 'status' => 'incorrectCode', 'errors' => array('code' => 'Incorrect code.')));
+							$req->setResult(array('success' => false, 'errors' => array('code' => 'Incorrect code.')));
 						}
-					}, array(
-						'email' => $email,
-						'code' => $code,
-					), $email, $code);
+					}, $email, $code);
 				}
 				else {
-					$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']));
-					
-					$password  = substr(md5($email . "\x00" . $code . "\x00" . $req->appInstance->config->cryptsalt->value. "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
-					$req->appInstance->outgoingmail->mailTemplate('mailAccountAccessRecovery', $email, array(
-						'email' => $email,
-						'password' => $password,
-						'code' => $code,
-						'locale' => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
-					));
+					$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $email) {
+						if (!$account) {
+							$req->setResult(array('success' => false, 'errors' => array('email' => 'Account not found.')));
+							return;
+						}
+						$req->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($req, $email) {
+						
+							if ($result['ts'] + 900 > time()) {
+								$req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
+							}
+							else {
+								$password  = substr(md5($email . "\x00" . $code . "\x00" . $req->appInstance->config->cryptsalt->value. "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
+								
+								$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']), $password);
+				
+								$req->appInstance->outgoingmail->mailTemplate('mailAccountAccessRecovery', $email, array(
+									'email' => $email,
+									'password' => $password,
+									'code' => $code,
+									'locale' => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+								));
+								$req->setResult(array('success' => true, 'status' => 'sent'));
+							}
+
+						});
+					});
 				}
 			}
-			
 		});
 	}
 	

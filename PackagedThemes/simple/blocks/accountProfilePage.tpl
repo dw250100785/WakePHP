@@ -48,7 +48,7 @@
 <div class="additionalFields" style="display:none">
 
 <div class="fieldname"><span class="i18n">Current password</span>: <span class="capslock" style="display:none">Caps Lock</span></div><div class="fieldcontrols">
-<input type="password" name="currentpassword" size="50" autocomplete="off" /></div><br class="clearfloat" /><a href="/{$req->locale}/account/recovery" class="i18n">Forgot your password?</a><br /><br />
+<input type="password" name="currentpassword" size="50" autocomplete="off" /></div><br class="clearfloat" /><a href="/{$req->locale}/account/recovery" class="forgotPasswordButton i18n">Forgot your password?</a><br /><br />
 
 <div class="fieldname"><span class="i18n">Choose a password</span>:</div><div class="fieldcontrols">
 <input type="password" name="password" size="50" autocomplete="off" /></div><br class="clearfloat" />

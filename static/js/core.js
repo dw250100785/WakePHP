@@ -25,6 +25,7 @@ $('.logoutButton').click(function() {
 		}
 	});
 });
+	
 
 });
 /* core */

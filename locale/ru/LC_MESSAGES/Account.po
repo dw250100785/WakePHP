@@ -26,8 +26,11 @@ msgstr "Выйти"
 msgid "Log in"
 msgstr "Войти"
 
-msgid "signup"
+msgid "sign up"
 msgstr "зарегистрироваться"
+
+msgid "Sign up"
+msgstr "Регистрация"
 
 msgid "I accept. Create my account."
 msgstr "Я принимаю условия. Создайте мою учетную запись."
@@ -122,6 +125,9 @@ msgstr "Неверный код."
 msgid "Account not found. Please register again."
 msgstr "Учетная запись не найдена. Пожалуйста, зарегистрируйтесь снова."
 
+msgid "Account not found."
+msgstr "Учетная запись не найдена."
+
 msgid "Save the changes"
 msgstr "Сохранить изменения"
 
@@ -187,3 +193,18 @@ msgstr "Забыли пароль?"
 
 msgid "Get confirmation code"
 msgstr "Получить код подтверждения"
+
+msgid "Recover account access"
+msgstr "Восстановить доступ к учетной записи"
+
+msgid "Access recovered. Use the password from the letter ;-)"
+msgstr "Доступ восстановлен. Используйте пароль из письма ;-)"
+
+msgid "Too often. Wait a bit before next try."
+msgstr "Слишком быстро. Сделайте паузу перед следующей попыткой."
+
+msgid "Check the mailbox ;-)"
+msgstr "Проверьте почту ;-)"
+
+msgid "Error happened."
+msgstr "Произошла ошибка."
