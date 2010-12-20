@@ -480,7 +480,7 @@ class CmpAccount extends Component {
 				if (isset($req->attrs->request['code'])) {
 					$code = Request::getString($req->attrs->request['code']);
 					
-					$req->appInstance->accountRecoveryRequests->invalidateCode(function($lastError) use ($req, $jobname, $email, $code) {
+					$req->appInstance->accountRecoveryRequests->invalidateCode(function($lastError) use ($req, $email, $code) {
 						if ($lastError['n'] > 0) {
 							
 							$req->appInstance->accountRecoveryRequests->getCode(function($result) use ($req) {
@@ -504,7 +504,7 @@ class CmpAccount extends Component {
 					}, array(
 						'email' => $email,
 						'code' => $code,
-					));
+					), $email, $code);
 				}
 				else {
 					$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']));
