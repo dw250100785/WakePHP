@@ -11,6 +11,9 @@ $(function() {
 		matchSubset:1,
 		autoFill:true,
 		maxItemsToShow:10
+	}).bind('focus.clear', function() {
+		$(this).val('');
+		$(this).unbind('focus.clear');		
 	});
 
 	

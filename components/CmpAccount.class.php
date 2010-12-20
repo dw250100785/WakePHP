@@ -92,13 +92,13 @@ class CmpAccount extends Component {
 							});
 							
 						}
-						$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $email, $password, $code) {
+						$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $password, $code) {
 							if (!$account) {
 								$req->setResult(array('success' => false));
 								return;
 							}
 							$req->appInstance->outgoingmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
-								'email' => $email,
+								'email' => $account['email'],
 								'password' => $password,
 								'code' => $code,
 								'locale' => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
@@ -470,6 +470,56 @@ class CmpAccount extends Component {
 		});
 	}
 	
+	public function	RecoveryController() {
+		
+		$req = $this->req;
+		$this->onSessionStart(function($authEvent) use ($req) {
+			
+			if (isset($req->attrs->request['email'])) {
+				$email = Request::getString($req->attrs->request['email']);
+				if (isset($req->attrs->request['code'])) {
+					$code = Request::getString($req->attrs->request['code']);
+					
+					$req->appInstance->accountRecoveryRequests->invalidateCode(function($lastError) use ($req, $jobname, $email, $code) {
+						if ($lastError['n'] > 0) {
+							
+							$req->appInstance->accountRecoveryRequests->getCode(function($result) use ($req) {
+								
+								$req->appInstance->accounts->saveAccount(array(
+									'email' => $email,
+									'password' => $code,
+								), function ($lastError) use ($req) {
+									if ($lastError['updatedExisting']) {
+										$req->setResult(array('success' => true));
+									} else {
+										$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+									}
+								}, true);
+								
+							}, $email, $code);
+							
+						} else {
+							$req->setResult(array('success' => false, 'status' => 'incorrectCode', 'errors' => array('code' => 'Incorrect code.')));
+						}
+					}, array(
+						'email' => $email,
+						'code' => $code,
+					));
+				}
+				else {
+					$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']));
+					
+					$req->appInstance->outgoingmail->mailTemplate('mailAccountAccessRecovery', $email, array(
+						'email' => $email,
+						'password' => $password,
+						'code' => $code,
+						'locale' => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+					));
+				}
+			}
+			
+		});
+	}
 	
 	public function startSession() {
 		$session = $this->appInstance->sessions->startSession();

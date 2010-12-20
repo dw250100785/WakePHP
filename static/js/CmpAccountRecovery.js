@@ -1,6 +1,6 @@
 $(function() {
 
-	$('form.AccountRecovery form').each(function(i, form) {
+	$('.AccountRecoveryForm').each(function(i, form) {
 		var $form = $(form);
 		$form.ajaxFormController({
 			success: function (result, statusText, xhr, $form) {
@@ -24,20 +24,6 @@ $(function() {
 			}
 		});
 		$('button[disabled]', $form).removeAttr('disabled');
-		$('.forgotPasswordButton', $form).click(function() {
-			var $input = $('input[name="username"]', $form);
-			var backUrl = $.urlParam('backurl');
-			var qs = [];
-			if (($input.size() > 0) && ($input.val() !== '')) {
-				qs.push('email=' + $.urlencode($input.val()));
-			}
-			if (backUrl != null) {
-				qs.push('backurl=' + $.urlencode(backUrl));
-			}
-			if (qs.length  > 0) {
-				location.href = $(this).attr('href') + '?'+qs.join('&');
-				return false;
-			}
-		});
+
 	});
 });

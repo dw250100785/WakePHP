@@ -185,3 +185,5 @@ msgstr "Восстановление доступа к учетной запис
 msgid "Forgot your password?"
 msgstr "Забыли пароль?"
 
+msgid "Get confirmation code"
+msgstr "Получить код подтверждения"

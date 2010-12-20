@@ -11,7 +11,7 @@ class AccountsORM extends ORM {
 	}
 	public function getAccountByName($username, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('username' => $username),
+				'where' =>	array('username' => (string) $username),
 		));
 	}
 	
@@ -34,7 +34,7 @@ class AccountsORM extends ORM {
 	
 	public function getRecentSignupsFromIP($ip, $cb) {
 	
-		$this->accounts->count($cb, array('where' => array('ip' => $ip, 'regdate' => array('$gt' => time() - 3600))));
+		$this->accounts->count($cb, array('where' => array('ip' => (string) $ip, 'regdate' => array('$gt' => time() - 3600))));
 		
 	}
 	

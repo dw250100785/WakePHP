@@ -13,14 +13,14 @@ class BlocksORM extends ORM {
 	public function getPage($locale,$path,$cb) {
 		$this->blocks->findOne($cb,array(
 				'where' => array(
-										'path' => $path,
+										'path' => (string) $path,
 				),
 		));
 	}
 	public function getBlockByName($name, $cb) {
 		$this->blocks->findOne($cb,array(
 				'where' => array(
-										'name' => $name,
+										'name' => (string) $name,
 				),
 		));
 	}
@@ -41,7 +41,7 @@ class BlocksORM extends ORM {
 			$find = array('locale' => $block['locale'], 'path' => $block['path']);
 		}
 		else {
-			$find = array('name' => $block['name']);
+			$find = array('name' => (string) $block['name']);
 		}
 		unset($block['_id']);
 		if (isset($block['template'])) {

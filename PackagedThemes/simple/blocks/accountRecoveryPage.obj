@@ -1,4 +1,5 @@
 {
 	"path": "\/account\/recovery",
+	"type": "GenericAuthDep",
 	"title": "Account access recovery"
 }

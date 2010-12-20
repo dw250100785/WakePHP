@@ -71,7 +71,7 @@ button {
 
 /* account */
 
-.AccountLoginForm input, .biginput {
+.AccountLoginForm form input, .AccountRecoveryForm input, .biginput {
 	font-size: 3em;
 	
 }

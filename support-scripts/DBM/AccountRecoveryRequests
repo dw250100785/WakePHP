@@ -6,3 +6,4 @@ include __DIR__.'/../generic.php';
 $accountRecoveryRequests = $db->selectCollection('accountRecoveryRequests');
 $accountRecoveryRequests->drop();
 $accountRecoveryRequests->ensureIndex(array('email' => 1, 'code' => 1), array('unique' => true));
+$accountRecoveryRequests->ensureIndex(array('ts' => -1));

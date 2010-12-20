@@ -24,6 +24,7 @@ class WakePHP extends AppInstance {
 		$appInstance->accounts = new AccountsORM($this);
 		$appInstance->sessions = new SessionsORM($this);
 		$appInstance->outgoingmail = new OutgoingmailORM($this);
+		$appInstance->accountRecoveryRequests = new AccountRecoveryRequestsORM($this);
 		$appInstance->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
 		{

@@ -8,27 +8,45 @@ class AccountRecoveryRequestsORM extends ORM {
 	public function init() {
 		$this->accountRecoveryRequests = $this->appInstance->db->{$this->appInstance->dbname . '.accountRecoveryRequests'};
 	}
-	public function getAccountByName($username, $cb) {
-		$this->accounts->findOne($cb, array(
-				'where' =>	array('username' => $username),
+	public function getLastCodeByEmail($email, $cb) {
+		$this->accountRecoveryRequests->findOne($cb, array(
+				'where' =>	array('email' => (string) $email),
+				'sort' => array('ts' => -1),
+				'limit' => 1,
 		));
 	}
 	
-	public function checkRecoveryCode($cb, $cond) {
-		$this->accounts->find($cb, $cond);
+	public function getCode($cb, $email, $code) {
+		$this->accountRecoveryRequests->findOne($cb, array(
+				'where' =>	array(
+					'email' => (string) $email,
+					'code' => (string) $code,
+		)));
+	}
+	
+	public function invalidateCode($cb, $email, $code) {
+		$this->accountRecoveryRequests->update(array(
+			'email' => (string) $email,
+			'code' => (string) $code,
+			'used' => 0,
+		), array('$set' => array('used' => 1)), 0, $cb);
 	}
 
-	public function addRecoveryCode($email) {
+	public function addRecoveryCode($email, $ip) {
 		
 		$this->accountRecoveryRequests->insert(array(
-			'email' => $email,
+			'email' => (string) $email,
 			'ts' => microtime(true),
+			'used' => 0,
+			'ip' => $ip,
 			'code' => $code = substr(md5(
 																			$email . "\x00"
-																		. $this->>appInstance->config->cryptsalt->value . "\x00"
+																		. $this->appInstance->config->cryptsalt->value . "\x00"
 																		. microtime(true)."\x00"
 																		. mt_rand(0, mt_getrandmax()))
 																	, 0, 10)
 		));
+		return $code;
+
 	}
 }
