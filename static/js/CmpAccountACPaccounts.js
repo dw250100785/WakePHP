@@ -2,7 +2,8 @@ $(function() {$.ongt(function() {
 
 	$('.AccountACPaccounts').each(function() {
 	
-		var oTable = $('.table', this).dataTable({
+		$table = $('.table', this);
+		var oTable = $table.dataTable({
 			"oLanguage": {
 				"sProcessing":   _("Processing..."),
 				"sLengthMenu":   _("Show _MENU_ entries"),
