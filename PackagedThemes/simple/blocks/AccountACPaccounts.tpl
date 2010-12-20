@@ -4,7 +4,6 @@
 <script src="/js/CmpAccountACPaccounts.js" type="text/javascript"></script>
 <script src="/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/js/jquery.jeditable.js" type="text/javascript"></script>
-<div class="AccountACPaccounts">
 
 <h1 class="i18n heading">{$block->title|escape}</h1>
 
@@ -38,5 +37,4 @@
 </table> 
 </div>
 
-</div>
 {getBlock name="PageEnd"}
