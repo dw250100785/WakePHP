@@ -20,6 +20,7 @@
 			<th class="i18n">First name</th> 
 			<th class="i18n">Last name</th> 
 			<th class="i18n">Location</th> 
+			<th class="i18n">Groups</th> 
 			<th class="i18n sorting_disabled"></th> 
 		{/capture}{$quicky.capture.fields}
 		</tr> 

@@ -61,3 +61,7 @@ msgstr "Вы уверены?"
 
 msgid "Account not found."
 msgstr "Учетная запись не найдена."
+
+msgid "Groups"
+msgstr "Группы"
+

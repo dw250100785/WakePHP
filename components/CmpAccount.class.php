@@ -289,11 +289,14 @@ class CmpAccount extends Component {
 				$value = Request::getString($req->attrs->request['value']);
 				
 				if ($column == 'regdate') {
-					$val = strtotime($val);
+					$value = strtotime($value);
+				}
+				
+				if ($column == 'aclgroups') {
+					$value = preg_split('~\s*[,;]\s*~s', $value);
 				}
 				
 				$req->appInstance->accounts->saveAccount(array('_id' => $accountId, $column => $value), function ($lastError) use ($req, $value)	{
-						Daemon::log(array('lasterror',$lastError));
 						if ($lastError['updatedExisting']) {
 							$req->setResult(array('success' => true, 'value' => $value));
 						}
@@ -364,6 +367,9 @@ class CmpAccount extends Component {
 									$val = (string) $val;
 								}
 								else {
+									if ($k === 'aclgroups') {
+										$val = (string) implode(', ', $val);
+									}
 									$val = htmlspecialchars($val);
 								}
 							}
@@ -485,7 +491,6 @@ class CmpAccount extends Component {
 						if ($lastError['n'] > 0) {
 							
 							$req->appInstance->accountRecoveryRequests->getCode(function($result) use ($req) {
-								Daemon::log($result);
 								if (!$result) {
 									$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
 									return;
