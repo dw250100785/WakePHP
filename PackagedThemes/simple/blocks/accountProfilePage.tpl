@@ -33,10 +33,10 @@
 
 <div class="fieldname"><span class="i18n">Subscription</span>:</div><div class="fieldcontrols">
 
-<input type="radio" name="subscription" id="subscription_daily" value="daily"{if isset($req->account.gender) && $req->account.gender == 'daily'} checked{/if} />
+<input type="radio" name="subscription" id="subscription_daily" value="daily"{if isset($req->account.subscription) && $req->account.subscription == 'daily'} checked{/if} />
 <label for="subscription_daily" class="i18n">Daily digest</label>
 
-<input type="radio" name="subscription" id="subscription_thematic" value="thematic"{if isset($req->account.gender) && $req->account.subscription == 'thematic'} checked{/if} />
+<input type="radio" name="subscription" id="subscription_thematic" value="thematic"{if isset($req->account.subscription) && $req->account.subscription == 'thematic'} checked{/if} />
 <label for="subscription_thematic" class="i18n">Thematic</label>
 
 <input type="radio" name="subscription" id="subscription_nothing" value="" {if !isset($req->account.subscription) || $req->account.subscription == ''} checked{/if} />
