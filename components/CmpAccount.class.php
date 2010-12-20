@@ -395,7 +395,7 @@ class CmpAccount extends Component {
 		});
 	}
 	
-	public function DeleteAccountController() {
+	public function ManageAccountsDeleteController() {
 		$req = $this->req;
 		$this->onAuth(function($result) use ($req) {
 			if (!in_array('Superusers', $req->account['aclgroups'], true)) {

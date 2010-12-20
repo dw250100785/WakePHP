@@ -38,7 +38,7 @@ var settings = {
 				$(el).attr('id', id);
 				$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('accountId', id).click(function() {
 					if (confirm(_("Are you sure?"))) {
-						$.queryController('Account/DeleteAccount', function(data) {
+						$.queryController($table.sSource + 'Delete', function(data) {
 							if (!data.success) {alert(_(data.error));}
 							else {
 								$table.fnDeleteRow();
