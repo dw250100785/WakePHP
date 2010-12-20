@@ -4,13 +4,14 @@
 <script src="/js/CmpAccountACPaccounts.js" type="text/javascript"></script>
 <script src="/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/js/jquery.jeditable.js" type="text/javascript"></script>
+<script src="/js/smartTable.js" type="text/javascript"></script>
 
 <div class="{$block->name|escape}">
 
 <h1 class="i18n heading">{$block->title|escape}</h1>
 
 <div class="tableWrapper">
-<table cellpadding="0" cellspacing="0" border="0" class="display table"> 
+<table cellpadding="0" cellspacing="0" border="0" data-source="Account/ManageAccounts" class="display table"> 
 	<thead> 
 		<tr>
 		{capture name="fields"}
