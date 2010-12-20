@@ -12,7 +12,7 @@ class OutgoingMailORM extends ORM {
 	public function mailTemplate($block, $email, $args) {
 		$appInstance = $this->appInstance;
 		$args['domain'] = $appInstance->config->domain->value;
-		$appInstance->renderBlock('mailAccountConfirmation', $args, function ($result) use ($email, $appInstance) {
+		$appInstance->renderBlock($block, $args, function ($result) use ($email, $appInstance) {
 
 			$result = str_replace("\r", '', $result);
 			$e = explode("\n\n", $result, 2);
