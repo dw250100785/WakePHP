@@ -20,6 +20,13 @@ $(function() {$.ongt(function() {
 					"sLast":     _("Last")
 				}
 			},
+			"aoColumns": function() {
+				var columns = [];
+				$('thead > tr > th', $table).each(function(i, el) {
+					columns.push($(el).hasClass('disabledSorting') ? {bSortable: false} : null);
+				});
+				return columns;
+			}(),
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "Account/ManageAccounts",
