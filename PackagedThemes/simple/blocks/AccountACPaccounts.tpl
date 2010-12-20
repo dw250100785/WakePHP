@@ -5,7 +5,7 @@
 <script src="/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/js/jquery.jeditable.js" type="text/javascript"></script>
 
-<div class="AccountACPaccounts">
+<div class="{$block->name|escape}">
 
 <h1 class="i18n heading">{$block->title|escape}</h1>
 
