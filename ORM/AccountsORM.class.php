@@ -111,7 +111,7 @@ class AccountsORM extends ORM {
 		if (isset($hosts[$host])) {
 			$host = $hosts[$host];
 		}
-		
+		Daemon::log(array($name . '@' . $host));
 		return $name . '@' . $host;
 	}
 	
