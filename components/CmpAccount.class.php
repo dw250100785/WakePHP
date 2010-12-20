@@ -267,6 +267,7 @@ class CmpAccount extends Component {
 				'firstname'	=> 1,
 				'lastname'	=> 1,
 				'location'	=> 1,
+				'aclgroups' => 1,
 				'_id'				=> 1,
 			);
 			$fieldNames = array_keys($fields);
