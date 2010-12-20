@@ -1,4 +1,5 @@
 {
 	"locale": null,
-	"type": "GenericAuthDep"
+	"type": "GenericAuthDep",
+	"title": "Authentication"
 }

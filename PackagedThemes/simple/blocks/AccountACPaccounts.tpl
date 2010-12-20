@@ -6,7 +6,7 @@
 <script src="/js/jquery.jeditable.js" type="text/javascript"></script>
 <div class="AccountACPaccounts">
 
-<h1 class="i18n heading">{$block->title}</h1>
+<h1 class="i18n heading">{$block->title|escape}</h1>
 
 <div class="tableWrapper">
 <table cellpadding="0" cellspacing="0" border="0" class="display table"> 

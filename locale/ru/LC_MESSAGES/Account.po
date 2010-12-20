@@ -178,3 +178,10 @@ msgstr "Неверный текущий пароль."
 
 msgid "Location"
 msgstr "Местонахождение"
+
+msgid "Account access recovery"
+msgstr "Восстановление доступа к учетной записи"
+
+msgid "Forgot your password?"
+msgstr "Забыли пароль?"
+

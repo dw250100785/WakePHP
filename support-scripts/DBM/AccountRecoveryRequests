@@ -1,0 +1,8 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* accounts */ 
+$accountRecoveryRequests = $db->selectCollection('accountRecoveryRequests');
+$accountRecoveryRequests->drop();
+$accountRecoveryRequests->ensureIndex(array('email' => 1, 'code' => 1), array('unique' => true));

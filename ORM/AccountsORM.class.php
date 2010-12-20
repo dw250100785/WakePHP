@@ -78,7 +78,7 @@ class AccountsORM extends ORM {
 		if ($account && !isset($account['password'])) {
 			return true;
 		}
-		return crypt($password,$account['password']) === $account['password'];
+		return crypt($password, $account['password']) === $account['password'];
 	}
 	
 	public function unifyUsername($username) {

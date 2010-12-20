@@ -4,7 +4,7 @@
 <script src="http://jquery-ui.googlecode.com/svn/trunk/ui/i18n/jquery.ui.datepicker-{$req->locale}.js" type="text/javascript"></script>
 <form action="Account/Profile" class="AccountProfileForm" method="post">
 
-<h1 class="i18n">{$block->title}</h1>
+<h1 class="i18n">{$block->title|escape}</h1>
 
 <div class="fieldname"><span class="i18n">Your city</span>:</div><div class="fieldcontrols">
 <input type="text" name="location" size="50"{if isset($req->account.location)} value="{$req->account.location|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
@@ -47,8 +47,8 @@
 
 <div class="additionalFields" style="display:none">
 
-<div class="fieldname"><span class="i18n">Current password</span>:</div><div class="fieldcontrols">
-<input type="password" name="currentpassword" size="50" autocomplete="off" /></div><br class="clearfloat" /><span class="capslock" style="display:none">Caps Lock</span><br /><br />
+<div class="fieldname"><span class="i18n">Current password</span>: <span class="capslock" style="display:none">Caps Lock</span></div><div class="fieldcontrols">
+<input type="password" name="currentpassword" size="50" autocomplete="off" /></div><br class="clearfloat" /><a href="/{$req->locale}/account/recovery" class="i18n">Forgot your password?</a><br /><br />
 
 <div class="fieldname"><span class="i18n">Choose a password</span>:</div><div class="fieldcontrols">
 <input type="password" name="password" size="50" autocomplete="off" /></div><br class="clearfloat" />

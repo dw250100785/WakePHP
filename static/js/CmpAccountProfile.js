@@ -1,9 +1,9 @@
 $(function() {
 	
-	$('form.AccountProfileForm').each(function() {
-		var $form = $(this);
-		$form.find('.buttonGeneratePassword').click(function() {
-			$form.find('.containerGeneratedPassword').easypassgen({
+	$('form.AccountProfileForm').each(function(i, form) {
+		var $form = $(form);
+		$('.buttonGeneratePassword', $form).click(function() {
+			$('.containerGeneratedPassword', $form).easypassgen({
 				'syllables':        2,
 				'numbers':          Math.round(Math.random()),
 				'specialchars':     Math.round(Math.random())
@@ -11,86 +11,91 @@ $(function() {
 			return false;
 		});
 		
-		$form.find('input[name="birthdate"]').datepicker({
+		$('input[name="birthdate"]', $form).datepicker({
 				changeMonth: true,
 				changeYear: true,
 				yearRange: "-100:-5"
 		});
 
-		$form.find('.containerGeneratedPassword').click(function() {
-			$form.find('input[name="password"]').val($(this).text());
+		$('.containerGeneratedPassword', $form).click(function() {
+			$('input[name="password"]', $form).val($(this).text());
 		});
-		$form.find('.additionalFieldsButton').click(function() {
-			$form.find('.additionalFields').show();
+		$('.additionalFieldsButton', $form).click(function() {
+			$('.additionalFields', $form).show();
 			$(this).hide();
 			return false;
 		});
-	}).ajaxFormController({
-		beforeSubmit: function(arr, $form, options) {
-			$.each(arr, function(index, el) {
-				if ((el.name == 'password') && (el.value == '')) {
-					el.value = $form.find('.generatePassword').text();
+		
+		$form.ajaxFormController({
+			beforeSubmit: function(arr, $form, options) {
+				$.each(arr, function(index, el) {
+					if ((el.name == 'password') && (el.value == '')) {
+						el.value = $('.generatePassword', $form).text();
+					}
+				});
+			},
+			success: function (result, statusText, xhr, $form) {
+				$('.errorMessage', $form).remove();
+				if (result.success) {
+					$('.popupMsg', $form).text(_('Thanks! We will remember ;-)'))
+						.slideDown(300, function() {$(this).delay(2000).hide(1000);});
+				} else {
+					var hasCaptchaError = false;
+					var captchaDiv = $('.CAPTCHA', $form);
+					
+					for (var field in result.errors) {
+					
+						if (field == 'captcha') {
+							hasCaptchaError = true;
+							if (captchaDiv.parent().parent().is(':visible')) {
+								captchaDiv.after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+							}
+							else {
+								captchaDiv.parent().parent().show();
+								captchaDiv.captcha();
+							}
+						} else {
+							$('input[name="'+field+'"]', $form).after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+						}			
+					}
+					if (hasCaptchaError) {
+						captchaDiv.captcha();
+					} else {
+						//captchaDiv.parent().parent().hide();
+						captchaDiv.captcha();
+						// @TODO
+					}
+					$('.usernameAvailability', $form).html('');
+					$("input[name='username']", $form).change();
 				}
-			});
-		},
-		success: function (result, statusText, xhr, $form) {
-			$form.find('.errorMessage').remove();
-			if (result.success) {
-				$form.find('.popupMsg').text(_('Thanks! We will remember ;-)'))
-					.slideDown(300, function() {$(this).delay(2000).hide(1000);});
-			} else {
-				var hasCaptchaError = false;
-				var captchaDiv = $('form.AccountProfileForm .CAPTCHA');
-				
-				for (var field in result.errors) {
-				
-					if (field == 'captcha') {
-						hasCaptchaError = true;
-						if (captchaDiv.parent().parent().is(':visible')) {
-							captchaDiv.after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
+			}
+		});
+		
+		$('button[disabled]', $form).removeAttr('disabled');
+	
+	
+		$("input[name='username']", $form).change(function() {
+			if ($(this).val().length > 3) {
+				$.queryController('Account/UsernameAvailablityCheck', function(data) {
+					if (data.success) {
+						$('.errorMessageUsername', $form).remove();
+						var div = $('.usernameAvailability', $form);
+						if (data.error == null) {
+							div.html(_('Username available.'));
+							div.removeClass('denyMsg');
+							div.addClass('allowMsg');
 						}
 						else {
-							captchaDiv.parent().parent().show();
-							captchaDiv.captcha();
+							div.html(_(data.error));
+							div.removeClass('allowMsg');
+							div.addClass('denyMsg');
 						}
-					} else {
-						$form.find('input[name="'+field+'"]').after('<div class="errorMessage errorMessage'+ucfirst(field)+'">'+_(result.errors[field])+'</div>');
-					}			
-				}
-				if (hasCaptchaError) {
-					captchaDiv.captcha();
-				} else {
-					//captchaDiv.parent().parent().hide();
-					captchaDiv.captcha();
-					// @TODO
-				}
-				$('.usernameAvailability').html('');
-				$("form.AccountProfileForm input[name='username']").change();
+					}
+				}, {username: $(this).val()}
+				);
 			}
-		}
-	}).find('button[disabled]').removeAttr('disabled');
-	
-	
-	$("form.AccountProfileForm input[name='username']").change(function() {
-		if ($(this).val().length > 3) {
-			$.queryController('Account/UsernameAvailablityCheck', function(data) {
-				if (data.success) {
-					$('form.AccountProfileForm .errorMessageUsername').remove();
-					var div = $('.usernameAvailability');
-					if (data.error == null) {
-						div.html(_('Username available.'));
-						div.removeClass('denyMsg');
-						div.addClass('allowMsg');
-					}
-					else {
-						div.html(_(data.error));
-						div.removeClass('allowMsg');
-						div.addClass('denyMsg');
-					}
-				}
-			}, {username: $(this).val()}
-			);
-		}
-	}).change();
+		}).change();
+
+	});
 
 });

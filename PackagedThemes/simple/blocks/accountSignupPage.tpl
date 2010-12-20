@@ -3,7 +3,7 @@
 <script src="/js/jquery.capslock.js" type="text/javascript"></script>
 <form action="Account/Signup" class="AccountSignupForm" method="post">
 
-<h1 class="i18n">{$block->title}</h1>
+<h1 class="i18n">{$block->title|escape}</h1>
 
 <div class="fieldname"><span class="i18n">E-Mail</span>:</div><div class="fieldcontrols">
 <input type="text" name="email" size="50" /></div><br class="clearfloat" /><br /><br />
