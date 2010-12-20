@@ -5,6 +5,8 @@
 <script src="/js/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/js/jquery.jeditable.js" type="text/javascript"></script>
 
+<div class="AccountACPaccounts">
+
 <h1 class="i18n heading">{$block->title|escape}</h1>
 
 <div class="tableWrapper">
@@ -35,6 +37,7 @@
 		</tr> 
 	</tfoot> 
 </table> 
+</div>
 </div>
 
 {getBlock name="PageEnd"}
