@@ -23,7 +23,7 @@ class BlockAccountConfirmation extends Block {
 			}
 			$block->req->appInstance->accounts->confirmAccount(array(
 				'email' => $email,
-				'confirmationcode' => $block->req->attrs->request['code']
+				'confirmationcode' => trim($block->req->attrs->request['code'])
 			), function ($result) use ($block, $email) {
 				if ($result['updatedExisting']) {
 					$block->success();

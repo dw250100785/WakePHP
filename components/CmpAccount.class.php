@@ -477,8 +477,8 @@ class CmpAccount extends Component {
 			
 			if (isset($req->attrs->request['email'])) {
 				$email = Request::getString($req->attrs->request['email']);
-				if (isset($req->attrs->request['code'])) {
-					$code = Request::getString($req->attrs->request['code']);
+				$code = trim(Request::getString($req->attrs->request['code']));
+				if ($code !== '') {
 					
 					$req->appInstance->accountRecoveryRequests->invalidateCode(function($lastError) use ($req, $email, $code) {
 						if ($lastError['n'] > 0) {
