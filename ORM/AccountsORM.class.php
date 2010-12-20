@@ -105,13 +105,13 @@ class AccountsORM extends ORM {
 		if (($p = strpos($name, '+')) !== false) {
 			$name = substr($name, 0, $p);
 		}
-		
+
 		$name = str_replace('.', '', $name);
 		$host = rtrim(str_replace('..', '.', $host), '.');
 		if (isset($hosts[$host])) {
 			$host = $hosts[$host];
 		}
-		Daemon::log(array($name . '@' . $host));
+
 		return $name . '@' . $host;
 	}
 	
