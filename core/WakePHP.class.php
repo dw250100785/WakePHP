@@ -20,11 +20,13 @@ class WakePHP extends AppInstance {
 		$appInstance = $this;
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 		$appInstance->dbname = $this->config->dbname->value;
-		$appInstance->blocks = new BlocksORM($this);
-		$appInstance->accounts = new AccountsORM($this);
-		$appInstance->sessions = new SessionsORM($this);
-		$appInstance->outgoingmail = new OutgoingmailORM($this);
-		$appInstance->accountRecoveryRequests = new AccountRecoveryRequestsORM($this);
+		
+		foreach (glob($appInstance->config->ormdir->value.'*ORM.class.php') as $file) {
+			$class = strstr(basename($file), '.', true);
+			$prop = lcfirst(substr($class, 0, -3));
+			$this->{$prop} = new $class($this);
+		}
+
 		$appInstance->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
 		{
@@ -97,6 +99,7 @@ class WakePHP extends AppInstance {
 			'templatedir' => './templates/',
 			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
 			'localedir' =>	dirname(__DIR__).'/locale/',
+			'ormdir' =>	dirname(__DIR__).'/ORM/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
 			'domain' => 'host.tld',
