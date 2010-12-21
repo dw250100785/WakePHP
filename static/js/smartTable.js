@@ -71,6 +71,7 @@ var settings = {
 					
 					var aPos = $table.fnGetPosition( this );
 					$table.fnUpdate( result.value, aPos[0], aPos[1] );
+					return result.value;
 				},
 				"submitdata": function ( value, settings ) {
 					return {
