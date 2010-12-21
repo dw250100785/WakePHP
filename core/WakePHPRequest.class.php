@@ -7,6 +7,7 @@ class WakePHPRequest extends HTTPRequest {
 
 	public $locale;
 	public $path;
+	public $pathArg = array();
 	public $html;
 	public $inner = array();
 	public $startTime;
@@ -98,7 +99,17 @@ class WakePHPRequest extends HTTPRequest {
 		else {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
-			$this->path = preg_replace('~/[a-z\d]{24}(?=/|$)~', '/%id', $this->path);
+			$req = $this;
+			$this->path = preg_replace_callback('~/([a-z\d]){24}(?=/|$)~', function($m) use ($req) {
+				if (isset($m[1]) && $m[1] !== '') {
+					$type = 'id';
+					$value = $m[1];
+				}
+				$req->pathArgType[] = $type;
+				$req->pathArg[] = $value;
+				return '/%'.$type;
+			}, $this->path);
+			Daemon::log('start - '.$this->path);
 			
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
@@ -170,7 +181,6 @@ class WakePHPRequest extends HTTPRequest {
 		}
 	}
 	public function onDestruct() {
-	 Daemon::log('destruct - '.$this->attrs->server['REQUEST_URI']);
+	 Daemon::log('destruct - '.$this->path);
 	}
 }
-
