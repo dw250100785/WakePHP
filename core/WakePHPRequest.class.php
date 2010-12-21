@@ -8,7 +8,7 @@ class WakePHPRequest extends HTTPRequest {
 	public $locale;
 	public $path;
 	public $pathArg = array();
-	public $pathArgTypes = array();
+	public $pathArgType = array();
 	public $html;
 	public $inner = array();
 	public $startTime;
@@ -129,7 +129,7 @@ class WakePHPRequest extends HTTPRequest {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
 			$req = $this;
-			$this->path = preg_replace_callback('~/([a-z\d]){24}(?=/|$)~', function($m) use ($req) {
+			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function($m) use ($req) {
 				if (isset($m[1]) && $m[1] !== '') {
 					$type = 'id';
 					$value = $m[1];
@@ -138,7 +138,6 @@ class WakePHPRequest extends HTTPRequest {
 				$req->pathArg[] = $value;
 				return '/%'.$type;
 			}, $this->path);
-			Daemon::log('start - '.$this->path);
 			
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
