@@ -288,7 +288,7 @@ class CmpAccount extends Component {
 								
 				$req->appInstance->accounts->saveAccount(array(
 					'_id' => Request::getString($req->attrs->request['id']),
-					$column => Request::getString($req->attrs->request['value'])
+					$column => $value = Request::getString($req->attrs->request['value'])
 				), function ($lastError) use ($req, $value)	{
 						if ($lastError['updatedExisting']) {
 							$req->setResult(array('success' => true, 'value' => $value));
