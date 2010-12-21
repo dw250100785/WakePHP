@@ -1,4 +1,12 @@
 $(function() {
+	$.ongt(function() {
+		var delim = ' - ';
+		var title = document.title.split(delim);
+		$.each(title, function(k, phrase) {
+			title[k] = _(phrase)
+		});
+		document.title = title.join(delim);
+	});
 	if (jQuery.fn.capslock != null) {
 		$(document).capslock({
 			caps_lock_on: function() {$('.capslock').show();},
