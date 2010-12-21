@@ -26,7 +26,7 @@ var process = function(el) {
 	});
 	var phrase = clone.html();
 	var tr = _(phrase);
-	if (phrase == tr) {var tr = tr.replace(/\%\%.+$/,'');}
+	if (phrase == tr) {var tr = tr.replace(/%%.+$/,'');}
 	el.data('i18norig', phrase).html($.vsprintf(tr,argValues)).i18n();
 };
 if ($(this).hasClass('.i18n')) {process($(this));}
