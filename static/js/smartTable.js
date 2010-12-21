@@ -36,7 +36,7 @@ var settings = {
 			$($table.fnGetNodes()).each(function(i, el) {
 				var id = $('td:last', el).text();
 				$(el).attr('id', id);
-				$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('accountId', id).click(function() {
+				$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('id', id).click(function() {
 					if (confirm(_("Are you sure?"))) {
 						$.queryController($table.sSource + 'Delete', function(result) {
 							if (!result.success) {
@@ -50,7 +50,7 @@ var settings = {
 							else {
 								$table.fnDeleteRow();
 							}									
-						}, {accountId: $(this).data('accountId')});
+						}, {id: $(this).data('id')});
 					}
 					return false;
 				});
@@ -74,8 +74,8 @@ var settings = {
 				},
 				"submitdata": function ( value, settings ) {
 					return {
-						"action": "EditAccountColumn",
-						"accountId": this.parentNode.getAttribute('id'),
+						"action": "EditColumn",
+						"id": this.parentNode.getAttribute('id'),
 						"column": $table.fnGetPosition( this )[2]
 					};
 				},

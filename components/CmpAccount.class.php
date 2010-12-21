@@ -279,16 +279,17 @@ class CmpAccount extends Component {
 			};
 			
 			$action = Request::getString($req->attrs->request['action']);
-			if ($action === 'EditAccountColumn') {
+			if ($action === 'EditColumn') {
 				$column = $field(Request::getInteger($req->attrs->request['column']));
 				if ($column === null) {
 					$req->setResult(array('success' => false, 'error' => 'Column not found.'));
 					return;
 				}
-				$accountId = Request::getString($req->attrs->request['accountId']);
-				$value = Request::getString($req->attrs->request['value']);
 								
-				$req->appInstance->accounts->saveAccount(array('_id' => $accountId, $column => $value), function ($lastError) use ($req, $value)	{
+				$req->appInstance->accounts->saveAccount(array(
+					'_id' => Request::getString($req->attrs->request['id']),
+					$column => Request::getString($req->attrs->request['value'])
+				), function ($lastError) use ($req, $value)	{
 						if ($lastError['updatedExisting']) {
 							$req->setResult(array('success' => true, 'value' => $value));
 						}
@@ -394,8 +395,7 @@ class CmpAccount extends Component {
 				$req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
-			$accountId = Request::getString($req->attrs->request['accountId']);
-			$req->appInstance->accounts->deleteAccount(array('_id' => $accountId), function($lastError) use ($req)  {
+			$req->appInstance->accounts->deleteAccount(array('_id' => Request::getString($req->attrs->request['id'])), function($lastError) use ($req)  {
 				
 				if ($lastError['n'] > 0) {
 					$req->setResult(array(
