@@ -98,6 +98,8 @@ class WakePHPRequest extends HTTPRequest {
 		else {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
+			$this->path = preg_replace('~/[a-z\d]{24}(?=/|$)~', '/%id', $this->path);
+			
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
 				$this->finish();
