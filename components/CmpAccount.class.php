@@ -547,7 +547,7 @@ class CmpAccount extends Component {
 		$session = $this->appInstance->sessions->startSession();
 		$this->req->attrs->session = $session;
 		$sid = (string) $session['_id'];
-		$this->req->setcookie('SESSID', $sid, time() + 60*60*24*365, '/');
+		$this->req->setcookie('SESSID', $sid, time() + 60*60*24*365, '/', $this->appInstance->config->cookiedomain->value);
 	}
 	public function onSessionStartEvent() {
 		

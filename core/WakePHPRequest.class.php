@@ -67,6 +67,27 @@ class WakePHPRequest extends HTTPRequest {
 		echo $this->html;
 	}
 
+	public function checkDomainMatch($domain = null, $pattern = null) {
+		if ($domain === null) {
+			$domain = Request::getString($this->attrs->server['HTTP_REFERER']);
+		}
+		if ($pattern === null) {
+			$pattern = $this->appInstance->config->cookiedomain->value;
+		}
+		foreach (explode(', ',$pattern) as $part) {
+			if (substr($part, 0, 1) === '.') {
+				if (substr($domain, -strlen($part)) === $part) {
+					return true;
+				}
+			} else {
+				if ($domain === $part) {
+					return true;
+				}
+			}	
+		}
+		return false;
+	}
+	
 	/**
 	 * URI parser.
 	 * @return void.
@@ -81,14 +102,21 @@ class WakePHPRequest extends HTTPRequest {
 			$this->cmpName = $e[1];
 			$this->controller = isset($e[2])?$e[2]:'';
 			$this->dataType = isset($e[3])?$e[3]:'json';
+			if (!$this->checkDomainMatch()) {
+				$this->setResult(array('errmsg' => 'Unacceptable referer.'));
+				return;
+			}
 			if ($this->components->{$this->cmpName}) {
 				$method = $this->controller.'Controller';
 				if (method_exists($this->components->{$this->cmpName},$method)) {
 					$this->components->{$this->cmpName}->$method();
 				}
 				else {
-					$this->setResult(array('errmsg' => 'Undefined controller.'));
+					$this->setResult(array('errmsg' => 'Unknown controller.'));
 				}
+			}
+			else {
+				$this->setResult(array('errmsg' => 'Unknown component.'));
 			}
 			return;
 		}

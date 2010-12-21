@@ -103,6 +103,7 @@ class WakePHP extends AppInstance {
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
 			'domain' => 'host.tld',
+			'cookiedomain' => 'host.tld',
 		);
 	}
 	
