@@ -8,6 +8,7 @@ class WakePHPRequest extends HTTPRequest {
 	public $locale;
 	public $path;
 	public $pathArg = array();
+	public $pathArgTypes = array();
 	public $html;
 	public $inner = array();
 	public $startTime;
