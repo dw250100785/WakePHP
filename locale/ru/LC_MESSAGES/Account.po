@@ -208,3 +208,10 @@ msgstr "Проверьте почту ;-)"
 
 msgid "Error happened."
 msgstr "Произошла ошибка."
+
+msgid "If you haven't the letter with code at your mailbox, please check the junk mail, otherwise please %s to send it again."
+msgstr "Если вы не получили письмо с кодом на ваш почтовый ящик, пожалуйста проверьте в Сомннительных, или пожалуйста воспользуйтесь %s чтобы отправить письмо снова."
+
+msgid "use the Account access recovery"
+msgstr "воспользуйтесь Восстановлением доступа к учетной записи"
+
