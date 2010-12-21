@@ -19,6 +19,7 @@ $(function() {$.ongt(function() {
 
 		$('.containerGeneratedPassword', $form).click(function() {
 			$('input[name="password"]', $form).val($(this).text());
+			return false;
 		});
 		$('.additionalFieldsButton', $form).click(function() {
 			$('.additionalFields', $form).show();
