@@ -37,10 +37,11 @@ var settings = {
 				var id = $('td:last', el).text();
 				$(el).attr('id', id);
 				$('td:last', el)
+				.html('')
 				.append($table.editUrl != null ? '<a href="/' + $('html').attr('lang') + $table.editUrl + '/' + id + '">' + _('Edit') + '</a>' : '')
 				.append(
-					$('<a href="#">' + _('Delete') + '</a>')
-					.find('a').data('id', id).click(function() {
+					$('<a href="#">').text(_('Delete'))
+					.data('id', id).click(function() {
 						if (confirm(_("Are you sure?"))) {
 							$.queryController($table.sSource + 'Delete', function(result) {
 								if (!result.success) {
