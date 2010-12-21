@@ -287,15 +287,7 @@ class CmpAccount extends Component {
 				}
 				$accountId = Request::getString($req->attrs->request['accountId']);
 				$value = Request::getString($req->attrs->request['value']);
-				
-				if ($column == 'regdate') {
-					$value = strtotime($value);
-				}
-				
-				if ($column == 'aclgroups') {
-					$value = preg_split('~\s*[,;]\s*~s', $value);
-				}
-				
+								
 				$req->appInstance->accounts->saveAccount(array('_id' => $accountId, $column => $value), function ($lastError) use ($req, $value)	{
 						if ($lastError['updatedExisting']) {
 							$req->setResult(array('success' => true, 'value' => $value));

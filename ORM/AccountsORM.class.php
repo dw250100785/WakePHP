@@ -127,6 +127,12 @@ class AccountsORM extends ORM {
 		if (isset($account['username'])) {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		}
+		if (isset($account['regdate']) && is_string($account['regdate'])) {
+			$account['regdate'] = strtotime($account['regdate']);
+		}
+		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
+			$account['aclgroups'] =  preg_split('~\s*[,;]\s*~s', $account['aclgroups']);
+		}
 		if (isset($account['email'])) {
 			$account['unifiedemail'] = $this->unifyEmail($account['email']);
 		}
