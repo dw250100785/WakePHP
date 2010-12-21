@@ -44,7 +44,7 @@ var settings = {
 										location.href = '/' + $('html').attr('lang') + '/account/login?backurl=' + $.urlencode(location.pathname);
 								}
 								else {
-									alert(_(success.error));
+									alert(_(result.error));
 								}
 							}
 							else {
