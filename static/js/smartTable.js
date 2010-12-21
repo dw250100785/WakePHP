@@ -33,6 +33,7 @@ var settings = {
 	},
 	"fnDrawCallback": function() {
 		setTimeout(function () {
+		alert($table.data('editurl'));
 			$($table.fnGetNodes()).each(function(i, el) {
 				var id = $('td:last', el).text();
 				$(el).attr('id', id);
