@@ -7,6 +7,13 @@ $(function() {
 		});
 		document.title = title.join(delim);
 	});
+	
+	$('.ui-tabs').each(function(index, el) {
+		$tabs = $(el);
+		$('>ul', $tabs).removeClass('ui-ul-hide');
+		$tabs.tabs();
+	});
+	
 	if (jQuery.fn.capslock != null) {
 		$(document).capslock({
 			caps_lock_on: function() {$('.capslock').show();},
