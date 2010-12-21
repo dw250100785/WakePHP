@@ -354,7 +354,7 @@ class CmpAccount extends Component {
 							} else {
 								$val = $item[$k];
 								if ($k === 'regdate') {
-									$val = date('r', $val);
+									$val = $val != 0 ? date('r', $val) : '';
 								}
 								elseif ($k === '_id') {
 									$val = (string) $val;

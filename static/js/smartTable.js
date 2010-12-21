@@ -36,24 +36,29 @@ var settings = {
 			$($table.fnGetNodes()).each(function(i, el) {
 				var id = $('td:last', el).text();
 				$(el).attr('id', id);
-				$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('id', id).click(function() {
-					if (confirm(_("Are you sure?"))) {
-						$.queryController($table.sSource + 'Delete', function(result) {
-							if (!result.success) {
-								if (result.goLoginPage != null) {
-										location.href = '/' + $('html').attr('lang') + '/account/login?backurl=' + $.urlencode(location.pathname);
+				$('td:last', el)
+				.append($table.editUrl != null ? '<a href="/' + $('html').attr('lang') + $table.editUrl + '/' + id + '">' + _('Edit') + '</a>' : '')
+				.append(
+					$('<a href="#">' + _('Delete') + '</a>')
+					.find('a').data('id', id).click(function() {
+						if (confirm(_("Are you sure?"))) {
+							$.queryController($table.sSource + 'Delete', function(result) {
+								if (!result.success) {
+									if (result.goLoginPage != null) {
+											location.href = '/' + $('html').attr('lang') + '/account/login?backurl=' + $.urlencode(location.pathname);
+									}
+									else {
+										alert(_(result.error));
+									}
 								}
 								else {
-									alert(_(result.error));
-								}
-							}
-							else {
-								$table.fnDeleteRow();
-							}									
-						}, {id: $(this).data('id')});
-					}
-					return false;
-				});
+									$table.fnDeleteRow();
+								}									
+							}, {id: $(this).data('id')});
+						}
+						return false;
+					})
+				);
 			});
 			$('td:not(:last)', $table.fnGetNodes()).editable( '/component/' + $table.sSource + '/json', {
 				"callback": function( result, y ) {
