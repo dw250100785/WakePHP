@@ -38,8 +38,15 @@ var settings = {
 				$(el).attr('id', id);
 				$('td:last', el).html('<a href="#">' + _('Delete') + '</a>').find('a').data('accountId', id).click(function() {
 					if (confirm(_("Are you sure?"))) {
-						$.queryController($table.sSource + 'Delete', function(data) {
-							if (!data.success) {alert(_(data.error));}
+						$.queryController($table.sSource + 'Delete', function(result) {
+							if (!result.success) {
+								if (result.goLoginPage != null) {
+										location.href = '/' + $('html').attr('lang') + '/account/login?backurl=' + $.urlencode(location.pathname);
+								}
+								else {
+									alert(_(success.error));
+								}
+							}
 							else {
 								$table.fnDeleteRow();
 							}									
@@ -49,9 +56,21 @@ var settings = {
 				});
 			});
 			$('td:not(:last)', $table.fnGetNodes()).editable( '/component/' + $table.sSource + '/json', {
-				"callback": function( sValue, y ) {
+				"callback": function( result, y ) {
+					result = eval('('+result+')');
+					
+					if (!result.success) {
+						if (result.goLoginPage != null) {
+							location.href = '/' + $('html').attr('lang') + '/account/login?backurl=' + $.urlencode(location.pathname);
+						}
+						else {
+							alert(_(result.error));
+						}
+						return;
+					}
+					
 					var aPos = $table.fnGetPosition( this );
-					$table.fnUpdate( sValue, aPos[0], aPos[1] );
+					$table.fnUpdate( result.value, aPos[0], aPos[1] );
 				},
 				"submitdata": function ( value, settings ) {
 					return {
