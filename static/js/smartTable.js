@@ -10,12 +10,22 @@ var settings = {
 		"sInfoPostFix":  "",
 		"sSearch":       _("Search:"),
 		"sUrl":          _(""),
+		
+		"sPaginationType": "full_numbers",
 		"oPaginate": {
 			"sFirst":    _("First"),
 			"sPrevious": _("Previous"),
 			"sNext":     _("Next"),
 			"sLast":     _("Last")
 		}
+	},
+	"fnInitComplete": function() {
+		$.keyboard('[ctrl|cmd]+aleft', function() {
+			$table.fnPageChange('previous');
+		});
+		$.keyboard('[ctrl|cmd]+aright', function() {
+			 $table.fnPageChange('next');
+		});		
 	},
 	"aoColumns": function(table) {
 		var columns = [];
