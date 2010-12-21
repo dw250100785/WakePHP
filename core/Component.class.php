@@ -15,6 +15,9 @@ class Component {
 	public function init() {
 	}
 	public function __get($event) {
+		if (!method_exists($this, $event.'Event')) {
+			throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
+		}
 		$this->{$event} = new DeferredEvent($this->{$event.'Event'}());
 		$this->{$event}->component = $this;
 		return $this->{$event};
