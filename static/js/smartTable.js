@@ -38,7 +38,7 @@ var settings = {
 				$(el).attr('id', id);
 				$('td:last', el)
 				.html('')
-				.append($table.editUrl != null ? '<a href="/' + $('html').attr('lang') + $table.editUrl + '/' + id + '">' + _('Edit') + '</a>' : '')
+				.append($table.data('editurl') != null ? '<a href="/' + $('html').attr('lang') + $table.data('editurl') + '/' + id + '">' + _('Edit') + '</a>' : '')
 				.append(
 					$('<a href="#">').text(_('Delete'))
 					.data('id', id).click(function() {
