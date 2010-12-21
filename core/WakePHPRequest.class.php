@@ -69,7 +69,7 @@ class WakePHPRequest extends HTTPRequest {
 
 	public function checkDomainMatch($domain = null, $pattern = null) {
 		if ($domain === null) {
-			$domain = Request::getString($this->attrs->server['HTTP_REFERER']);
+			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
 		}
 		if ($pattern === null) {
 			$pattern = $this->appInstance->config->cookiedomain->value;
