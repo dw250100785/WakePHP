@@ -29,6 +29,18 @@ img {
 .ui-resizable-se {
 	bottom: 17px;
 }
+.ui-tabs .ui-widget-content { padding:20px 9px;}
+.ui-tabs {
+	width: 90%;
+}
+.ui-tabs .ui-tabs-hide {
+    position: absolute;
+    left: -10000px;
+}
+.ui-tabs .ui-ul-hide {
+    position: absolute;
+    left: -10000px;
+}
 
 /* page */
 
