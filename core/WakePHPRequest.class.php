@@ -128,6 +128,11 @@ class WakePHPRequest extends HTTPRequest {
 		else {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
+				$this->finish();
+				return;
+			}
 			$req = $this;
 			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function($m) use ($req) {
 				if (isset($m[1]) && $m[1] !== '') {
@@ -138,12 +143,7 @@ class WakePHPRequest extends HTTPRequest {
 				$req->pathArg[] = $value;
 				return '/%'.$type;
 			}, $this->path);
-			
-			if (!in_array($this->locale, $this->appInstance->locales, true)) {
-				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
-				$this->finish();
-				return;
-			}
+
 		}
 		
 		++$this->jobTotal;
