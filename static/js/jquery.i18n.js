@@ -24,10 +24,7 @@ var process = function(el) {
 		argValues.push($(this).outerHTML());
 		$(this).replaceWith('%s');
 	});
-	var phrase = clone.html();
-	var tr = _(phrase);
-	if (phrase == tr) {var tr = tr.replace(/%%.+$/,'');}
-	el.data('i18norig', phrase).html($.vsprintf(tr,argValues)).i18n();
+	el.data('i18norig', phrase).html($.vsprintf(_(clone.html()),argValues)).i18n();
 };
 if ($(this).hasClass('.i18n')) {process($(this));}
 $(this).find('.i18n').each(function(index) {process($(this));});

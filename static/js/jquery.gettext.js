@@ -119,6 +119,7 @@
 			} else if(typeof trans == 'object' && trans.constructor == Array) { // the translation contains plural(s), yet gettext was called
 				return trans[0];
 			}
+			msgstr = msgstr.replace(/%%.+$/, '');
 			return msgstr;
 		},
 		ngettext: function() {
