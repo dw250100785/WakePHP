@@ -9,9 +9,12 @@ $(function() {
 	});
 	
 	$('.ui-tabs').each(function(index, el) {
-		$tabs = $(el);
-		$('>ul', $tabs).removeClass('ui-ul-hide');
-		$tabs.tabs();
+		$('>ul', el).removeClass('ui-ul-hide');
+		var $tabs = $(el).tabs({
+			show: function(event, ui) {
+				$('textarea.resizable', ui.panel).resizable({handles: "se"});
+			}
+		});
 	});
 	
 	if (jQuery.fn.capslock != null) {
