@@ -91,8 +91,8 @@ $(function() {$.ongt(function() {
 
 			// Replace values for the template plugin
 			template_replace_values : {
-				username : "Some User",
-				staffid : "991234"
+				//username : "Some User",
+				//staffid : "991234"
 			}
 				});
 		}
