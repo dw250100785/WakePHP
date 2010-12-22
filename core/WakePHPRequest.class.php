@@ -185,6 +185,7 @@ class WakePHPRequest extends HTTPRequest {
 		
 		if (!$page)	{
 			++$this->jobTotal;
+			$this->header('404 Not Found');
 			$this->appInstance->blocks->getPage($this->locale,'/404',array($this,'loadErrorPage'));
 			return;
 		}
