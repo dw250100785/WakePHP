@@ -32,5 +32,5 @@ $(this).find('.i18n').each(function(index) {process($(this));});
 return this;
 }});
 $.fn.outerHTML = function() {return $('<div></div>').append( this.clone() ).html();}
-$(function() {$.ongt(function(e) {$(this).i18n();});});
+$(function() {$.ongt(function(e) {$(document).i18n();});});
 })(jQuery);
