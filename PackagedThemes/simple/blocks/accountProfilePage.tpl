@@ -24,7 +24,7 @@
 <label for="gender_female" class="i18n">Female</label>
 
 <input type="radio" name="gender" id="gender_na" value="" {if !isset($req->account.gender) || $req->account.gender == ''} checked{/if} />
-<label for="gender_male" class="i18n">Not specified</label>
+<label for="gender_na" class="i18n">Not specified</label>
 
 </div><br class="clearfloat" /><br /><br />
 
