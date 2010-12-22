@@ -24,7 +24,8 @@ var process = function(el) {
 		argValues.push($(this).outerHTML());
 		$(this).replaceWith('%s');
 	});
-	el.data('i18norig', phrase).html($.vsprintf(_(clone.html()),argValues)).i18n();
+	var phrase = clone.html();
+	el.data('i18norig', phrase).html($.vsprintf(_(phrase),argValues)).i18n();
 };
 if ($(this).hasClass('.i18n')) {process($(this));}
 $(this).find('.i18n').each(function(index) {process($(this));});
