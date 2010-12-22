@@ -94,10 +94,10 @@ class WakePHPRequest extends HTTPRequest {
 	 */
 	public function dispatch() {	
 		$this->dispatched = true;
-		$e = explode('/', ltrim($_SERVER['DOCUMENT_URI'],'/'), 2);
+		$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 		
-			$e = explode('/', ltrim($_SERVER['DOCUMENT_URI'],'/'), 4);
+			$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 4);
 			++$this->jobTotal;
 			$this->cmpName = $e[1];
 			$this->controller = isset($e[2])?$e[2]:'';
