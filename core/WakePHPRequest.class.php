@@ -33,6 +33,14 @@ class WakePHPRequest extends HTTPRequest {
 		$this->tpl->assign('req',$this);
 	}
 
+	public function date($format, $ts) {
+		return date($format, $ts);
+	}
+		
+	public function strtotime($str) {
+		return Strtotime::parse($str);
+	}
+	
 	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag,$obj->html,$this->html);
 		unset($this->inner[$obj->_nid]);
