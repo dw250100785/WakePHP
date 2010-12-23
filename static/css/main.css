@@ -20,7 +20,9 @@ img {
 	font-size: 1px;
 	line-height: 0px;
 }
-
+.multiselect {
+	width: 200px;
+}
 .capslock
 {
  color: red;
