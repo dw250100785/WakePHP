@@ -16,7 +16,7 @@ $(function() {
 			}
 		});
 	});
-	
+	$('.multiselect').multiselect();
 	if (jQuery.fn.capslock != null) {
 		$(document).capslock({
 			caps_lock_on: function() {$('.capslock').show();},
