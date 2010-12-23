@@ -5,11 +5,29 @@
  */
 class CmpGMAPS extends AsyncServer {
 
+
+	/**
+	 * Function to get default config options from application
+	 * Override to set your own
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			'privatekey' => new Daemon_ConfigEntry(''),
+		);
+	}
+	
 	public $req;
 	public $appInstance;
 	public function __construct($req) {
 		$this->req = $req;
 		$this->appInstance = $req->appInstance;
+		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
+		$defaults = $this->getConfigDefaults();
+		if ($defaults) {
+			$this->processDefaultConfig($defaults);
+		}
+		$this->init();
 	}	
 
 	/**

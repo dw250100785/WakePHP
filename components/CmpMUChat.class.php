@@ -40,9 +40,9 @@ class CmpMUChat extends AppInstance {
 			'adminpassword' => 'lolz',
 		);
 	}
-
-	public function init() {
-	
+	public function __construct($req) {
+		$this->req = $req;
+		$this->appInstance = $req->appInstance;
 		Daemon::log(__CLASS__ . ' up.');
 		$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 		$this->dbname = $this->config->dbname->value;
@@ -52,6 +52,14 @@ class CmpMUChat extends AppInstance {
 
 		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
 		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid .'-' . microtime(true)));
+		
+		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
+		$defaults = $this->getConfigDefaults();
+		if ($defaults) {
+			$this->processDefaultConfig($defaults);
+		}
+		$this->init();
+
 
 	}
 	

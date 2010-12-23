@@ -5,6 +5,17 @@
  */
 class CmpCAPTCHA extends AsyncServer {
 
+	/**
+	 * Function to get default config options from application
+	 * Override to set your own
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			'privatekey' => new Daemon_ConfigEntry(''),
+		);
+	}
+	
 	public $req;
 	public $appInstance;
 	public function __construct($req) {
@@ -86,8 +97,12 @@ class CmpCAPTCHASession extends SocketSession {
 			$cb(false,'incorrect-captcha-sol');
 			return;
 		}
+		if (empty($this->config->privatekey->value)) {
+			$cb(false,'empty-private-key');
+			return;
+		}
 		$body =  http_build_query(array(
-			'privatekey' => $this->appInstance->req->appInstance->config->captchaprivatekey->value,
+			'privatekey' => $this->config->privatekey->value,
 			'remoteip' => $this->appInstance->req->attrs->server['REMOTE_ADDR'],
 			'challenge' => Request::getString($this->appInstance->req->attrs->request['recaptcha_challenge_field']),
 			'response' => Request::getString($this->appInstance->req->attrs->request['recaptcha_response_field']),
