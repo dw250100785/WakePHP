@@ -21,10 +21,8 @@ img {
 	line-height: 0px;
 }
 .multiselect {
-	min-width: 300px;
-	height: 200px;
+	width: 459px;
 }
-
 .capslock
 {
  color: red;
