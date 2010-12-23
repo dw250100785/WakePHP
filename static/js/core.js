@@ -8,14 +8,6 @@ $(function() {
 		document.title = title.join(delim);
 	});
 	
-	$('.ui-tabs').each(function(index, el) {
-		$('>ul', el).removeClass('ui-ul-hide');
-		var $tabs = $(el).tabs({
-			show: function(event, ui) {
-				$('textarea.resizable', ui.panel).resizable({handles: "se"});
-			}
-		});
-	});
 	if (jQuery.fn.capslock != null) {
 		$(document).capslock({
 			caps_lock_on: function() {$('.capslock').show();},
