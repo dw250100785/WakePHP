@@ -5,7 +5,7 @@
  */
 
 $.extend($.ui.multiselect.locale, {
-	addAll:'Добавить все',
-	removeAll:'Убрать все',
-	itemsCount:'в списке'
+	addAll:'Р”РѕР±Р°РІРёС‚СЊ РІСЃРµ',
+	removeAll:'РЈР±СЂР°С‚СЊ РІСЃРµ',
+	itemsCount:'РІ СЃРїРёСЃРєРµ'
 });
