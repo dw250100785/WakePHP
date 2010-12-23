@@ -285,7 +285,7 @@ class CmpAccount extends Component {
 					$req->setResult(array('success' => false, 'error' => 'Column not found.'));
 					return;
 				}
-								
+
 				$req->appInstance->accounts->saveAccount(array(
 					'_id' => Request::getString($req->attrs->request['id']),
 					$column => $value = Request::getString($req->attrs->request['value'])
