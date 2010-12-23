@@ -7,12 +7,56 @@ class Component {
 
 	public $req;
 	public $appInstance;
+	public $config;
 	public function __construct($req) {
 		$this->req = $req;
 		$this->appInstance = $req->appInstance;
+		$this->config = &$this->appInstance->config->{get_class($this)};
+		$defaults = $this->getConfigDefaults();
+		if ($defaults) {
+			$this->processDefaultConfig($defaults);
+		}
 		$this->init();
 	}
 	public function init() {
+	}
+	/**
+	 * Function to get default config options from application
+	 * Override to set your own
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return false;
+	}
+	
+	 /**
+	 * Process default config
+	 * @param array {"setting": "value"}
+	 * @return void
+	 */
+	private function processDefaultConfig($settings = array()) {
+		foreach ($settings as $k => $v) {
+			$k = strtolower(str_replace('-', '', $k));
+
+			if (!isset($this->config->{$k})) {
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				} else {
+					$this->config->{$k} = $v;
+				}
+			} else {
+				$current = $this->config->{$k};
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				} else {
+					$this->config->{$k} = $v;
+				}
+				
+				$this->config->{$k}->setHumanValue($current->value);
+				$this->config->{$k}->source = $current->source;
+				$this->config->{$k}->revision = $current->revision;
+			}
+		}
 	}
 	public function __get($event) {
 		if (!method_exists($this, $event.'Event')) {
