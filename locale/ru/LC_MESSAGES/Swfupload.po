@@ -44,4 +44,9 @@ msgstr "Размер файла %s превысил лимит."
 msgid "File"
 msgstr "Файл"
 
+msgid "Done!"
+msgstr "Готово!"
+
+
+
 
