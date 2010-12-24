@@ -21,6 +21,10 @@ img {
 	line-height: 0px;
 }
 
+.buttonLeftMargin {
+	margin-left: 30px;
+}
+
 .multiselect {
 	width: 460px;
 	height: 200px;

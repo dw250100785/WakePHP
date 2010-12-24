@@ -31,7 +31,7 @@ while (true) {
 		continue;
 	}
 	echo "Sending ".$mail['_id']." ... ";
-	$success = call_user_func_array('mail', $mail['args']);
+	$success = call_user_func_array($mail['jobname'], $mail['args']);
 	echo ($success ? 'OK' : 'FAILED') . "\n";
 	try {
 		$outgoingmail->update(array('_id' => $mail['_id']), array('$set' => array('status' => $success ? 'succeed' : 'failed')), array('safe' => true));
