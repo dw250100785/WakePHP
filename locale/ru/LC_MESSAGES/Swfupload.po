@@ -30,10 +30,7 @@ msgid "Pending"
 msgstr "В ожидании"
 
 msgid "Files Selected"
-msgstr "Выбрано файлов:"
-
-msgid "Files Selected"
-msgstr "Выбрано файлов:"
+msgstr "Выбрано файлов"
 
 msgid "Queued Files"
 msgstr "В очереди"
@@ -43,4 +40,8 @@ msgstr "Идет загрука..."
 
 msgid "Size of the file %s is greater than limit."
 msgstr "Размер файла %s превысил лимит."
+
+msgid "File"
+msgid "Файл"
+
 
