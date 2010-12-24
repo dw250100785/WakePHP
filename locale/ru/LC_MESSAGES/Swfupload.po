@@ -42,6 +42,6 @@ msgid "Size of the file %s is greater than limit."
 msgstr "Размер файла %s превысил лимит."
 
 msgid "File"
-msgid "Файл"
+msgstr "Файл"
 
 
