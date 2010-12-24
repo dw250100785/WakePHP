@@ -110,12 +110,11 @@ class WakePHPRequest extends HTTPRequest {
 			$this->cmpName = $e[1];
 			$this->controller = isset($e[2])?$e[2]:'';
 			$this->dataType = isset($e[3])?$e[3]:'json';
-			if (!$this->checkDomainMatch()) {
-				$this->setResult(array('errmsg' => 'Unacceptable referer.'));
-				return;
-			}
 			if ($this->components->{$this->cmpName}) {
 				$method = $this->controller.'Controller';
+				if (!$this->components->{$this->cmpName}->checkReferer()) {
+					$this->setResult(array('errmsg' => 'Unacceptable referer.'));
+				}
 				if (method_exists($this->components->{$this->cmpName},$method)) {
 					$this->components->{$this->cmpName}->$method();
 				}

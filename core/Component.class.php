@@ -28,7 +28,9 @@ class Component {
 	protected function getConfigDefaults() {
 		return false;
 	}
-	
+	public function checkReferer() {
+		return $this->req->checkDomainMatch();
+	}
 	 /**
 	 * Process default config
 	 * @param array {"setting": "value"}
