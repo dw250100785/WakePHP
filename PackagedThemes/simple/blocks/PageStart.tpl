@@ -40,8 +40,13 @@
 <script src="/js/jquery.scrollTo-min.js" type="text/javascript"></script>
 <script src="/js/jquery.tooltip.pack.js" type="text/javascript"></script>
 <script src="/js/jquery.keyboard.js" type="text/javascript"></script>
-
-{if $req->account.logged}
+<script type="text/javascript">var $user = {array(
+	'logged' => $req->account.logged,
+	'username' => $req->account.username,
+	'aclgroups' => $req->account.aclgroups,
+	'acl' => $req->account.acl,
+)|json_encode}</script>
+{if $req->components->Blocks->checkRole('Webmaster')}
 <script src="/js/CmpI18n.js" type="text/javascript"></script>
 <script src="/js/CmpBlocks.js" type="text/javascript"></script>
 {/if}

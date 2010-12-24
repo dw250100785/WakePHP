@@ -16,6 +16,20 @@ class CmpBlocks extends Component {
 		));
 
 	}
+	public function checkRole($role) {
+		static $roles = array(
+			'Webmaster' => array('Superusers', 'Webmasters'),
+		);
+		if (!isset($roles[$role])) {
+			return false;
+		}
+		foreach ($roles[$role] as $group) {
+			if (in_array($group, $this->req->account['aclgroups'], true)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public function getBlockSourceController() {
 		
 		$req = $this->req;
