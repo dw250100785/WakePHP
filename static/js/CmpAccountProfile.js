@@ -40,7 +40,7 @@ $(function() {$.ongt(function() {
 				if (result.success) {
 					$('.popupMsg', $form).removeClass('denyMsg').addClass('allowMsg')
 						.text(_('Thanks! We will remember ;-)'))
-						.slideDown(300, function() {$(this).delay(2000).hide(1000);});
+						.slideDown(300).delay(2000).hide(1000);
 				} else {
 					var hasCaptchaError = false;
 					var captchaDiv = $('.CAPTCHA', $form);

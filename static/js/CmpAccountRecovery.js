@@ -22,14 +22,14 @@ $(function() {$.ongt(function() {
 							$('.popupMsg', $form)
 								.removeClass('denyMsg').addClass('allowMsg')
 								.text(_('Access recovered. Use the password from the letter ;-)'))
-								.slideDown(300, function() {$(this).delay(2000).hide(0, function() {
+								.slideDown(300).delay(2000).hide(0, function() {
 									var backUrl = $.urlParam('backurl');
 									if (backUrl != null) {
 										location.href = backUrl;
 									} else {
 										location.href = '/' +  $('html').attr('lang') + '/account/login';
 									}
-								});});
+								});
 						}
 					}
 				}	else {
