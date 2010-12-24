@@ -11,3 +11,5 @@ msgstr "Все файлы"
 msgid "Image files"
 msgstr "Картинки"
 
+msgid "Upload image files (jpeg, png, gif), each having maximum size of 5 MB. Use Shift to select multiple files."
+msgstr "Загрузите картинки (jpeg, png, gif), каждая из них должна занимать не больше 5 мегабайт. Используйте Shift чтобы выбрать несколько файлов сразу."
