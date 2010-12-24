@@ -8,6 +8,6 @@ msgstr ""
 msgid "All Files"
 msgstr "Все файлы"
 
-msgid "Images"
+msgid "Image files"
 msgstr "Картинки"
 
