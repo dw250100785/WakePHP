@@ -13,6 +13,8 @@ class WakePHP extends AppInstance {
 	public $dbname;
 	public $LockClient;
 	public $locales;
+	public $ipcId;
+	public $jobManager;
 
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
@@ -20,6 +22,8 @@ class WakePHP extends AppInstance {
 		$appInstance = $this;
 		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 		$appInstance->dbname = $this->config->dbname->value;
+		$appInstance->ipcId = sprintf('%x',crc32(Daemon::$process->pid.'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
+		$appInstance->jobManager = new JobManager($this);
 		
 		foreach (glob($appInstance->config->ormdir->value.'*ORM.class.php') as $file) {
 			$class = strstr(basename($file), '.', true);

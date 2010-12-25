@@ -1,0 +1,8 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* jobresults */ 
+$jobresults = $db->selectCollection('jobresults');
+$jobresults->drop();
+$jobresults->ensureIndex(array('instance' => 1, 'ts' => 1));

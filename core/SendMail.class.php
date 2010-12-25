@@ -1,13 +1,15 @@
 <?php
 
 /**
- * OutgoingMailORM
+ * Sendmail
  */
-class OutgoingMailORM extends ORM {
+class Sendmail
 
 	public $outgoingmail;
-	public function init() {
-		$this->outgoingmail = $this->appInstance->db->{$this->appInstance->dbname . '.outgoingmail'};
+	public $appInstance;
+	public function __construct($appInstance) {
+		$this->appInstance = $appInstance;
+		$this->init();
 	}
 	public function mailTemplate($block, $email, $args) {
 		$appInstance = $this->appInstance;
@@ -19,12 +21,12 @@ class OutgoingMailORM extends ORM {
 			$e[0] = str_replace("\n", "\r\n", $e[0]);
 			
 			$subject = preg_match('~^Subject: (.*)$~mi',  $e[0], $m) ? $m[1] : '';
-			$appInstance->outgoingmail->mail($email, $subject, $e[1], $e[0]);
+			$appInstance->Sendmail->mail($email, $subject, $e[1], $e[0]);
 		});
 	}
 	public function mail() {
 		
-		$this->outgoingmail->insert(array('ts' => microtime(true), 'status' => 'vacant', 'args' => func_get_args()));
-				
+		$this->appInstance->JobManager->enqueue(null, 'mail', func_get_args());
+
 	}
 }

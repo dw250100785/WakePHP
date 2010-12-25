@@ -1,7 +1,9 @@
 #!/usr/bin/php -q
 <?php
 include 'generic.php';
-
+foreach (glob('./jobs/*.job.php') as $f) {
+	include $f;
+}
 $pid = pcntl_fork();
 if ($pid == -1) {
      die('could not fork');
@@ -14,28 +16,31 @@ if ($pid == -1) {
 		}
 }
 if (is_callable('setproctitle')) {
-	setproctitle('SendmailDaemon');
+	setproctitle('JobWorkerDaemon');
 }
 echo "Forked.\n";
-$outgoingmail = $db->selectCollection('outgoingmail');
+$jobqueue = $db->selectCollection('jobqueue');
+$jobresults = $db->selectCollection('jobresults');
 while (true) {
-	$mail = $outgoingmail->findOne(array('status' => 'vacant'));
-	if (!$mail) {
+	$job = $jobqueue->findOne(array('status' => 'vacant'));
+	if (!$job) {
 		sleep(1);
 		continue;
 	}
 	try {
-		$outgoingmail->update(array('_id' => $mail['_id'], 'status' => 'vacant'), array('$set' => array('status' => 'acquired')), array('safe' => true));
+		$jobqueue-->update(array('_id' => $job['_id'], 'status' => 'vacant'), array('$set' => array('status' => 'acquired')), array('safe' => true));
 	} catch (MongoCursorException $e) {
-		echo "Caught exception trying to acquire ".$mail['_id'].": ".$e->getMessage()."\n";
+		echo "Caught exception trying to acquire ".$job['_id'].": ".$e->getMessage()."\n";
 		continue;
 	}
-	echo "Sending ".$mail['_id']." ... ";
-	$success = call_user_func_array($mail['jobname'], $mail['args']);
-	echo ($success ? 'OK' : 'FAILED') . "\n";
+	echo "Sending ".$job['_id']." ... ";
+	$result = call_user_func_array($job['jobtype'], $job['args']);
+	echo ($result ? 'OK' : 'FAILED') . "\n";
 	try {
-		$outgoingmail->update(array('_id' => $mail['_id']), array('$set' => array('status' => $success ? 'succeed' : 'failed')), array('safe' => true));
+		$status = $result === false? 'succeed' : 'failed';
+		$jobqueue->update(array('_id' => $job['_id']), array('$set' => array('status' => $status, array('safe' => true));
+		$jobresults->insert(array('_id' => $job['_id'], 'instance' => $job['instance'], 'status' => $status, 'result' => $result));
 	} catch (MongoCursorException $e) {
-		echo "Caught exception trying to set status of ".$mail['_id']."\n";
+		echo "Caught exception trying to set status of ".$job['_id']."\n";
 	}
 }

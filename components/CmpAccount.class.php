@@ -523,7 +523,7 @@ class CmpAccount extends Component {
 								$req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 							}
 							else {
-								$password  = substr(md5($email . "\x00" . $code . "\x00" . $req->appInstance->config->cryptsalt->value. "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
+								$password  = substr(md5($email . "\x00" . $result['code'] . "\x00" . $req->appInstance->config->cryptsalt->value. "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
 								
 								$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']), $password);
 				

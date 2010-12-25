@@ -1,0 +1,8 @@
+#!/usr/bin/php -q
+<?php
+include __DIR__.'/../generic.php';
+
+/* jobqueue */ 
+$jobqueue = $db->selectCollection('jobqueue');
+$jobqueue->drop();
+$jobqueue->ensureIndex(array('status' => 1, 'ts' => 1));
