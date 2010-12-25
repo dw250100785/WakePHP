@@ -97,7 +97,7 @@ class CmpAccount extends Component {
 								$req->setResult(array('success' => false));
 								return;
 							}
-							$req->appInstance->outgoingmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
+							$req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
 								'email' => $account['email'],
 								'password' => $password,
 								'code' => $code,
@@ -527,7 +527,7 @@ class CmpAccount extends Component {
 								
 								$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']), $password);
 				
-								$req->appInstance->outgoingmail->mailTemplate('mailAccountAccessRecovery', $email, array(
+								$req->appInstance->Sendmail->mailTemplate('mailAccountAccessRecovery', $email, array(
 									'email' => $email,
 									'password' => $password,
 									'code' => $code,
