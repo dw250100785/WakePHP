@@ -38,7 +38,7 @@ while (true) {
 	echo ($result ? 'OK' : 'FAILED') . "\n";
 	try {
 		$status = $result === false? 'succeed' : 'failed';
-		$jobqueue->update(array('_id' => $job['_id']), array('$set' => array('status' => $status, array('safe' => true));
+		$jobqueue->update(array('_id' => $job['_id']), array('$set' => array('status' => $status, array('safe' => true))));
 		$jobresults->insert(array('_id' => $job['_id'], 'instance' => $job['instance'], 'status' => $status, 'result' => $result));
 	} catch (MongoCursorException $e) {
 		echo "Caught exception trying to set status of ".$job['_id']."\n";

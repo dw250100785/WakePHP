@@ -3,13 +3,11 @@
 /**
  * Sendmail
  */
-class Sendmail
+class Sendmail {
 
-	public $outgoingmail;
 	public $appInstance;
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
-		$this->init();
 	}
 	public function mailTemplate($block, $email, $args) {
 		$appInstance = $this->appInstance;
@@ -27,6 +25,6 @@ class Sendmail
 	public function mail() {
 		
 		$this->appInstance->JobManager->enqueue(null, 'mail', func_get_args());
-
+		
 	}
 }

@@ -5,4 +5,5 @@ include __DIR__.'/../generic.php';
 /* jobresults */ 
 $jobresults = $db->selectCollection('jobresults');
 $jobresults->drop();
+$collection = $db->command(array("create" => 'jobresults', "size" => 1024*1024*10, "capped" => true, "max" => 1024*10));
 $jobresults->ensureIndex(array('instance' => 1, 'ts' => 1));
