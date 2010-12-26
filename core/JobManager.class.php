@@ -50,9 +50,13 @@ class	JobManager {
 					$JobManager->resultCursor = false;
 				}
 			}
-			
-			$event->timeout();
-		}, pow(10,6) * 0.02);
+			if (sizeof($JobManager->callbacks)) {
+				$event->timeout(pow(10,6) * 0.02);
+			}
+			else {
+				$event->timeout(pow(10,6) * 5);
+			}
+		});
 	}
 	public function enqueue($cb, $jobtype, $args) {
 		$jobId = $this->appInstance->db->{$this->appInstance->config->dbname->value.'.jobqueue'}->insert(array(
@@ -64,6 +68,7 @@ class	JobManager {
 		));
 		if ($cb !== NULL) {
 			$this->callbacks[(string) $jobId] = $cb;
+			Daemon_TimedEvent::setTimeout($this->resultEvent);
 		}
 	}
 }
