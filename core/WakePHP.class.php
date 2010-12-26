@@ -104,6 +104,7 @@ class WakePHP extends AppInstance {
 			'templatedir' => './templates/',
 			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
 			'localedir' =>	dirname(__DIR__).'/locale/',
+			'storagedir' =>	'/storage/',
 			'ormdir' =>	dirname(__DIR__).'/ORM/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
