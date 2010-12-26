@@ -491,12 +491,12 @@ class CmpAccount extends Component {
 								$req->appInstance->accounts->saveAccount(array(
 									'email' => $result['email'],
 									'password' => $result['password'],
-								), function ($lastError) use ($req, $email) {
+								), function ($lastError) use ($req, $result) {
 									if ($lastError['updatedExisting']) {
 										$req->setResult(array('success' => true, 'status' => 'recovered'));
 										
 										$req->appInstance->accounts->confirmAccount(array(
-											'email' => $email,
+											'email' => $result['email'],
 										));
 										
 									} else {
