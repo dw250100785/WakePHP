@@ -27,7 +27,7 @@ class	JobManager {
 					foreach ($cursor->items as $k => &$item) {
 						$jobId = (string) $item['_id'];
 						if (isset($JobManager->callbacks[$jobId])) {
-							call_user_func($JobManager->callbacks[$jobId], $item['result']);
+							call_user_func($JobManager->callbacks[$jobId], $item);
 						}
 						unset($cursor->items[$k]);
 					}
