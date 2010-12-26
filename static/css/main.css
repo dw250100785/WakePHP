@@ -50,6 +50,23 @@ img {
     left: -10000px;
 }
 
+
+.photosGallery {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+.photosGallery li {
+	border: 1px;
+	margin: 3px 3px 3px 0;
+	padding: 1px;
+	float: left;
+	width: 100px;
+	height: 100px;
+	font-size: 4em;
+	text-align: center; 
+}
+
 /* page */
 
 .pageContent {
