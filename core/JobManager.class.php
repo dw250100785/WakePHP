@@ -55,7 +55,7 @@ class	JobManager {
 		}, pow(10,6) * 0.02);
 	}
 	public function enqueue($cb, $jobtype, $args) {
-		$jobId = $this->appInstance->db->{$appInstance->config->dbname->value.'.jobqueue'}->insert(array(
+		$jobId = $this->appInstance->db->{$this->appInstance->config->dbname->value.'.jobqueue'}->insert(array(
 			'jobtype' => $jobtype,
 			'args' => $args,
 			'status' => 'vacant',
