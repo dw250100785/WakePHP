@@ -20,7 +20,6 @@ class	JobManager {
 		$this->resultEvent = Daemon_TimedEvent::add(function($event) use ($JobManager, $appInstance) {
 			
 			if (!$JobManager->resultCursor) {
-				Daemon::log($appInstance->config->dbname->value.'.jobresults');
 				$appInstance->db->{$appInstance->config->dbname->value.'.jobresults'}->find(function($cursor) use ($JobManager, $appInstance) {
 					$JobManager->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {Daemon::log('items = '.Debug::dump($cursor->items));}
