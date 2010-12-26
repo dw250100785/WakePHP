@@ -28,7 +28,7 @@ while (true) {
 		continue;
 	}
 	try {
-		$jobqueue-->update(array('_id' => $job['_id'], 'status' => 'vacant'), array('$set' => array('status' => 'acquired')), array('safe' => true));
+		$jobqueue->update(array('_id' => $job['_id'], 'status' => 'vacant'), array('$set' => array('status' => 'acquired')), array('safe' => true));
 	} catch (MongoCursorException $e) {
 		echo "Caught exception trying to acquire ".$job['_id'].": ".$e->getMessage()."\n";
 		continue;
