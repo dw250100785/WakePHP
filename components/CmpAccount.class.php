@@ -556,7 +556,7 @@ class CmpAccount extends Component {
 				$sessionStartEvent->setResult();
 				return;
 			}
-			$sid = Request::getString($sessionStartEvent->component->req->attrs->cookie['SESSID']);
+			$sid = Request::getString($sessionStartEvent->component->req->attrs->request['SESSID']);
 			if ($sid === '') {
 				$sessionStartEvent->component->startSession();
 				$sessionStartEvent->setResult();
@@ -575,7 +575,7 @@ class CmpAccount extends Component {
 	public function onSessionReadEvent() {
 		
 		return function($sessionEvent) {
-			$sid = Request::getString($sessionEvent->component->req->attrs->cookie['SESSID']);
+			$sid = Request::getString($sessionEvent->component->req->attrs->request['SESSID']);
 			if ($sid === '') {
 				$sessionEvent->setResult();
 				return;
