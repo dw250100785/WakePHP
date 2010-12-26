@@ -28,6 +28,7 @@ class	JobManager {
 						$jobId = (string) $item['_id'];
 						if (isset($JobManager->callbacks[$jobId])) {
 							call_user_func($JobManager->callbacks[$jobId], $item);
+							unset($JobManager->callbacks[$jobId]);
 						}
 						unset($cursor->items[$k]);
 					}
