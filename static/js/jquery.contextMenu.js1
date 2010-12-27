@@ -32,13 +32,9 @@ if(jQuery)( function() {
 				// Simulate a true right click
 				$(this).mousedown( function(e) {
 					var evt = e;
-					if (evt.button == 2) {
-						e.stopPropagation();
-					}
+					evt.stopPropagation();
 					$(this).mouseup( function(e) {
-						if (evt.button == 2) {
-							e.stopPropagation();
-						}
+						e.stopPropagation();
 						var srcElement = $(this);
 						$(this).unbind('mouseup');
 						if( evt.button == 2 ) {
