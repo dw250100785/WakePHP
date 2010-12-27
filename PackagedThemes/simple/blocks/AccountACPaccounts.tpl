@@ -2,8 +2,8 @@
 <link href="/css/ACP.css" rel="stylesheet" type="text/css" /> 
 <link href="/css/table.css" rel="stylesheet" type="text/css" /> 
 <script src="/js/CmpAccountACPaccounts.js" type="text/javascript"></script>
-<script src="/js/jquery.dataTables.js" type="text/javascript"></script>
-<script src="/js/jquery.jeditable.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/js/jquery/query.jeditable.js" type="text/javascript"></script>
 <script src="/js/smartTable.js" type="text/javascript"></script>
 
 <div class="{$block->name|escape}">

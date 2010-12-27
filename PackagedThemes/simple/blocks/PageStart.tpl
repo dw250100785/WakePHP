@@ -22,7 +22,7 @@
 <script src="{$libs}jquery/1.4.4/jquery{$jqmin?".min":""}.js"></script>
 <script src="/js/jquery.autocomplete.js" type="text/javascript"></script>
 <script src="{$libs}jqueryui/1.8.6/jquery-ui{$jqmin?".min":""}.js"></script>
-<script src="/js/jquery.keyboard.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.keyboard.js" type="text/javascript"></script>
 <script src="/js/tiny_mce/jquery.tinymce.js" type="text/javascript"></script>
 <script src="/js/jquery/jquery.contextMenu.js" type="text/javascript"></script>
 <script src="/js/jquery/jquery.form.js" type="text/javascript"></script>

@@ -1,5 +1,5 @@
 <script src="/js/CmpAccountLogin.js" type="text/javascript"></script>
-<script src="/js/jquery.capslock.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.capslock.js" type="text/javascript"></script>
 <form action="Account/Authentication" method="post">
 <h1 class="i18n">{$block->title|escape}</h1>
 {if $req->account.logged}<div class="i18n">You're logged as <strong class="i18nArg">{$req->account.email|escape}</strong>.</div><br />{/if}
