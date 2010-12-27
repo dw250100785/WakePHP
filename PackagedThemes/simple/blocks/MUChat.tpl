@@ -1,5 +1,5 @@
 <link href="/css/muchat.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="/js/websocket.js"></script>
+<script type="text/javascript" src="/js/websocket/websocket.js"></script>
 <script type="text/javascript" src="/js/CmpMUChat.js"></script>
 <div id="tabs" class="ui-tabs">
 <ul><li><a href="#room"><span>Room</span></a></li></ul>
