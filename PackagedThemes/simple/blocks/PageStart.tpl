@@ -24,22 +24,22 @@
 <script src="{$libs}jqueryui/1.8.6/jquery-ui{$jqmin?".min":""}.js"></script>
 <script src="/js/jquery.keyboard.js" type="text/javascript"></script>
 <script src="/js/tiny_mce/jquery.tinymce.js" type="text/javascript"></script>
-<script src="/js/jquery.contextMenu.js" type="text/javascript"></script>
-<script src="/js/jquery.form.js" type="text/javascript"></script>
-<script src="/js/jquery.i18n.js" type="text/javascript"></script>
-<script src="/js/jquery.gettext.js" type="text/javascript"></script>
-<script src="/js/jquery.sprintf.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.contextMenu.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.form.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.i18n.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.gettext.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.sprintf.js" type="text/javascript"></script>
 <script src="/js/core.js" type="text/javascript"></script>
 <script src="/js/config.js" type="text/javascript"></script>
 <script src="/js/CmpCAPTCHA.js" type="text/javascript"></script>
 
-<script src="/js/jquery.easypassgen.js" type="text/javascript"></script>
-<script src="/js/jquery.address-1.3.min.js" type="text/javascript"></script>
-<script src="/js/jquery.cookie.js" type="text/javascript"></script>
-<script src="/js/jquery.json.js" type="text/javascript"></script>
-<script src="/js/jquery.scrollTo-min.js" type="text/javascript"></script>
-<script src="/js/jquery.tooltip.pack.js" type="text/javascript"></script>
-<script src="/js/jquery.keyboard.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.easypassgen.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.address-1.3.min.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.cookie.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.json.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.scrollTo-min.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.tooltip.pack.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.keyboard.js" type="text/javascript"></script>
 <script type="text/javascript">var $user = {array(
 	'logged' => $req->account.logged,
 	'username' => $req->account.username,
