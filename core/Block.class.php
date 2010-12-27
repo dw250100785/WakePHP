@@ -69,41 +69,37 @@ class Block implements ArrayAccess {
 					
 			++$this->req->jobTotal;
 			$node = $this;
-			$this->req->appInstance->blocks->blocks->find(
-				function($cursor) use ($node) {
-		
-					static $dbprops = array();
+			$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function($cursor) use ($node) {
 	
-					foreach ($cursor->items as $k => $block) {
-						if (isset($block['name'])) {
-							$dbprops[$block['name']] = $block;
-						}
-						unset($cursor->items[$k]);
+				static $dbprops = array();
+
+				foreach ($cursor->items as $k => $block) {
+					if (isset($block['name'])) {
+						$dbprops[$block['name']] = $block;
 					}
-				
-					if (!$cursor->finished) {
-						$cursor->getMore();
-					}	else {
-						$cursor->destroy();
-				
-						foreach ($node->addedBlocks as $block) {
-							if (isset($block['name']) && isset($dbprops[$block['name']])) {
-								$block = array_merge($block,$dbprops[$block['name']]);
-							}
-							if ((!isset($block['type'])) || (!class_exists($class = 'Block'.$block['type']))) {
-								$class = 'Block';
-							}
-							new $class($block,$node);
+					unset($cursor->items[$k]);
+				}
+			
+				if (!$cursor->finished) {
+					$cursor->getMore();
+				}	else {
+					$cursor->destroy();
+			
+					foreach ($node->addedBlocks as $block) {
+						if (isset($block['name']) && isset($dbprops[$block['name']])) {
+							$block = array_merge($block,$dbprops[$block['name']]);
 						}
-						unset($node->addedBlocks);
-				
-						++$node->req->jobDone;
-						$node->req->wakeup();
+						if ((!isset($block['type'])) || (!class_exists($class = 'Block'.$block['type']))) {
+							$class = 'Block';
+						}
+						new $class($block,$node);
 					}
-				}, array(
-					'where' => array('name' => array('$in' => array_unique($this->addedBlocksNames)))
-				)
-			);
+					unset($node->addedBlocks);
+			
+					++$node->req->jobDone;
+					$node->req->wakeup();
+				}
+			});
 			unset($this->addedBlocksNames);
 			$this->req->tpl->register_function('getblock',array($this->parentNode,'getBlock'));
 		}

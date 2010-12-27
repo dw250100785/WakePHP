@@ -25,6 +25,8 @@ class WakePHPRequest extends HTTPRequest {
 		
 		$this->req = $this;
 		
+		$this->theme = $this->appInstance->config->defaulttheme->value;
+		
 		$this->components = new Components($this);
 		
 		$this->startTime = microtime(true);
@@ -42,7 +44,7 @@ class WakePHPRequest extends HTTPRequest {
 	}
 	
 	public function onReadyBlock($obj) {
-		$this->html = str_replace($obj->tag,$obj->html,$this->html);
+		$this->html = str_replace($obj->tag, $obj->html, $this->html);
 		unset($this->inner[$obj->_nid]);
 		$this->req->wakeup();
 	}
@@ -154,7 +156,10 @@ class WakePHPRequest extends HTTPRequest {
 		}
 		
 		++$this->jobTotal;
-		$this->appInstance->blocks->getPage($this->locale,$this->path,array($this,'loadPage'));
+		$this->appInstance->blocks->getBlock(array(
+			'theme' => $this->theme,
+			'path' => $this->path,
+		), array($this, 'loadPage'));
 	}
 	
 	public function setResult($result) {
@@ -177,13 +182,13 @@ class WakePHPRequest extends HTTPRequest {
 	}
 	
 	public function addBlock($block) {
-		if ((!isset($block['type'])) || (!class_exists($class = 'Block'.$block['type']))) {
+		if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
 			$class = 'Block';
 		}
 		$block['tag'] = new MongoId();
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
-		new $class($block,$this);
+		new $class($block, $this);
 	}
 	
 	public function loadPage($page) {
@@ -193,7 +198,10 @@ class WakePHPRequest extends HTTPRequest {
 		if (!$page)	{
 			++$this->jobTotal;
 			$this->header('404 Not Found');
-			$this->appInstance->blocks->getPage($this->locale,'/404',array($this,'loadErrorPage'));
+			$this->appInstance->blocks->getBlock(array(
+				'theme' => $this->theme,
+				'path' => '/404',
+			), array($this, 'loadErrorPage'));
 			return;
 		}
 		$this->addBlock($page);	

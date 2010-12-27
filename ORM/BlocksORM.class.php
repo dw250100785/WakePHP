@@ -10,26 +10,17 @@ class BlocksORM extends ORM {
 	public function init() {
 		$this->blocks = $this->appInstance->db->{$this->appInstance->dbname . '.blocks'};
 	}
-	public function getPage($locale,$path,$cb) {
-		$this->blocks->findOne($cb,array(
-				'where' => array(
-										'path' => (string) $path,
-				),
-		));
+	public function getBlock($find, $cb) {
+		if (isset($find['_id']) && is_string($find['_id'])) {
+			$find['_id'] = new MongoId($find['_id']);
+		}
+		$this->blocks->findOne($cb, array('where' => $find));
 	}
-	public function getBlockByName($name, $cb) {
-		$this->blocks->findOne($cb,array(
-				'where' => array(
-										'name' => (string) $name,
-				),
-		));
+	public function getBlocksByNames($names, $cb) {
+		$this->blocks->find($cb, array('where' => array('name' => array('$in' => $names))));
 	}
 	public function getBlockById($id, $cb) {
-		$this->blocks->findOne($cb,array(
-				'where' => array(
-										'_id' => new MongoId($id),
-				),
-		));
+		$this->getBlock(array('_id' => $id), $cb);
 	}
 	public function saveBlock($block, $update = false) {
 		$block['mtime'] = microtime(true);
