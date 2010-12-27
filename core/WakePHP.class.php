@@ -108,6 +108,7 @@ class WakePHP extends AppInstance {
 			'ormdir' =>	dirname(__DIR__).'/ORM/',
 			'dbname' => 'WakePHP',
 			'defaultlocale' => 'en',
+			'defaulttheme' => 'simple',
 			'domain' => 'host.tld',
 			'cookiedomain' => 'host.tld',
 		);
