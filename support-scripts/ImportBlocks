@@ -16,7 +16,7 @@ $decoder = function($json) {
 	);
 	return json_decode(strtr($json,$pairs), true);
 };
-foreach (glob('./PackagedThemes/'.$theme.'/blocks/*.obj') as $file) {
+foreach (glob('./themes/'.$theme.'/blocks/*.obj') as $file) {
 	$block = $decoder(file_get_contents($file));
 	$block['name'] = pathinfo($file,PATHINFO_FILENAME);
 	$tplFilename = dirname($file).'/'.$block['name'].'.tpl';
