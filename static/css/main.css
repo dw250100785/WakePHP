@@ -51,12 +51,12 @@ img {
 }
 
 
-.photosGallery {
+.photoGallery {
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
 }
-.photosGallery li {
+.photoGallery li {
 	border: 1px;
 	margin: 3px 10px 3px 0;
 	padding: 1px;
