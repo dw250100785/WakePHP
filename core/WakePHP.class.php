@@ -102,7 +102,7 @@ class WakePHP extends AppInstance {
 	protected function getConfigDefaults() {
 		return array(
 			'templatedir' => './templates/',
-			'themesdir' =>	dirname(__DIR__).'/PackagedThemes/',
+			'themesdir' =>	dirname(__DIR__).'/themes/',
 			'localedir' =>	dirname(__DIR__).'/locale/',
 			'storagedir' =>	'/storage/',
 			'ormdir' =>	dirname(__DIR__).'/ORM/',
