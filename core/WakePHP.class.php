@@ -54,12 +54,12 @@ class WakePHP extends AppInstance {
 		return $lc;
 	}
 	public function renderBlock($blockname, $variables, $cb) {
-			$appInstance = $this;
-			$this->blocks->getBlockByName($blockname, function ($block) use ($variables, $cb, $appInstance) {
-				$tpl = $appInstance->getQuickyInstance();
-				$tpl->assign($variables);
-				$cb($tpl->PHPtemplateFetch($block['templatePHP']));
-			});
+		$appInstance = $this;
+		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance) {
+			$tpl = $appInstance->getQuickyInstance();
+			$tpl->assign($variables);
+			$cb($tpl->PHPtemplateFetch($block['templatePHP']));
+		});
 	}
 	public function onBlockFileChanged($file) {
 		Daemon::log('changed - '.$file);
