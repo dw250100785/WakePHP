@@ -7,6 +7,8 @@ class Block implements ArrayAccess {
 
 	public $html = '';
 	
+	public $tplvars = array();
+	
 	public $readyBlocks = 0;
 	public $numBlocks = 0;
 
@@ -64,6 +66,7 @@ class Block implements ArrayAccess {
 		$this->req->onWakeup();
 		if (isset($this->template)) {
 			$this->assign('block',	$this);
+			$this->assign($this->tplvars);
 			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
 			$this->html = $this->req->tpl->PHPtemplateFetch($this->templatePHP);
 					

@@ -92,6 +92,7 @@ class WakePHP extends AppInstance {
 		}
 	}
 	public function getQuickyInstance() {
+		require_once $this->config->utilsdir->value . 'lang_om_number.php';
 		$tpl = new Quicky;
 		$tpl->template_dir = $this->config->templatedir->value;
 		$tpl->compile_dir = '/tmp/templates_c/';
@@ -103,6 +104,7 @@ class WakePHP extends AppInstance {
 		return array(
 			'templatedir' => './templates/',
 			'themesdir' =>	dirname(__DIR__).'/themes/',
+			'utilsdir' =>	dirname(__DIR__).'/utils/',
 			'localedir' =>	dirname(__DIR__).'/locale/',
 			'storagedir' =>	'/storage/',
 			'ormdir' =>	dirname(__DIR__).'/ORM/',
