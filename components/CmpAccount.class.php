@@ -441,7 +441,7 @@ class CmpAccount extends Component {
 		
 		$req = $this->req;
 		$this->onSessionStart(function($sessionEvent) use ($req) {
-			$username = Request::getString($req->attrs->request['username']));
+			$username = Request::getString($req->attrs->request['username']);
 			if ($username === '') {
 				$req->setResult(array('success' => false, 'errors' => array(
 					'username' => 'Unrecognized username.'
@@ -449,7 +449,7 @@ class CmpAccount extends Component {
 				return;
 			}
 			$req->appInstance->accounts->getAccount(array('$or' => array(
-				array('username' => $username,
+				array('username' => $username),
 				array('unifiedemail' => $req->appInstance->accounts->unifyEmail($username))
 			))
 			,function ($account) use ($req) {
