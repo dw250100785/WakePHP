@@ -95,7 +95,7 @@ class WakePHP extends AppInstance {
 		require_once $this->config->utilsdir->value . 'lang_om_number.php';
 		$tpl = new Quicky;
 		$tpl->load_filter('pre','optimize');
-		$tpl->template_dir = $this->config->templatedir->value;
+		$tpl->template_dir = $this->config->themesdir->value;
 		$tpl->compile_dir = '/tmp/templates_c/';
 		$tpl->compiler_prefs['inline_includes'] = true;
 		$tpl->force_compile = true;
@@ -104,7 +104,6 @@ class WakePHP extends AppInstance {
 	
 	protected function getConfigDefaults() {
 		return array(
-			'templatedir' => './templates/',
 			'themesdir' =>	dirname(__DIR__).'/themes/',
 			'utilsdir' =>	dirname(__DIR__).'/utils/',
 			'localedir' =>	dirname(__DIR__).'/locale/',
