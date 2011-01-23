@@ -97,6 +97,7 @@ class WakePHP extends AppInstance {
 		$tpl->load_filter('pre','optimize');
 		$tpl->template_dir = $this->config->templatedir->value;
 		$tpl->compile_dir = '/tmp/templates_c/';
+		$tpl->compiler_prefs['inline_includes'] = true;
 		$tpl->force_compile = true;
 		return $tpl;
 	}
