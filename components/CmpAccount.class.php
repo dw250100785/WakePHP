@@ -18,7 +18,13 @@ class CmpAccount extends Component {
 					$authEvent->setResult();
 				};
 				if (isset($authEvent->component->req->attrs->session['accountId'])) {
-					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'], $cb);
+					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'], function ($account) use ($authEvent, $cb) {
+						if (!$account) {
+							$authEvent->component->appInstance->accounts->getAccountByName('Guest', $cb);
+							return;
+						}
+						$cb($account);
+					});
 				}
 				else {
 					$authEvent->component->appInstance->accounts->getAccountByName('Guest', $cb);
