@@ -21,7 +21,9 @@ class WakePHPRequest extends HTTPRequest {
 	public $updatedSession = false;
 	
 	public function init() {
-		$this->header('Content-Type: text/html');
+		try {
+			$this->header('Content-Type: text/html');
+		} catch (RequestHeadersAlreadySent $e) {}
 		
 		$this->req = $this;
 		
@@ -138,7 +140,10 @@ class WakePHPRequest extends HTTPRequest {
 			$this->locale = $e[0];
 			$this->path = '/'.$e[1];
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
-				$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
+				try {
+					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
+				}
+				catch (RequestHeadersAlreadySent $e) {}
 				$this->finish();
 				return;
 			}
@@ -164,12 +169,18 @@ class WakePHPRequest extends HTTPRequest {
 	
 	public function setResult($result) {
 		if ($this->dataType === 'json') {
-			$this->header('Content-Type: text/json');
+			try {
+				$this->header('Content-Type: text/json');
+			}
+			catch (RequestHeadersAlreadySent $e) {}
 			$this->html = json_encode($result);
 		}
 		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
-			$this->header('Content-Type: text/xml');
+			try {
+				$this->header('Content-Type: text/xml');
+			}
+			catch (RequestHeadersAlreadySent $e) {}
 			$this->html = $converter->convert($result);
 		}
 		else {
@@ -197,7 +208,10 @@ class WakePHPRequest extends HTTPRequest {
 		
 		if (!$page)	{
 			++$this->jobTotal;
-			$this->header('404 Not Found');
+			try {
+				$this->header('404 Not Found');
+			}
+			catch (RequestHeadersAlreadySent $e) {}
 			$this->appInstance->blocks->getBlock(array(
 				'theme' => $this->theme,
 				'path' => '/404',
