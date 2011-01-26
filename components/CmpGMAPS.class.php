@@ -82,7 +82,7 @@ class CmpGMAPSSession extends SocketSession {
 			'output'	=> 'json',
 			'oe'			=> 'utf8',
 			'sensor'	=> 'false',
-			'key'			=> $this->appInstance->appInstance->config->googleapikey->value,
+			'key'			=> $this->appInstance->config->apikey->value,
     )) . ' HTTP/1.0');
 		$this->writeln('Host: maps.google.com');
 		$this->writeln('User-Agent: GMAPS/phpDaemon');
