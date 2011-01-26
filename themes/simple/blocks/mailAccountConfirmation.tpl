@@ -2,7 +2,8 @@
 From: {$domain} <no-reply@{$domain}>
 MIME-Version: 1.0
 Content-type: text/html; charset=utf-8
-
+\
+\
 Добрый день!<br /><br />
 
 Вы зарегистрировались на {$domain|escape}, Ваш код подтверждения: {$code|escape}<br /><br />

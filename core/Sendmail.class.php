@@ -15,7 +15,7 @@ class Sendmail {
 		$appInstance->renderBlock($block, $args, function ($result) use ($email, $appInstance) {
 
 			$result = str_replace("\r", '', $result);
-			$e = explode("\n\n", $result, 2);
+			$e = explode("\\\n\\\n", $result, 2);
 			$e[0] = str_replace("\n", "\r\n", $e[0]);
 			
 			$subject = preg_match('~^Subject: (.*)$~mi',  $e[0], $m) ? $m[1] : '';
