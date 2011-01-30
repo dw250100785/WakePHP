@@ -37,10 +37,29 @@ class WakePHPRequest extends HTTPRequest {
 		$this->tpl->assign('req',$this);
 	}
 
-	public function date($format, $ts) {
-		return date($format, $ts);
+	public function date($format, $ts = null) { // @todo
+    if ($ts === null) {
+      $ts = time();
+    }
+		$t = array();
+		$format = preg_replace_callback('~%n2?~', function($m) use (&$t) {
+			$t[] = $m[0];
+			return "\x01";
+		}, $format);
+		$r = date($format, $ts);
+    $req = $this;
+    $r = preg_replace_callback('~\x01~s', function($m) use ($t, $ts, $req) {
+      static $i = 0;
+      switch ($t[$i++]) {
+        case "%n":
+          return $req->monthes[date('n', $ts)];
+        case "%n2":
+          return $req->monthes2[date('n', $ts)];
+      }
+    }, $r);
+    return $r;
 	}
-		
+	
 	public function strtotime($str) {
 		return Strtotime::parse($str);
 	}
