@@ -60,6 +60,21 @@ class WakePHPRequest extends HTTPRequest {
     return $r;
 	}
 	
+	public function date_period($st,$fin) {
+		if ((is_int($st)) || (ctype_digit($st))) {$st = $this->date('d-m-Y-H-i-s',$st);}
+		$st = explode('-',$st);
+		if ((is_int($fin)) || (ctype_digit($fin))) {$fin = $this->date('d-m-Y-H-i-s',$fin);}
+		$fin = explode('-',$fin);
+		if (($seconds = $fin[5] - $st[5]) < 0) {$fin[4]--; $seconds += 60;}
+		if (($minutes = $fin[4] - $st[4]) < 0) {$fin[3]--; $minutes += 60;}
+		if (($hours = $fin[3] - $st[3]) < 0) {$fin[0]--; $hours += 24;}
+		if (($days = $fin[0] - $st[0]) < 0) {$fin[1]--; $days += $this->date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));}
+		if (($months = $fin[1] - $st[1]) < 0) {$fin[2]--; $months += 12;}
+		$years = $fin[2] - $st[2];
+		return array($seconds,$minutes,$hours,$days,$months,$years);
+	}
+
+
 	public function strtotime($str) {
 		return Strtotime::parse($str);
 	}
