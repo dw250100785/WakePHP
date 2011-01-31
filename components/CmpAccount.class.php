@@ -216,9 +216,10 @@ class CmpAccount extends Component {
 						
 							$req->components->GMAPS->geo($location, function ($geo) use ($req) {
 							
-								$req->appInstance->accounts->saveAccount(array('$set' => array(
+								$req->appInstance->accounts->saveAccount(array(
 									'email' => $req->account['email'],
-									'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
+									'$set' => array(
+										'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
 								)), null, true);
 							
 							});
