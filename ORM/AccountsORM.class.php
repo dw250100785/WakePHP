@@ -119,7 +119,6 @@ class AccountsORM extends ORM {
 		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
 	}
 	
-	
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
@@ -147,7 +146,8 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
+			unset($account['email']);
+			$this->accounts->update($cond, $account, 0, $cb);
 		} else {
 			$this->accounts->upsert($cond, $account, false, $cb);
 		}
