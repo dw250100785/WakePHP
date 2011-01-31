@@ -505,6 +505,7 @@ class CmpAccount extends Component {
 									'email' => $result['email'],
 									array('$set' => array(
 										'password' => $result['password'],
+										)
 									)
 								), function ($lastError) use ($req, $result) {
 									if ($lastError['updatedExisting']) {
