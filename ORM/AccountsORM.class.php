@@ -119,6 +119,16 @@ class AccountsORM extends ORM {
 		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
 	}
 	
+	public function addACLgroupToAccount($account, $group, $cb = null) {
+		if (isset($account['_id']) && is_string($account['_id'])) {
+			$account['_id'] = new MongoId($account['_id']);
+		}
+		if (!is_string($group)) {
+			return;
+		}
+		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
+	}
+	
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
