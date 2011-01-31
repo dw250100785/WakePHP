@@ -164,6 +164,7 @@ class AccountsORM extends ORM {
 		if ($update) {
 			unset($account['_id']);
 			unset($account['email']);
+			Daemon::log(array($cond, $account, 0));
 			$this->accounts->update($cond, $account, 0, $cb);
 		} else {
 			$this->accounts->upsert($cond, $account, false, $cb);
