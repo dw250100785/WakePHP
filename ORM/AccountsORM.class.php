@@ -149,7 +149,7 @@ class AccountsORM extends ORM {
 		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
 			$account['aclgroups'] =  preg_split('~\s*[,;]\s*~s', $account['aclgroups']);
 		}
-		if (isset($account['email']) && isset($account['_id'])) {
+		if (isset($account['email']) && (!$update || isset($account['_id']))) {
 			$account['unifiedemail'] = $this->unifyEmail($account['email']);
 		}
 		if (isset($account['_id'])) {
