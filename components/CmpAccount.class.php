@@ -199,7 +199,6 @@ class CmpAccount extends Component {
 				if (sizeof($errors) === 0) {
 					
 					$update = array(
-						'email' => $req->account['email'],
 						'location' => $location = Request::getString($req->attrs->request['location']),
 						'firstname' =>  Request::getString($req->attrs->request['firstname']),
 						'lastname' => Request::getString($req->attrs->request['lastname']),
@@ -211,7 +210,7 @@ class CmpAccount extends Component {
 					if (($password = Request::getString($req->attrs->request['password'])) !== '') {
 						$update['password'] = $password;
 					}
-					$req->appInstance->accounts->saveAccount(array('$set' => $update), function ($lastError) use ($req, $password, $location)	{
+					$req->appInstance->accounts->saveAccount(array('email' => $req->account['email'], '$set' => $update), function ($lastError) use ($req, $password, $location)	{
 						if ($location !== '') {
 						
 							$req->components->GMAPS->geo($location, function ($geo) use ($req) {
@@ -503,9 +502,10 @@ class CmpAccount extends Component {
 									return;
 								}
 								
-								$req->appInstance->accounts->saveAccount(
-									array('email' => $result['email']	),
-									array('$set' => array('password' => $result['password'])),
+								$req->appInstance->accounts->saveAccount(array(
+										'email' => $result['email'],
+										'$set' => array('password' => $result['password']),
+									),
 									function ($lastError) use ($req, $result) {
 								
 									if ($lastError['updatedExisting']) {
