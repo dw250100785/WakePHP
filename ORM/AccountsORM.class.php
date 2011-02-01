@@ -119,22 +119,6 @@ class AccountsORM extends ORM {
 		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
 	}
 	
-	public function addACLgroupToAccount($account, $group, $cb = null) {
-		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new MongoId($account['_id']);
-		}
-		if (!is_string($group)) {
-			return;
-		}
-		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
-	}
-	
-	public function updateAccount($account, $update, $cb = null) {
-		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new MongoId($account['_id']);
-		}
-		$this->accounts->update($account, $update, 0, $cb);
-	}
 	
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
@@ -149,7 +133,7 @@ class AccountsORM extends ORM {
 		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
 			$account['aclgroups'] =  preg_split('~\s*[,;]\s*~s', $account['aclgroups']);
 		}
-		if (isset($account['email']) && (!$update || isset($account['_id']))) {
+		if (isset($account['email'])) {
 			$account['unifiedemail'] = $this->unifyEmail($account['email']);
 		}
 		if (isset($account['_id'])) {
@@ -163,9 +147,7 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			unset($account['email']);
-			Daemon::log(array($cond, $account, 0));
-			$this->accounts->update($cond, $account, 0, $cb);
+			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		} else {
 			$this->accounts->upsert($cond, $account, false, $cb);
 		}
