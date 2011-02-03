@@ -122,7 +122,7 @@ class WakePHPRequest extends HTTPRequest {
 		}
 		foreach (explode(', ',$pattern) as $part) {
 			if (substr($part, 0, 1) === '.') {
-				if (substr($domain, -strlen($part)) === $part) {
+				if ('.' . ltrim(substr($domain, -strlen($part)), '.') === $part) {
 					return true;
 				}
 			} else {
