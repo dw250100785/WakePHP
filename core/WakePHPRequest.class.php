@@ -212,7 +212,7 @@ class WakePHPRequest extends HTTPRequest {
 		}
 		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
-			$converter->rootName = $this->xmlRootName;
+			$converter->setRootName($this->xmlRootName);
 			try {
 				$this->header('Content-Type: text/xml');
 			}
