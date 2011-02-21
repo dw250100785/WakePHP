@@ -74,14 +74,14 @@ class Array2XML {
 	 * Этот метод преобразует данные массива в XML строку.
 	 * Если массив многомерный, то метод вызывается рекурсивно.
 	 */
-	private function getXML($data) {
+	private function getXML($data, $parentKey) {
 		foreach ($data as $key => $val) {
 			if (is_numeric($key)) {
-				$key = 'key'.$key;
+				$key = substr($parentKey, 0, -1);
 			}
 			if (is_array($val)) {
 				$this->writer->startElement($key);
-				$this->getXML($val);
+				$this->getXML($val, $key);
 				$this->writer->endElement();
 			}
 			else {
