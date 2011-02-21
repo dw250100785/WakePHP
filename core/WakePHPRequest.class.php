@@ -19,6 +19,7 @@ class WakePHPRequest extends HTTPRequest {
 	public $components;
 	public $dispatched = false;
 	public $updatedSession = false;
+	public $xmlRootName = 'response';
 	
 	public function init() {
 		try {
@@ -211,6 +212,7 @@ class WakePHPRequest extends HTTPRequest {
 		}
 		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
+			$converter->rootName = $this->xmlRootName;
 			try {
 				$this->header('Content-Type: text/xml');
 			}
