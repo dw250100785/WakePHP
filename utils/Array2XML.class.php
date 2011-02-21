@@ -37,7 +37,7 @@ class Array2XML {
 		$this->writer->startDocument($this->version, $this->encoding);
 		$this->writer->startElement($this->rootName);
 		if (is_array($data)) {
-			$this->getXML($data);
+			$this->getXML($data, $this->rootName);
 		}
 		$this->writer->endElement();
 		return $this->writer->outputMemory();
