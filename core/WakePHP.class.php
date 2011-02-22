@@ -144,6 +144,22 @@ class WakePHP extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new WakePHPRequest($this, $upstream, $req);
 	}
+	
+	/**
+	 * Handles the output from downstream requests.
+	 * @param object Request.
+	 * @param string The output.
+	 * @return void
+	 */
+	public function requestOut($r, $s) {
+	}
 
+	/**
+	 * Handles the output from downstream requests.
+	 * @return void
+	 */
+	public function endRequest($req, $appStatus, $protoStatus) {
+	}
+	
 }
 
