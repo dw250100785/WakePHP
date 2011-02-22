@@ -144,6 +144,11 @@ class WakePHPRequest extends HTTPRequest {
 		$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 		
+			$this->locale = Request::getString($this->attrs->request['LC']);
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+				$this->locale = $this->appInstance->config->defaultlocale->value;
+			}
+		
 			$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 4);
 			++$this->jobTotal;
 			$this->cmpName = $e[1];
