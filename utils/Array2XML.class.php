@@ -84,6 +84,11 @@ class Array2XML {
 				$this->getXML($val, $key);
 				$this->writer->endElement();
 			}
+			elseif (substr($key, 0, 1) == '!') {
+				$this->writer->startElement(substr($key, 1));
+				$this->writer->writeCData($val);
+				$this->writer->endElement();
+			}
 			else {
 				$this->writer->writeElement($key, $val);
 			}
