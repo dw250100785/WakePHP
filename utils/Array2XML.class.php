@@ -77,7 +77,7 @@ class Array2XML {
 	private function getXML($data, $parentKey) {
 		foreach ($data as $key => $val) {
 			if (is_numeric($key)) {
-				$key = substr($parentKey, 0, -1);
+				$key = rtrim(substr($parentKey, 0, -1), 'e');
 			}
 			if (is_array($val)) {
 				$this->writer->startElement($key);
