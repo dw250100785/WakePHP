@@ -76,17 +76,16 @@ class Array2XML {
 	 */
 	private function getXML($data, $parentKey) {
 		foreach ($data as $key => $val) {
+			$e = explode(' ', $key, 2);
+			$key = $e[0];
+			$attrs = isset($e[1]) ? json_decode($e[1], true) : array();
 			if (is_numeric($key)) {
 				$key = rtrim(substr($parentKey, 0, -1), 'e');
 			}
 			if (is_array($val)) {
-				$e = explode(' ', $key, 2);
-				$this->writer->startElement($e[0]);
-				if (isset($e[1])) {
-					$p = json_decode($e[1], true);
-					foreach ($p as $k => $v) {
-						$this->writer->writeAttribute($k, $v);
-					}
+				$this->writer->startElement($key);
+				foreach ($attrs as $k => $v) {
+					$this->writer->writeAttribute($k, $v);
 				}
 				$this->getXML($val, $e[0]);
 				$this->writer->endElement();
