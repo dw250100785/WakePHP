@@ -50,14 +50,11 @@ class Block implements ArrayAccess {
 		end($this->parentNode->inner);
 		$this->_nid = key($this->parentNode->inner);
 	
-		$this->attrs = $attrs;
 		foreach ($attrs as $key => $value) {
-			if (!isset($this->{$key})) {
-				$this->{$key} = $value;
-			}
+			$this->{$key} = $value;
 		}
+		$this->attrs = $attrs;
 		unset($this->attrs['template'], $this->attrs['templatePHP'], $this->attrs['cachekey']);
-
 		$this->init();
 		//$this->req->queryBlock($this);
 	}
@@ -150,7 +147,7 @@ class Block implements ArrayAccess {
 			return;
 		}
 		foreach ($this->inner as $k => $obj) {
-			$this->html = str_replace($obj->tag,$obj->html,$this->html);
+			$this->html = str_replace($obj->tag, $obj->html,$this->html);
 			unset($this->inner[$k]);	
 		}
 		$this->execute();
@@ -160,9 +157,7 @@ class Block implements ArrayAccess {
 		if ($this->ready) {
 			return;
 		}
-
 		$this->ready = true;
-		
 		if (!$this->nowrap) {
 			$attrs = ' class="block ' . 
 				htmlspecialchars($this->name, ENT_QUOTES) . 
@@ -180,5 +175,4 @@ class Block implements ArrayAccess {
 		++$this->parentNode->readyBlocks;
 		$this->parentNode->onReadyBlock($this);
 	}
-
 }
