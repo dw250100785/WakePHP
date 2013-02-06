@@ -3,7 +3,7 @@
 /**
  * JobManager class.
  */
-class	JobManager {
+class JobManager {
 
 	public $appInstance;
 	public $resultCursor;

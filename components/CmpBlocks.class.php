@@ -6,7 +6,6 @@
 class CmpBlocks extends Component {
 	
 	public function saveBlockController() {
-	
 		$this->appInstance->blocks->saveBlock(array(
 				'_id' => new MongoId($id = Request::getString($this->req->attrs->request['id'])),
 				'template' => Request::getString($_REQUEST['template']),

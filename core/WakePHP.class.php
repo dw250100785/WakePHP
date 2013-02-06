@@ -15,16 +15,33 @@ class WakePHP extends AppInstance {
 	public $locales;
 	public $ipcId;
 	public $jobManager;
+	public $components;
+	public $backendServer;
+	public $backendClient;
 
+	public function onReady() {
+		if (isset($this->backendServer)) {
+			$this->backendServer->onReady();
+		}
+		if (isset($this->backendClient)) {
+			$this->backendClient->onReady();
+		}
+	}
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors','On');
 		$appInstance = $this;
-		$appInstance->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
+		$appInstance->db = MongoClientAsync::getInstance();
 		$appInstance->dbname = $this->config->dbname->value;
 		$appInstance->ipcId = sprintf('%x',crc32(Daemon::$process->pid.'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail = new Sendmail($this);
+		if (isset($this->config->BackendServer)) {
+			$this->backendServer = BackendServer::getInstance($this->config->BackendServer, $this);
+		}
+		if (isset($this->config->BackendClient)) {
+			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, $this);
+		}
 		
 		foreach (glob($appInstance->config->ormdir->value.'*ORM.class.php') as $file) {
 			$class = strstr(basename($file), '.', true);
@@ -32,7 +49,7 @@ class WakePHP extends AppInstance {
 			$this->{$prop} = new $class($this);
 		}
 
-		$appInstance->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
+		$appInstance->LockClient = LockClient::getInstance();
 		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
 		{
 			foreach (glob($appInstance->config->themesdir->value.'*/blocks/*') as $file) {
@@ -46,6 +63,17 @@ class WakePHP extends AppInstance {
 		if (!in_array('en', $this->locales, true)) {
 			$this->locales[] = 'en';
 		}
+		$req = new stdClass; // @TODO: refactor this shit
+		$req->appInstance = $appInstance;
+		$appInstance->components = new Components($req);
+		foreach ($appInstance->config as $k => $c) {
+			if (isset($c->run->value) && $c->run->value) {
+				if (substr($k, 0, 3) == 'Cmp') {
+					$appInstance->components->{substr($k, 3)};
+				}
+			}
+		}
+		$this->serializer = 'igbinary';
 	}
 	public function getLocaleName($lc) {
 		if (!in_array($lc, $this->locales, true)) {
@@ -162,4 +190,14 @@ class WakePHP extends AppInstance {
 	}
 	
 }
+if (!function_exists('igbinary_serialize')) {
+	function igbinary_serialize($m) {
+		return serialize($m);
+	}
+}
 
+if (!function_exists('igbinary_unserialize')) {
+	function igbinary_unserialize($m) {
+		return unserialize($m);
+	}
+}

@@ -23,6 +23,9 @@ class MUChatORM extends ORM {
 					$cb(false);
 					return;
 				}
+				if (empty($account['username'])) {
+					$account['username'] = strstr($account['email'], '@', true);
+				}
 				$cb(array(
 					'username' => $account['username'],
 					'tags' => array('mainroom','secondroom'),

@@ -62,7 +62,7 @@ class AccountsORM extends ORM {
 		));
 	}
 	
-	public function getAccount($find,	$cb) {
+	public function getAccount($find, $cb) {
 		$this->accounts->findOne($cb, array(
 				'where' =>	$find,
 		));
@@ -147,11 +147,12 @@ class AccountsORM extends ORM {
 			$account['regdate'] = Strtotime::parse($account['regdate']);
 		}
 		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
-			$account['aclgroups'] =  preg_split('~\s*[,;]\s*~s', $account['aclgroups']);
+			$account['aclgroups'] = array_filter(preg_split('~\s*[,;]\s*~s', $account['aclgroups']), 'strlen');
 		}
 		if (isset($account['email'])) {
 			$account['unifiedemail'] = $this->unifyEmail($account['email']);
 		}
+
 		if (isset($account['_id'])) {
 			if (is_string($account['_id'])) {
 				$account['_id'] = new MongoId($account['_id']);
@@ -163,6 +164,7 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
+			Daemon::log(Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		} else {
 			$this->accounts->upsert($cond, $account, false, $cb);

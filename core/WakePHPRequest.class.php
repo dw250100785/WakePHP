@@ -20,7 +20,24 @@ class WakePHPRequest extends HTTPRequest {
 	public $dispatched = false;
 	public $updatedSession = false;
 	public $xmlRootName = 'response';
+	public $backendClientConn;
+	private static $emulMode = false;
 	
+	/**
+	 * Constructor
+	 * @param object Parent AppInstance.
+	 * @param object Upstream.
+	 * @param object Source request.
+	 * @return void
+	 */
+	public function __construct($appInstance, $upstream, $parent = null) {
+		if (self::$emulMode) {
+			Daemon::log('emulMode');
+			return;
+		}
+		parent::__construct($appInstance, $upstream, $parent);
+	}
+
 	public function init() {
 		try {
 			$this->header('Content-Type: text/html');
@@ -36,6 +53,32 @@ class WakePHPRequest extends HTTPRequest {
 		
 		$this->tpl = $this->appInstance->getQuickyInstance();
 		$this->tpl->assign('req',$this);
+	}
+
+	public function exportObject() {
+		return array('attrs' => $this->attrs);
+	}
+	public function queryBlock($block) {
+		if (!$this->appInstance->backendClient) {
+			return true;
+		}
+		$fc = function($conn) use ($block) {
+			if (!$conn->connected) {
+				// fail
+				return;	
+			}
+			if (!$this->backendClientConn) {
+				$this->backendClientConn = $conn;
+				$this->rid = $conn->beginRequest($this);
+			}
+			$conn->queryBlock($this->rid, $block);
+		};
+		if ($this->backendClientConn) {
+			$this->req->backendClientConn->onConnected($fc);
+		} else {
+			$this->req->appInstance->backendClient->getConnection($fc);
+		}
+		return false;
 	}
 
 	public function date($format, $ts = null) { // @todo
@@ -158,6 +201,7 @@ class WakePHPRequest extends HTTPRequest {
 				$method = $this->controller.'Controller';
 				if (!$this->components->{$this->cmpName}->checkReferer()) {
 					$this->setResult(array('errmsg' => 'Unacceptable referer.'));
+					return;
 				}
 				if (method_exists($this->components->{$this->cmpName},$method)) {
 					$this->components->{$this->cmpName}->$method();
@@ -237,7 +281,7 @@ class WakePHPRequest extends HTTPRequest {
 		if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
 			$class = 'Block';
 		}
-		$block['tag'] = new MongoId();
+		$block['tag'] = (string) new MongoId;
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
 		new $class($block, $this);
@@ -280,6 +324,6 @@ class WakePHPRequest extends HTTPRequest {
 		}
 	}
 	public function onDestruct() {
-	 Daemon::log('destruct - '.$this->path);
+	// Daemon::log('destruct - '.$this->path);
 	}
 }

@@ -1,11 +1,10 @@
 {getBlock name="PageStart"}
 <script src="/js/CmpAccountProfile.js" type="text/javascript"></script>
-<script src="/js/jquery.capslock.js" type="text/javascript"></script>
+<script src="/js/jquery/jquery.capslock.js" type="text/javascript"></script>
 <script src="http://jquery-ui.googlecode.com/svn/trunk/ui/i18n/jquery.ui.datepicker-{$req->locale}.js" type="text/javascript"></script>
 <form action="Account/Profile" class="AccountProfileForm" method="post">
 
 <h1 class="i18n">{$block->title|escape}</h1>
-
 <div class="fieldname"><span class="i18n">Your city</span>:</div><div class="fieldcontrols">
 <input type="text" name="location" size="50"{if isset($req->account.location)} value="{$req->account.location|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 

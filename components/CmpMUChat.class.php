@@ -38,19 +38,20 @@ class CmpMUChat extends AppInstance {
 		return array(
 			'dbname' => 'WakePHP',
 			'adminpassword' => 'lolz',
+			'enable' => true,
 		);
 	}
 	public function __construct($req) {
 		$this->req = $req;
 		$this->appInstance = $req->appInstance;
+		$this->dbname =& $this->appInstance->dbname;
 		Daemon::log(__CLASS__ . ' up.');
-		$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
-		$this->dbname = $this->config->dbname->value;
+		$this->db = $this->appInstance->db;
 		$this->ORM = new MUChatORM($this);
 		$this->tags = array();
 		$this->minMsgInterval = 1;
 
-		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
+		$this->cache = MemcacheClient::getInstance();
 		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid .'-' . microtime(true)));
 		
 		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
@@ -58,8 +59,9 @@ class CmpMUChat extends AppInstance {
 		if ($defaults) {
 			$this->processDefaultConfig($defaults);
 		}
+		$this->dbname = $this->config->dbname->value;
 		$this->init();
-
+		$this->onReady();
 
 	}
 	
@@ -144,17 +146,17 @@ class CmpMUChat extends AppInstance {
 	public function onReady() {
 	
 		if ($this->config->enable->value) {
-			$this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
+			$this->WS = WebSocketServer::getInstance();
 			if ($this->WS) {
 				$this->WS->addRoute('MUChat', array($this, 'onHandshake'));
 			}
 			$appInstance = $this;
 			
-			$this->pushRequest(new MUChat_MsgQueueRequest($this, $this));
+			$req = new MUChat_MsgQueueRequest($this, $this);
 			
-			$appInstance->pushRequest(new MUChat_IdleCheck($appInstance, $appInstance));
+			$req = new MUChat_IdleCheck($appInstance, $appInstance);
 			
-			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
+			$this->LockClient = LockClient::getInstance();
 			
 			$this->LockClient->job(__CLASS__,true,function($jobname) use ($appInstance) {
 				$appInstance->pushRequest(new MUChat_UpdateStat($appInstance, $appInstance));
@@ -448,11 +450,11 @@ class MUChatSession {
 	public static function serialize($o) {
 		return urlencode(json_encode($o));
 	}
-	public function setUsername($name, $silence = false) {
+	public function setUsername($name, $silence = false, $tab = '') {
 		$name = trim($name);
 		if ($name === '') {
 			if (!$silence) {
-				$this->sysMsg('/nick <name>: insufficient parameters',$packet['tab']);
+				$this->sysMsg('/nick <name>: insufficient parameters',$tab);
 			}
 			return 4;
 		}
@@ -544,7 +546,7 @@ class MUChatSession {
 			}
 			$clientId = $this->client->connId;
 			$appInstance = $this->appInstance;
-			$appInstance->ORM->getAuthKey($packet['authkey'], function($authkey) use ($clientId, $appInstance) {
+			$appInstance->ORM->getAuthKey($packet['authkey'], function($authkey) use ($clientId, $appInstance, $packet) {
 				if (!isset($appInstance->sessions[$clientId])) {
 					return;
 				}
@@ -552,14 +554,13 @@ class MUChatSession {
 
 				if (!$authkey) {
 					$session->send(array('type' => 'youWereKicked', 'reason' => 'Incorrect auth. data.'));
-					Daemon::log('Incorrect auth. data.');
 					return;
 				}
 				if (isset($authkey['su'])) {
 					$session->su = $authkey['su'];
 				}
 				$session->authkey = $authkey;
-				$appInstance->db->{$appInstance->config->dbname->value . '.akicks'}->findOne(function($akick) use ($authkey, $clientId, $appInstance) {
+				$appInstance->db->{$appInstance->config->dbname->value . '.akicks'}->findOne(function($akick) use ($authkey, $packet, $clientId, $appInstance) {
 					if (!isset($appInstance->sessions[$clientId])) {
 						return;
 					}
@@ -569,7 +570,8 @@ class MUChatSession {
 						return;
 					}
 					$session->updateAvailTags();     
-					$session->setUsername($authkey['username']);
+					Daemon::log('Incorrect auth. data.');
+					$session->setUsername($authkey['username'], false, $packet['tab']);
 				});
 			});
 		}

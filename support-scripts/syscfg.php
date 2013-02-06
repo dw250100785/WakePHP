@@ -2,5 +2,6 @@
 $dbname = 'WakePHP'; // Mongo database name 
 $name = ''; // AppInstance name ('test' for "WakePHP test {...")
 $pidfile = '/var/run/phpd.pid';
-$mastersocket = '/tmp/phpDaemon-master-%x.sock';
+$mastersocket = '/tmp/phpDaemon-ipc-%x.sock';
 $theme = 'simple';
+

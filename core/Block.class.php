@@ -25,20 +25,22 @@ class Block implements ArrayAccess {
 	
 	public $name;
 	
-	public $addedBlocks = array();
-	public $addedBlocksNames = array();
+	public $addedBlocks = [];
+	public $addedBlocksNames = [];
+	public $attrs = [];
 	
 	public function offsetSet($offset, $value) {}
 	
 	public function offsetExists($offset) {
 		return isset($this->{$offset});
 	}
-	public function offsetUnset($offset) {
-	}
+
+	public function offsetUnset($offset) {}
+
 	public function offsetGet($offset) {
-    return $this->{$offset};
-  }  
-    
+    	return $this->{$offset};
+  	}  
+
 	public function __construct($attrs,	$parentNode) {
 		$this->parentNode = $parentNode;
 		$this->req = $this->parentNode->req;
@@ -48,12 +50,19 @@ class Block implements ArrayAccess {
 		end($this->parentNode->inner);
 		$this->_nid = key($this->parentNode->inner);
 	
-		
+		$this->attrs = $attrs;
 		foreach ($attrs as $key => $value) {
-			$this->{$key} = $value;
+			if (!isset($this->{$key})) {
+				$this->{$key} = $value;
+			}
 		}
+		unset($this->attrs['template'], $this->attrs['templatePHP'], $this->attrs['cachekey']);
 
 		$this->init();
+		//$this->req->queryBlock($this);
+	}
+	public function exportObject() {
+		return ['attrs' => $this->attrs];
 	}
 	public function init() {
 		$this->runTemplate();
@@ -65,10 +74,22 @@ class Block implements ArrayAccess {
 	public function runTemplate() {
 		$this->req->onWakeup();
 		if (isset($this->template)) {
+			$tpl = $this->req->tpl;
 			$this->assign('block',	$this);
 			$this->assign($this->tplvars);
-			$this->req->tpl->register_function('getblock',array($this,'getBlock'));
-			$this->html = $this->req->tpl->PHPtemplateFetch($this->templatePHP);
+			$tpl->register_function('getblock',array($this,'getBlock'));
+			static $cache = array();
+			if (isset($cache[$this->cachekey])) {
+				$cb = $cache[$this->cachekey];
+			} else {
+				$cb = eval($this->templatePHP);
+				$cache[$this->cachekey] = $cb;
+			}
+			ob_start();
+			call_user_func($cb, $tpl);
+			$this->html = ob_get_contents();
+			ob_end_clean();
+			//$this->html = $tpl->_block_props['capture']['w'];
 					
 			++$this->req->jobTotal;
 			$node = $this;
@@ -114,7 +135,6 @@ class Block implements ArrayAccess {
 	public function getBlock($block) {
 		$block['tag'] = (string) new MongoId;
 		$this->addedBlocks[] = $block;
-		$this->addedBlocksNames[] = $block;
 		if (isset($block['name'])) {
 			$this->addedBlocksNames[] = $block['name'];
 		}
