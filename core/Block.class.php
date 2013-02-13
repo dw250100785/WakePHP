@@ -13,6 +13,9 @@ class Block implements ArrayAccess {
 	public $numBlocks = 0;
 
 	public $_nid;
+
+	public $bid;
+
 	public $nowrap = false;
 
 	public $parentNode;
@@ -41,7 +44,7 @@ class Block implements ArrayAccess {
     	return $this->{$offset};
   	}  
 
-	public function __construct($attrs,	$parentNode) {
+	public function __construct($attrs,	$parentNode, $cold = false) {
 		$this->parentNode = $parentNode;
 		$this->req = $this->parentNode->req;
 		
@@ -54,27 +57,39 @@ class Block implements ArrayAccess {
 			$this->{$key} = $value;
 		}
 		$this->attrs = $attrs;
-		unset($this->attrs['template'], $this->attrs['templatePHP'], $this->attrs['cachekey']);
-		$this->init();
-		//$this->req->queryBlock($this);
+		unset($this->attrs['template'], $this->attrs['templatePHP'], $this->attrs['cachekey'], $this->attrs['tag']);
+
+		if ($cold) {
+			return;
+		}
+
+		if (!$this->req->getBlock($this)) {
+			$this->init();
+		}
 	}
 	public function exportObject() {
-		return ['attrs' => $this->attrs];
+		return $this->attrs;
 	}
 	public function init() {
 		$this->runTemplate();
 	}
-	public function assign() {
-		// @TODO: local assignation?
-		call_user_func_array(array($this->req->tpl, 'assign'), func_get_args());
+	public function assign($k, $v) {
+		//call_user_func_array(array($this->req->tpl, 'assign'), func_get_args());
+		$this->tplvars[$k] = $v;
+		// @TODO: more flexible arguments order
 	}
 	public function runTemplate() {
+		if ($this->req->backendServerConn) {
+			++$this->parentNode->readyBlocks;
+			$this->req->backendServerConn->onReadyBlock($this);
+			return;
+		}
 		$this->req->onWakeup();
 		if (isset($this->template)) {
 			$tpl = $this->req->tpl;
-			$this->assign('block',	$this);
-			$this->assign($this->tplvars);
-			$tpl->register_function('getblock',array($this,'getBlock'));
+			$tpl->assign('block', $this);
+			$tpl->assign($this->tplvars);
+			$tpl->register_function('getblock', array($this, 'getBlock'));
 			static $cache = array();
 			if (isset($cache[$this->cachekey])) {
 				$cb = $cache[$this->cachekey];

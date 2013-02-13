@@ -6,14 +6,18 @@
 class CmpAccount extends Component {
 	
 	public function onAuthEvent() {
-		
 		return function($authEvent) {
 			$authEvent->component->onSessionRead(function($sessionEvent) use ($authEvent) {
+				if (isset($authEvent->component->req->account)) {
+					$authEvent->setResult();
+					return;
+				}
 				$cb = function ($account) use ($authEvent) {
 					if ($account) {
 						$account['logged'] = $account['username'] !== 'Guest';
 					}
 					$authEvent->component->req->account = $account;
+					$authEvent->component->req->propertyUpdated('account');
 					$authEvent->setResult();
 				};
 				if (isset($authEvent->component->req->attrs->session['accountId'])) {
@@ -564,11 +568,12 @@ class CmpAccount extends Component {
 	public function onSessionStartEvent() {
 		
 		return function($sessionStartEvent) {
-			if (isset($sessionStartEvent->component->req->session['_id'])) {
+			$req = $sessionStartEvent->component->req;
+			if (isset($req->session['_id'])) {
 				$sessionStartEvent->setResult();
 				return;
 			}
-			$sid = Request::getString($sessionStartEvent->component->req->attrs->request['SESSID']);
+			$sid = Request::getString($req->attrs->request['SESSID']);
 			if ($sid === '') {
 				$sessionStartEvent->component->startSession();
 				$sessionStartEvent->setResult();
@@ -576,7 +581,6 @@ class CmpAccount extends Component {
 			}
 			
 			$sessionStartEvent->component->onSessionRead(function($session) use ($sessionStartEvent) {
-			
 				if (!$session) {
 					$sessionStartEvent->component->startSession();
 				}
@@ -587,8 +591,13 @@ class CmpAccount extends Component {
 	public function onSessionReadEvent() {
 		
 		return function($sessionEvent) {
-			$sid = Request::getString($sessionEvent->component->req->attrs->request['SESSID']);
+			$req = $sessionEvent->component->req;
+			$sid = Request::getString($req->attrs->cookie['SESSID']);
 			if ($sid === '') {
+				$sessionEvent->setResult();
+				return;
+			}
+			if ($req->attrs->session) {
 				$sessionEvent->setResult();
 				return;
 			}

@@ -21,6 +21,13 @@ class WakePHPRequest extends HTTPRequest {
 	public $updatedSession = false;
 	public $xmlRootName = 'response';
 	public $backendClientConn;
+	public $backendClientCbs;
+	public $backendClientInited = false;
+	public $backendServerConn;
+	public $queries = [];
+	public $queriesCnt = 0;
+	public $rid;
+	public $account;
 	private static $emulMode = false;
 	
 	/**
@@ -52,16 +59,31 @@ class WakePHPRequest extends HTTPRequest {
 		$this->startTime = microtime(true);
 		
 		$this->tpl = $this->appInstance->getQuickyInstance();
-		$this->tpl->assign('req',$this);
+		$this->tpl->assign('req', $this);
+	}
+	public function propertyUpdated($prop) {
+		if ($this->backendServerConn) {
+			$this->backendServerConn->propertyUpdated($this, $prop, $this->{$prop});
+		}
 	}
 
 	public function exportObject() {
-		return array('attrs' => $this->attrs);
+		$req = new stdClass;
+		$req->attrs = $this->attrs;
+		return $req;
 	}
-	public function queryBlock($block) {
+	public function getBlock($block) {
 		if (!$this->appInstance->backendClient) {
-			return true;
+			return false;
 		}
+		if ($this->upstream instanceof BackendServerConnection) {
+			return false;
+		}
+
+		if (get_class($block) === 'Block') {
+			return false;
+		}
+	
 		$fc = function($conn) use ($block) {
 			if (!$conn->connected) {
 				// fail
@@ -69,16 +91,28 @@ class WakePHPRequest extends HTTPRequest {
 			}
 			if (!$this->backendClientConn) {
 				$this->backendClientConn = $conn;
-				$this->rid = $conn->beginRequest($this);
+				$conn->beginRequest($this);
 			}
-			$conn->queryBlock($this->rid, $block);
+			$conn->getBlock($this->rid, $block);
+			if ($this->backendClientCbs !== null) {
+				$this->backendClientCbs->executeAll($conn);
+				$this->backendClientCbs = null;
+			}
 		};
 		if ($this->backendClientConn) {
 			$this->req->backendClientConn->onConnected($fc);
 		} else {
-			$this->req->appInstance->backendClient->getConnection($fc);
+			if ($this->backendClientInited) {
+				if ($this->backendClientCbs === null) {
+					$this->backendClientCbs = new StackCallbacks;
+				}
+				$this->backendClientCbs->push($fc);
+			} else {
+				$this->req->appInstance->backendClient->getConnection($fc);
+				$this->backendClientInited = true;
+			}
 		}
-		return false;
+		return true;
 	}
 
 	public function date($format, $ts = null) { // @todo
@@ -184,6 +218,9 @@ class WakePHPRequest extends HTTPRequest {
 	 */
 	public function dispatch() {	
 		$this->dispatched = true;
+		if ($this->backendServerConn) {
+			return;
+		}
 		$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 		
@@ -203,7 +240,7 @@ class WakePHPRequest extends HTTPRequest {
 					$this->setResult(array('errmsg' => 'Unacceptable referer.'));
 					return;
 				}
-				if (method_exists($this->components->{$this->cmpName},$method)) {
+				if (method_exists($this->components->{$this->cmpName}, $method)) {
 					$this->components->{$this->cmpName}->$method();
 				}
 				else {
@@ -218,11 +255,11 @@ class WakePHPRequest extends HTTPRequest {
 
 		if (!isset($e[1])) {
 			$this->locale = $this->appInstance->config->defaultlocale->value;
-			$this->path = '/'.$e[0];
+			$this->path = '/' . $e[0];
 		}
 		else {
 			$this->locale = $e[0];
-			$this->path = '/'.$e[1];
+			$this->path = '/' . $e[1];
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				try {
 					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
@@ -317,6 +354,16 @@ class WakePHPRequest extends HTTPRequest {
 		
 		$this->addBlock($page);
 	
+	}
+
+	public function onFinish() {
+		if ($this->backendClientConn) {
+			$this->backendClientConn->endRequest($this);
+			unset($this->backendClientConn);
+		}
+		if ($this->backendServerConn) {
+			unset($this->backendServerConn);
+		}
 	}
 	public function sessionCommit() {
 		if ($this->updatedSession) {
