@@ -33,7 +33,7 @@ class WakePHP extends AppInstance {
 		$appInstance = $this;
 		$appInstance->db = MongoClientAsync::getInstance();
 		$appInstance->dbname = $this->config->dbname->value;
-		$appInstance->ipcId = sprintf('%x',crc32(Daemon::$process->pid.'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
+		$appInstance->ipcId = sprintf('%x',crc32(Daemon::$process->getPid().'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {

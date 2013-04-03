@@ -17,7 +17,7 @@ class JobManager {
 	
 		$JobManager = $this;
 		$appInstance = $this->appInstance;
-		$this->resultEvent = Daemon_TimedEvent::add(function($event) use ($JobManager, $appInstance) {
+		$this->resultEvent = Timer::add(function($event) use ($JobManager, $appInstance) {
 			
 			if (!$JobManager->resultCursor) {
 				$appInstance->db->{$appInstance->config->dbname->value.'.jobresults'}->find(function($cursor) use ($JobManager, $appInstance) {

@@ -218,9 +218,6 @@ class WakePHPRequest extends HTTPRequest {
 	 */
 	public function dispatch() {	
 		$this->dispatched = true;
-		if ($this->backendServerConn) {
-			return;
-		}
 		$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 		
@@ -281,6 +278,10 @@ class WakePHPRequest extends HTTPRequest {
 
 		}
 		
+		if ($this->backendServerConn) {
+			return;
+		}
+
 		++$this->jobTotal;
 		$this->appInstance->blocks->getBlock(array(
 			'theme' => $this->theme,
@@ -361,16 +362,14 @@ class WakePHPRequest extends HTTPRequest {
 			$this->backendClientConn->endRequest($this);
 			unset($this->backendClientConn);
 		}
-		if ($this->backendServerConn) {
-			unset($this->backendServerConn);
-		}
 	}
 	public function sessionCommit() {
 		if ($this->updatedSession) {
 			$this->appInstance->sessions->saveSession($this->attrs->session);
 		}
 	}
-	public function onDestruct() {
-	// Daemon::log('destruct - '.$this->path);
+	public function __destruct() {
+		 Daemon::log('destruct - '.$this->path);
+		 parent::__destruct();
 	}
 }

@@ -105,22 +105,17 @@ class Block implements ArrayAccess {
 					
 			++$this->req->jobTotal;
 			$node = $this;
-			$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function($cursor) use ($node) {
-	
-				static $dbprops = array();
-
-				foreach ($cursor->items as $k => $block) {
-					if (isset($block['name'])) {
-						$dbprops[$block['name']] = $block;
-					}
-					unset($cursor->items[$k]);
-				}
-			
+			$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function($cursor) use ($node) {			
 				if (!$cursor->finished) {
 					$cursor->getMore();
 				}	else {
+					$dbprops = array();
+					foreach ($cursor->items as $k => $block) {
+						if (isset($block['name'])) {
+							$dbprops[$block['name']] = $block;
+						}
+					}
 					$cursor->destroy();
-			
 					foreach ($node->addedBlocks as $block) {
 						if (isset($block['name']) && isset($dbprops[$block['name']])) {
 							$block = array_merge($block,$dbprops[$block['name']]);
