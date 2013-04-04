@@ -1,11 +1,11 @@
 <?php
 include 'syscfg.php';
-$mongo = new Mongo();
+$mongo = new MongoClient();
 $db = $mongo->{$dbname};
 chdir(__DIR__.'/..');
 class WakePHP {
 	public $name;
-	public function __construct($path,$name) {
+	public function __construct($path, $name) {
 		$this->name = $name;
 		$this->sock = stream_socket_client($path, $errno, $errstr);
 		if (!$this->sock) {
@@ -31,7 +31,7 @@ class CouldntConnect extends Exception {}
 
 
 try {
-	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($pidfile)),$name);
+	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($pidfile . "\x00" . $user. "\x00" . $group)),$name);
 }
 catch (CouldntConnect $e) {
 	exit('Connection failed to '.$e->path.'.');
