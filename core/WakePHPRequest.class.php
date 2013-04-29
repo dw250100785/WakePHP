@@ -290,7 +290,7 @@ class WakePHPRequest extends HTTPRequest {
 		), array($this, 'loadPage'));
 	}
 	
-	public function setResult($result) {
+	public function setResult($result=NULL) {
 		if ($this->dataType === 'json') {
 			try {
 				$this->header('Content-Type: text/json');

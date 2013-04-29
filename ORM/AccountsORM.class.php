@@ -68,7 +68,7 @@ class AccountsORM extends ORM {
 		));
 	}
 	
-	public function getACLgroup($name) {
+	public function getACLgroup($name, $cb) {
 		$this->aclgroups->findOne($cb, array(
 				'where' =>	array('name' => $name),
 		));
