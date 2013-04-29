@@ -31,8 +31,9 @@ class CouldntConnect extends Exception {}
 
 
 try {
-	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($pidfile . "\x00" . $user. "\x00" . $group)),$name);
+	$app = new WakePHP('unix://'.sprintf($mastersocket, crc32($a = $pidfile . "\x00" . $user. "\x00" . $group)),$name);
 }
 catch (CouldntConnect $e) {
+		var_dump($a);
 	exit('Connection failed to '.$e->path.'.');
 }

@@ -535,7 +535,7 @@ class CmpAccount extends Component {
 						}
 						$req->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($req, $email) {
 						
-							if ($result['ts'] + 900 > time()) {
+							if (0) { //$result['ts'] + 900 > time()) {
 								$req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 							}
 							else {

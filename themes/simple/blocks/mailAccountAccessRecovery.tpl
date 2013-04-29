@@ -21,7 +21,8 @@ Content-type: text/html; charset=utf-8
 From: {$domain} <no-reply@{$domain}>
 MIME-Version: 1.0
 Content-type: text/html; charset=utf-8
-
+\
+\
 Good day!<br /><br />
 
 You just requested account access recovery ({$domain|escape}), your confirmation code: {$code|escape}<br /><br />

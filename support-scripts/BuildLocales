@@ -1,4 +1,4 @@
-#!/usr/bin/php -q
+#!/usr/bin/env php
 <?php
 chdir(__DIR__.'/..');
 
@@ -14,6 +14,6 @@ foreach (glob($lcPath.'/*/LC_MESSAGES/*.po') as $poFile) {
 	$jsFile = $jsPath.'/'.$locale.'/'.$domain.'.json';
 	shell_exec('mkdir -p '.escapeshellarg($jsPath.'/'.$locale));
 	shell_exec('msgfmt -o '.escapeshellarg($moFile).' '.escapeshellarg($poFile));
-	$cmd = 'gettext2json '.escapeshellarg($domain).' '.escapeshellarg($lcPath ).' '.escapeshellarg($locale).' > '.escapeshellarg($jsFile);
+	$cmd = './support-scripts/gettext2json '.escapeshellarg($domain).' '.escapeshellarg($lcPath ).' '.escapeshellarg($locale).' > '.escapeshellarg($jsFile);
 	shell_exec($cmd);
 }

@@ -13,7 +13,6 @@ class Sendmail {
 		$appInstance = $this->appInstance;
 		$args['domain'] = $appInstance->config->domain->value;
 		$appInstance->renderBlock($block, $args, function ($result) use ($email, $appInstance) {
-
 			$result = str_replace("\r", '', $result);
 			$e = explode("\\\n\\\n", $result, 2);
 			$e[0] = str_replace("\n", "\r\n", $e[0]);

@@ -26,6 +26,7 @@ class WakePHPRequest extends HTTPRequest {
 	public $backendServerConn;
 	public $queries = [];
 	public $queriesCnt = 0;
+	public $readyBlocks = 0;
 	public $rid;
 	public $account;
 	private static $emulMode = false;
@@ -370,6 +371,5 @@ class WakePHPRequest extends HTTPRequest {
 	}
 	public function __destruct() {
 		 Daemon::log('destruct - '.$this->path);
-		 parent::__destruct();
 	}
 }

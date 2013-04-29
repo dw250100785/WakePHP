@@ -86,7 +86,21 @@ class WakePHP extends AppInstance {
 		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance) {
 			$tpl = $appInstance->getQuickyInstance();
 			$tpl->assign($variables);
-			$cb($tpl->PHPtemplateFetch($block['templatePHP']));
+			$tpl->assign('block', $block);
+			$tpl->register_function('getblock', array($this, 'getBlock'));
+			static $cache = [];
+			$k = $block['cachekey'];
+			if (isset($cache[$k])) {
+				$tplf = $cache[$k];
+			} else {
+				$tplf = eval($block['templatePHP']);
+				$cache[$k] = $tplf;
+			}
+			ob_start();
+			call_user_func($tplf, $tpl);
+			$r = ob_get_contents();
+			ob_end_clean();
+			$cb($r);
 		});
 	}
 	public function onBlockFileChanged($file) {
