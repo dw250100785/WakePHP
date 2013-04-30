@@ -207,6 +207,11 @@ class CmpAccount extends Component {
 				 }
 			 }]);
 	}
+	
+	public function TwitterAuthRedirectController()
+	{
+		
+	}
 
 	protected function getTwitterAuthorizationHeader($url, $redirect_url) {
 		$header                    = 'OAuth ';
