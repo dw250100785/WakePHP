@@ -183,10 +183,57 @@ class CmpAccount extends Component {
 			$job();
 		});
 	}
-	
-	public function TwitterAuthController()
-	{
+
+	public function TwitterAuthController() {
 		//@TODO: twitter auth
+		$url          = $this->config->twitter_api_url->value.'oauth/request_token';
+		$redirect_url = $this->appInstance->config->domain->value;
+		$this->appInstance->httpclient->post(
+			$url,
+			[],
+			['headers'  => ['Authorization: '.$this->getTwitterAuthorizationHeader($url, $redirect_url)],
+			 'resultcb' => function ($conn, $success) {
+				 if ($success) {
+					 //$this->
+				 }
+				 else {
+					 $this->req->header('Location: '.$this->appInstance->config->domain->value);
+				 }
+			 }]);
+	}
+
+	protected function getTwitterAuthorizationHeader($url, $redirect_url) {
+		$header                    = 'OAuth ';
+		$params                    =
+				['oauth_callback'         => $redirect_url,
+				 'oauth_consumer_key'     => $this->config->twitter_app_key->value,
+				 'oauth_nonce'            => md5(uniqid(rand(), true)),
+				 'oauth_signature_method' => 'HMAC-SHA1',
+				 'oauth_timestamp'        => time(),
+				 'oauth_version'          => '1.0'
+				];
+		$params['oauth_signature'] = $this->getOauthSignature('POST', $url, $params, $this->config->twitter_app_secret->value);
+		$header_params             = [];
+		foreach ($params as $param => $value) {
+			$header_params[] = rawurlencode($param).'="'.rawurlencode($value).'"';
+		}
+		$header .= implode(', ', $header_params);
+		return $header;
+	}
+
+	protected function getOauthSignature($method, $url, $oauth_params, $app_secret, $user_token = '', $request_params = array()) {
+		$method = strtoupper($method);
+		$params = array_merge($request_params, $oauth_params);
+		ksort($params);
+		$signature_base   = $method.'&'.rawurlencode($url).'&';
+		$signature_params = [];
+		foreach ($params as $param => $value) {
+			$signature_params[] = rawurlencode($param).'='.rawurlencode($value);
+		}
+		$signature_base .= rawurlencode(implode('&', $signature_params));
+		$signing_key = rawurlencode($app_secret).'&'.($user_token ? rawurlencode($user_token) : '');
+		$signature   = base64_encode(hash_hmac('sha1', $signature_base, $signing_key, true));
+		return $signature;
 	}
 
 	public function ProfileController() {

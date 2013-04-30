@@ -5,7 +5,9 @@
  */
 class Component {
 
+	/** @var  WakePHPRequest */
 	public $req;
+	/** @var WakePHP */
 	public $appInstance;
 	public $config;
 	public function __construct($req) {

@@ -7,6 +7,7 @@ class WakePHP extends AppInstance {
 
 	public $statistics;
 	public $blocks;
+	/** @var AccountsORM */
 	public $accounts;
 	public $sessions;
 	public $db;
@@ -18,6 +19,8 @@ class WakePHP extends AppInstance {
 	public $components;
 	public $backendServer;
 	public $backendClient;
+	/** @var HTTPClient */
+	public $httpclient;
 
 	public function onReady() {
 		if (isset($this->backendServer)) {
@@ -74,6 +77,7 @@ class WakePHP extends AppInstance {
 			}
 		}
 		$this->serializer = 'igbinary';
+		$this->httpclient = HTTPClient::getInstance();
 	}
 	public function getLocaleName($lc) {
 		if (!in_array($lc, $this->locales, true)) {

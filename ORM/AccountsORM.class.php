@@ -73,10 +73,15 @@ class AccountsORM extends ORM {
 				'where' =>	array('name' => $name),
 		));
 	}
-	
+
+	/**
+	 * @param array $account
+	 * @param string $password
+	 * @return bool
+	 */
 	public function checkPassword($account,$password) {
 		if ($account && !isset($account['password'])) {
-			return true;
+			return false;
 		}
 		return crypt($password, $account['password']) === $account['password'];
 	}
@@ -174,5 +179,9 @@ class AccountsORM extends ORM {
 	public function saveACLgroup($group) {
 		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));
 	}
+
+	public function addTwitterUser($data, $param) {
 		
+	}
+
 }
