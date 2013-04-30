@@ -185,7 +185,6 @@ class CmpAccount extends Component {
 	}
 
 	public function TwitterAuthController() {
-		//@TODO: twitter auth
 		$url          = $this->config->twitter_api_url->value.'oauth/request_token';
 		$redirect_url = $this->appInstance->config->domain->value;
 		$this->appInstance->httpclient->post(
@@ -194,7 +193,10 @@ class CmpAccount extends Component {
 			['headers'  => ['Authorization: '.$this->getTwitterAuthorizationHeader($url, $redirect_url)],
 			 'resultcb' => function ($conn, $success) {
 				 if ($success) {
-					 //$this->
+					 parse_str($conn->body, $response);
+					 $oauth_token        = $response['oauth_token'];
+					 $oauth_token_secret = $response['oauth_token_secret'];
+					 $this->
 				 }
 				 else {
 					 $this->req->header('Location: '.$this->appInstance->config->domain->value);
