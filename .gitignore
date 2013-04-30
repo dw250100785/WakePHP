@@ -1,2 +1,5 @@
 conf.d/*.conf
 doc/output
+.idea
+
+/conf.d/WakePHP.conf
