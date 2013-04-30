@@ -186,7 +186,7 @@ class CmpAccount extends Component {
 
 	public function TwitterAuthController() {
 		$url          = $this->config->twitter_api_url->value.'oauth/request_token';
-		$redirect_url = $this->appInstance->config->domain->value;
+		$redirect_url = $this->appInstance->config->domain->value.'/sign_in_twitter/';
 		$this->appInstance->httpclient->post(
 			$url,
 			[],
