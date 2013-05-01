@@ -198,16 +198,12 @@ class CmpAccount extends Component {
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->setResult();
-						 Daemon::log(Debug::dump($conn->body));
-						 Daemon::log(Debug::dump($conn->headers));
-						 Daemon::log(Debug::dump(time()));
 						 return;
 					 }
 					 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
 						 function () use ($response) {
 							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
 							 $this->req->header('Location: ' . $url);
-							 Daemon::log(Debug::dump($url));
 							 $this->req->setResult();
 						 });
 				 }
