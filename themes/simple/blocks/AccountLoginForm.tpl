@@ -9,4 +9,5 @@
 <input type="password" name="password" size="25" /><br />
 <a href="/{$req->locale}/account/recovery" class="forgotPasswordButton i18n">Forgot your password?</a><br />
 <br /><button type="submit" class="i18n" disabled="disabled">Log in</button>
+	{getBlock name="TwitterAuth"}
 </form>

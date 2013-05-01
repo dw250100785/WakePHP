@@ -1,1 +1,1 @@
-<a href="" class="button twitter-auth-button">Authenticate via Twitter</a>
+<a href="/component/Account/TwitterAuth" class="button twitter-auth-button">Authenticate via Twitter</a>
