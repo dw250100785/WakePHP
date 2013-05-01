@@ -195,8 +195,8 @@ class CmpAccount extends Component {
 			 'resultcb' => function ($conn, $success) use ($base_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 $oauth_token        = $response['oauth_token'];
-					 $oauth_token_secret = $response['oauth_token_secret'];
+					 $oauth_token        = isset($response['oauth_token']) ? $response['oauth_token'] : '';
+					 $oauth_token_secret = isset($response['oauth_token_secret']) ? $response['oauth_token_socret'] : '';
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 $this->appInstance->authTokens->addToken($oauth_token, $oauth_token_secret, function () use ($oauth_token) {
 						 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($oauth_token);
