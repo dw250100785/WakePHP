@@ -237,9 +237,7 @@ class CmpAccount extends Component {
 					 $this->acceptUserAuthentication(['twitterId' => $user_twitter_id],
 													 ['twitterName' => $user_twitter_name]);
 				 }
-				 else {
-					 $this->req->header('Location: ' . $base_url);
-				 }
+				 $this->req->header('Location: ' . $base_url);
 				 $this->req->setResult();
 			 }
 			]
