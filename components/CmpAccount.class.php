@@ -197,6 +197,7 @@ class CmpAccount extends Component {
 					 parse_str($conn->body, $response);
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+						 $this->req->setResult();
 						 return;
 					 }
 					 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
