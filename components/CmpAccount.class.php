@@ -249,6 +249,7 @@ class CmpAccount extends Component {
 			$this->appInstance->accounts->getAccount($credentials,
 				function ($account) use ($credentials, $user_data) {
 					$cb = function ($account) {
+						Daemon::log($account);
 						$this->req->attrs->session['accountId'] = $account['_id'];
 						$this->req->updatedSession              = true;
 					};
