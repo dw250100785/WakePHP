@@ -185,7 +185,7 @@ class CmpAccount extends Component {
 	}
 
 	public function TwitterAuthController() {
-		$url          = $this->config->twitter_api_url->value . 'oauth/request_token';
+		$url          = $this->config->twitter_auth_url->value . 'oauth/request_token';
 		$base_url     = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
 		$redirect_url = $base_url . '/component/Account/TwitterAuthRedirect/json';
 		$this->appInstance->httpclient->post(
@@ -199,7 +199,7 @@ class CmpAccount extends Component {
 					 $oauth_token_secret = $response['oauth_token_secret'];
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 $this->appInstance->authtokens->addToken($oauth_token, $oauth_token_secret, function () use ($oauth_token) {
-						 $url = $this->config->twitter_api_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($oauth_token);
+						 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($oauth_token);
 						 $this->req->header('Location: ' . $url);
 					 });
 				 }
@@ -211,7 +211,7 @@ class CmpAccount extends Component {
 	}
 
 	public function TwitterAuthRedirectController() {
-		$url      = $this->config->twitter_api_url->value . 'oauth/access_token';
+		$url      = $this->config->twitter_auth_url->value . 'oauth/access_token';
 		$base_url = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
 		$this->appInstance->httpclient->post(
 			$url,
