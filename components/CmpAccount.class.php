@@ -235,32 +235,35 @@ class CmpAccount extends Component {
 					 $user_twitter_id   = $response['user_id'];
 					 $user_twitter_name = $response['screen_name'];
 					 $this->acceptUserAuthentication(['twitterId' => $user_twitter_id],
-													 ['twitterName' => $user_twitter_name]);
+													 ['twitterName' => $user_twitter_name],
+						 function () use ($base_url) {
+							 $this->req->header('Location: ' . $base_url);
+							 $this->req->setResult();
+						 });
 				 }
-				 $this->req->header('Location: ' . $base_url);
-				 $this->req->setResult();
 			 }
 			]
 		);
 	}
 
-	protected function acceptUserAuthentication($credentials, $user_data) {
-		$this->onSessionStart(function () use ($credentials, $user_data) {
+	protected function acceptUserAuthentication($credentials, $user_data, $cb) {
+		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
 			$this->appInstance->accounts->getAccount($credentials,
-				function ($account) use ($credentials, $user_data) {
-					$cb = function ($account) {
+				function ($account) use ($credentials, $user_data, $cb) {
+					$loginTo = function ($account) use ($cb) {
 						Daemon::log($account);
 						$this->req->attrs->session['accountId'] = $account['_id'];
 						$this->req->updatedSession              = true;
+						$cb();
 					};
 					if (!$account) {
 						$account = array_merge($credentials, $user_data);
-						$this->appInstance->accounts->saveAccount($account, function () use ($cb, $credentials) {
-							$this->appInstance->accounts->getAccount($credentials, $cb);
+						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
+							$this->appInstance->accounts->getAccount($credentials, $loginTo);
 						});
 					}
 					else {
-						$cb($account);
+						$loginTo($account);
 					}
 				});
 		});
