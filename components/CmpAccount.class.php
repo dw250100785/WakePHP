@@ -220,7 +220,8 @@ class CmpAccount extends Component {
 
 	public function checkReferer() {
 		if ($this->req->controller === 'TwitterAuthRedirect') {
-			return $this->req->checkDomainMatch(null, 'api.twitter.com');
+			return true;
+			//return $this->req->checkDomainMatch(null, 'api.twitter.com');
 		}
 		return $this->req->checkDomainMatch();
 	}
