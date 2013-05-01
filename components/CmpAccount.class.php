@@ -208,12 +208,13 @@ class CmpAccount extends Component {
 							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
 							 $this->req->header('Location: ' . $url);
 							 Daemon::log(Debug::dump($url));
+							 $this->req->setResult();
 						 });
 				 }
 				 else {
 					 $this->req->header('Location: ' . $base_url);
+					 $this->req->setResult();
 				 }
-				 $this->req->setResult();
 			 }]);
 	}
 
