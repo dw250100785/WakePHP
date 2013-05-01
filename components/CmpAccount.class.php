@@ -195,13 +195,15 @@ class CmpAccount extends Component {
 			 'resultcb' => function ($conn, $success) use ($base_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 $oauth_token        = isset($response['oauth_token']) ? $response['oauth_token'] : '';
-					 $oauth_token_secret = isset($response['oauth_token_secret']) ? $response['oauth_token_socret'] : '';
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
-					 $this->appInstance->authTokens->addToken($oauth_token, $oauth_token_secret, function () use ($oauth_token) {
-						 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($oauth_token);
-						 $this->req->header('Location: ' . $url);
-					 });
+					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+						 return;
+					 }
+					 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
+						 function () use ($response) {
+							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+							 $this->req->header('Location: ' . $url);
+						 });
 				 }
 				 else {
 					 $this->req->header('Location: ' . $base_url);
