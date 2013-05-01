@@ -9,6 +9,7 @@ class WakePHP extends AppInstance {
 	public $blocks;
 	/** @var AccountsORM */
 	public $accounts;
+	/** @var SessionsORM */
 	public $sessions;
 	public $db;
 	public $dbname;

@@ -180,8 +180,4 @@ class AccountsORM extends ORM {
 		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));
 	}
 
-	public function addTwitterUser($data, $param) {
-		
-	}
-
 }

@@ -80,10 +80,10 @@ class CmpAccount extends Component {
 							'username'         => Request::getString($req->attrs->request['username']),
 							'location'         => $location = Request::getString($req->attrs->request['location']),
 							'password'         => $password = Request::getString($req->attrs->request['password']),
-							'confirmationcode' => $code = substr(md5($req->attrs->request['email']."\x00"
-																			 .$req->appInstance->config->cryptsalt->value."\x00"
-																			 .microtime(true)."\x00"
-																			 .mt_rand(0, mt_getrandmax()))
+							'confirmationcode' => $code = substr(md5($req->attrs->request['email'] . "\x00"
+																			 . $req->appInstance->config->cryptsalt->value . "\x00"
+																			 . microtime(true) . "\x00"
+																			 . mt_rand(0, mt_getrandmax()))
 								, 0, 6),
 							'regdate'          => time(),
 							'etime'            => time(),
@@ -185,48 +185,92 @@ class CmpAccount extends Component {
 	}
 
 	public function TwitterAuthController() {
-		$url          = $this->config->twitter_api_url->value.'oauth/request_token';
-		$redirect_url = $this->appInstance->config->domain->value.'/sign_in_twitter/';
+		$url          = $this->config->twitter_api_url->value . 'oauth/request_token';
+		$base_url     = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
+		$redirect_url = $base_url . '/component/Account/TwitterAuthRedirect/json';
 		$this->appInstance->httpclient->post(
 			$url,
 			[],
-			['headers'  => ['Authorization: '.$this->getTwitterAuthorizationHeader($url, $redirect_url)],
-			 'resultcb' => function ($conn, $success) {
+			['headers'  => ['Authorization: ' . $this->getTwitterAuthorizationHeader($url, ['oauth_callback' => $redirect_url])],
+			 'resultcb' => function ($conn, $success) use ($base_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 $oauth_token        = $response['oauth_token'];
 					 $oauth_token_secret = $response['oauth_token_secret'];
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 $this->appInstance->authtokens->addToken($oauth_token, $oauth_token_secret, function () use ($oauth_token) {
-						 $url = $this->config->twitter_api_url->value.'oauth/authenticate/?oauth_token='.rawurlencode($oauth_token);
-						 $this->req->header('Location: '.$url);
+						 $url = $this->config->twitter_api_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($oauth_token);
+						 $this->req->header('Location: ' . $url);
 					 });
 				 }
 				 else {
-					 $this->req->header('Location: '.$this->appInstance->config->domain->value);
+					 $this->req->header('Location: ' . $base_url);
 				 }
+				 $this->req->setResult();
 			 }]);
 	}
-	
-	public function TwitterAuthRedirectController()
-	{
-		
+
+	public function TwitterAuthRedirectController() {
+		$url      = $this->config->twitter_api_url->value . 'oauth/access_token';
+		$base_url = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
+		$this->appInstance->httpclient->post(
+			$url,
+			['oauth_verifier' => $_GET['oauth_verifier']],
+			['headers'  => ['Authorization: ' . $this->getTwitterAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
+			 'resultcb' => function ($conn, $success) use ($base_url) {
+				 if ($success) {
+					 parse_str($conn->body, $response);
+					 $user_twitter_id   = $response['user_id'];
+					 $user_twitter_name = $response['screen_name'];
+					 $this->acceptUserAuthentication(['twitterId' => $user_twitter_id],
+													 ['twitterName' => $user_twitter_name]);
+				 }
+				 else {
+					 $this->req->header('Location: ' . $base_url);
+				 }
+				 $this->req->setResult();
+			 }
+			]
+		);
 	}
 
-	protected function getTwitterAuthorizationHeader($url, $redirect_url) {
-		$header                    = 'OAuth ';
-		$params                    =
-				['oauth_callback'         => $redirect_url,
-				 'oauth_consumer_key'     => $this->config->twitter_app_key->value,
+	protected function acceptUserAuthentication($credentials, $user_data) {
+		$this->onSessionStart(function () use ($credentials, $user_data) {
+			$this->appInstance->accounts->getAccount($credentials,
+				function ($account) use ($credentials, $user_data) {
+					$cb = function ($account) {
+						$this->req->attrs->session['accountId'] = $account['_id'];
+						$this->req->updatedSession              = true;
+					};
+					if (!$account) {
+						$account = array_merge($credentials, $user_data);
+						$this->appInstance->accounts->saveAccount($account, function () use ($cb, $credentials) {
+							$this->appInstance->accounts->getAccount($credentials, $cb);
+						});
+					}
+					else {
+						$cb($account);
+					}
+				});
+		});
+	}
+
+	protected function getTwitterAuthorizationHeader($url, $oauth_params = array()) {
+		$header = 'OAuth ';
+		$params =
+				['oauth_consumer_key'     => $this->config->twitter_app_key->value,
 				 'oauth_nonce'            => md5(uniqid(rand(), true)),
 				 'oauth_signature_method' => 'HMAC-SHA1',
 				 'oauth_timestamp'        => time(),
 				 'oauth_version'          => '1.0'
 				];
+		if (!empty($oauth_params)) {
+			$params = array_merge($params, $oauth_params);
+		}
 		$params['oauth_signature'] = $this->getOauthSignature('POST', $url, $params, $this->config->twitter_app_secret->value);
 		$header_params             = [];
 		foreach ($params as $param => $value) {
-			$header_params[] = rawurlencode($param).'="'.rawurlencode($value).'"';
+			$header_params[] = rawurlencode($param) . '="' . rawurlencode($value) . '"';
 		}
 		$header .= implode(', ', $header_params);
 		return $header;
@@ -236,13 +280,13 @@ class CmpAccount extends Component {
 		$method = strtoupper($method);
 		$params = array_merge($request_params, $oauth_params);
 		ksort($params);
-		$signature_base   = $method.'&'.rawurlencode($url).'&';
+		$signature_base   = $method . '&' . rawurlencode($url) . '&';
 		$signature_params = [];
 		foreach ($params as $param => $value) {
-			$signature_params[] = rawurlencode($param).'='.rawurlencode($value);
+			$signature_params[] = rawurlencode($param) . '=' . rawurlencode($value);
 		}
 		$signature_base .= rawurlencode(implode('&', $signature_params));
-		$signing_key = rawurlencode($app_secret).'&'.($user_token ? rawurlencode($user_token) : '');
+		$signing_key = rawurlencode($app_secret) . '&' . ($user_token ? rawurlencode($user_token) : '');
 		$signature   = str_replace(['+', '%7E'], ['%20', '~'], base64_encode(
 			hash_hmac('sha1', $signature_base, $signing_key, true)));
 		return $signature;
@@ -379,9 +423,9 @@ class CmpAccount extends Component {
 			$sortDir = array();
 
 			foreach ($req->attrs->request as $k => $value) {
-				list ($type, $index) = explode('_', $k.'_');
+				list ($type, $index) = explode('_', $k . '_');
 				if ($type === 'iSortCol') {
-					$sort[$field($value)] = Request::getString($req->attrs->request['sSortDir_'.$index]) == 'asc' ? 1 : -1;
+					$sort[$field($value)] = Request::getString($req->attrs->request['sSortDir_' . $index]) == 'asc' ? 1 : -1;
 				}
 			}
 			unset($sort[null]);
@@ -608,7 +652,7 @@ class CmpAccount extends Component {
 								$req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 							}
 							else {
-								$password = substr(md5($email."\x00".$result['code']."\x00".$req->appInstance->config->cryptsalt->value."\x00".mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
+								$password = substr(md5($email . "\x00" . $result['code'] . "\x00" . $req->appInstance->config->cryptsalt->value . "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
 
 								$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']), $password);
 
