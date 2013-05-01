@@ -186,7 +186,7 @@ class CmpAccount extends Component {
 
 	public function TwitterAuthController() {
 		$url          = $this->config->twitter_auth_url->value . 'oauth/request_token';
-		$base_url     = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
+		$base_url     = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 		$redirect_url = $base_url . '/component/Account/TwitterAuthRedirect/json';
 		$this->appInstance->httpclient->post(
 			$url,
@@ -220,7 +220,7 @@ class CmpAccount extends Component {
 
 	public function TwitterAuthRedirectController() {
 		$url      = $this->config->twitter_auth_url->value . 'oauth/access_token';
-		$base_url = $_SERVER['SERVER_PROTOCOL'] . '://' . $this->appInstance->config->domain->value;
+		$base_url = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 		$this->appInstance->httpclient->post(
 			$url,
 			['oauth_verifier' => $_GET['oauth_verifier']],
