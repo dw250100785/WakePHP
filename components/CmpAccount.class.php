@@ -202,7 +202,7 @@ class CmpAccount extends Component {
 					 if ($response_status > 299) {
 						 /** try to fix timestamp difference */
 						 if (!empty($conn->headers['HTTP_DATE'])) {
-							 $timestamp = strtotime($conn->headers['date']);
+							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
 							 $this->appInstance->httpclient->post(
 								 $url, [],
 								 ['headers'  => ['Authorization: ' .
