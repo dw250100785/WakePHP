@@ -191,7 +191,6 @@ class CmpAccount extends Component {
 		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->req->header('Pragma: no-cache');
 		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		Daemon::log('twitter auth');
 		$this->appInstance->httpclient->post(
 			$url,
 			[],
@@ -200,7 +199,6 @@ class CmpAccount extends Component {
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 $response_status = $conn->responseCode;
-					 Daemon::log('response: ' . $response_status . ', headers: ' . print_r($conn->headers, 1));
 					 if ($response_status > 299) {
 						 /** try to fix timestamp difference */
 						 if (!empty($conn->headers['HTTP_DATE'])) {
@@ -283,7 +281,6 @@ class CmpAccount extends Component {
 			$this->appInstance->accounts->getAccount($credentials,
 				function ($account) use ($credentials, $user_data, $cb) {
 					$loginTo = function ($account) use ($cb) {
-						Daemon::log($account);
 						$this->req->attrs->session['accountId'] = $account['_id'];
 						$this->req->updatedSession              = true;
 						$cb();
