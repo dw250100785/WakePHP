@@ -217,6 +217,7 @@ class CmpAccount extends Component {
 									  else {
 										  $this->req->header('Location: ' . $base_url);
 									  }
+									  Daemon::log(__LINE__);
 									  $this->req->setResult();
 								  }
 								 ]);
@@ -227,6 +228,7 @@ class CmpAccount extends Component {
 					 }
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+						 Daemon::log(__LINE__);
 						 $this->req->setResult();
 						 return;
 					 }
@@ -234,12 +236,14 @@ class CmpAccount extends Component {
 						 function () use ($response) {
 							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
 							 $this->req->header('Location: ' . $url);
+							 Daemon::log(__LINE__);
 							 $this->req->setResult();
 						 });
 				 }
 				 else {
 					 err_response:
 					 $this->req->header('Location: ' . $base_url);
+					 Daemon::log(__LINE__);
 					 $this->req->setResult();
 				 }
 			 }]);
