@@ -188,6 +188,9 @@ class CmpAccount extends Component {
 		$url          = $this->config->twitter_auth_url->value . 'oauth/request_token';
 		$base_url     = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 		$redirect_url = $base_url . '/component/Account/TwitterAuthRedirect/json';
+		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
+		$this->req->header('Pragma: no-cache');
+		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 		Daemon::log('twitter auth');
 		$this->appInstance->httpclient->post(
 			$url,
