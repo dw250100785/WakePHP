@@ -196,18 +196,18 @@ class CmpAccount extends Component {
 			 'resultcb' => function ($conn, $success) use ($url, $base_url, $redirect_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 $response_status = (int)$conn->headers['STATUS'];
+					 $response_status = $conn->responseCode;
 					 Daemon::log('response: ' . $response_status . ', headers: ' . print_r($conn->headers, 1));
 					 if ($response_status > 299) {
 						 /** try to fix timestamp difference */
-						 if (!empty($conn->headers['date'])) {
+						 if (!empty($conn->headers['HTTP_DATE'])) {
 							 $timestamp = strtotime($conn->headers['date']);
 							 $this->appInstance->httpclient->post(
 								 $url, [],
 								 ['headers'  => ['Authorization: ' .
 										 $this->getTwitterAuthorizationHeader($url, ['oauth_callback' => $redirect_url, 'oauth_timestamp' => $timestamp])],
 								  'resultcb' => function ($conn, $success) use ($url, $base_url, $redirect_url) {
-									  $status = intval($conn->headers['STATUS']);
+									  $status = $conn->responseCode;
 									  if ($success && $status > 199 && $status < 300) {
 										  parse_str($conn->body, $response);
 										  $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
