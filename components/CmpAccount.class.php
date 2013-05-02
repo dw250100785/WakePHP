@@ -217,7 +217,6 @@ class CmpAccount extends Component {
 									  else {
 										  $this->req->header('Location: ' . $base_url);
 									  }
-									  Daemon::log(__LINE__);
 									  $this->req->setResult();
 								  }
 								 ]);
@@ -234,14 +233,12 @@ class CmpAccount extends Component {
 						 function () use ($response) {
 							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
 							 $this->req->header('Location: ' . $url);
-							 Daemon::log(__LINE__);
 							 $this->req->setResult();
 						 });
 				 }
 				 else {
 					 err_response:
 					 $this->req->header('Location: ' . $base_url);
-					 Daemon::log(__LINE__);
 					 $this->req->setResult();
 				 }
 			 }]);
@@ -291,6 +288,7 @@ class CmpAccount extends Component {
 					if (!$account) {
 						$account = $this->appInstance->accounts->getAccountBase($this->req);
 						$account = array_merge($account, $credentials, $user_data);
+						Daemon::log($account);
 						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
 							$this->appInstance->accounts->getAccount($credentials, $loginTo);
 						});
