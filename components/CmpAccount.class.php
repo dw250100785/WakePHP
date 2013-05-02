@@ -265,7 +265,8 @@ class CmpAccount extends Component {
 					 $user_twitter_id   = $response['user_id'];
 					 $user_twitter_name = $response['screen_name'];
 					 $this->acceptUserAuthentication(['twitterId' => $user_twitter_id],
-													 ['twitterName' => $user_twitter_name],
+													 ['twitterName' => $user_twitter_name,
+													  'username'    => $user_twitter_name],
 						 function () use ($base_url) {
 							 $this->req->header('Location: ' . $base_url);
 							 $this->req->setResult();
@@ -288,7 +289,6 @@ class CmpAccount extends Component {
 					if (!$account) {
 						$account = $this->appInstance->accounts->getAccountBase($this->req);
 						$account = array_merge($account, $credentials, $user_data);
-						Daemon::log($account);
 						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
 							$this->appInstance->accounts->getAccount($credentials, $loginTo);
 						});
