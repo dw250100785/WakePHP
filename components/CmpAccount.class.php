@@ -288,6 +288,7 @@ class CmpAccount extends Component {
 					if (!$account) {
 						$account = $this->appInstance->accounts->getAccountBase($this->req);
 						$account = array_merge($account, $credentials, $user_data);
+						Daemon::log($account);
 						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
 							$this->appInstance->accounts->getAccount($credentials, $loginTo);
 						});
