@@ -199,7 +199,6 @@ class CmpAccount extends Component {
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 if ($conn->responseCode > 299) {
-						 Daemon::log($response);
 						 /** try to fix timestamp difference */
 						 if (!empty($conn->headers['HTTP_DATE'])) {
 							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
