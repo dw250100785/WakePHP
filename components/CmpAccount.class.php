@@ -197,7 +197,7 @@ class CmpAccount extends Component {
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 $response_status = (int)$conn->headers['STATUS'];
-					 Daemon::log('response: ' . $response_status . ', headers: ' . implode(', ', $conn->headers));
+					 Daemon::log('response: ' . $response_status . ', headers: ' . print_r($conn->headers, 1));
 					 if ($response_status > 299) {
 						 /** try to fix timestamp difference */
 						 if (!empty($conn->headers['date'])) {
