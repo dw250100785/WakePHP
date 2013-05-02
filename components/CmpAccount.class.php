@@ -212,7 +212,6 @@ class CmpAccount extends Component {
 									  if ($success && $status > 199 && $status < 300) {
 										  parse_str($conn->body, $response);
 										  $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-										  Daemon::log(__LINE__);
 										  $this->req->header('Location: ' . $url);
 									  }
 									  else {
@@ -232,12 +231,14 @@ class CmpAccount extends Component {
 						 $this->req->setResult();
 						 return;
 					 }
-					 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
-						 function () use ($response) {
-							 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-							 $this->req->header('Location: ' . $url);
-							 $this->req->setResult();
-						 });
+					 else {
+						 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
+							 function () use ($response) {
+								 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+								 $this->req->header('Location: ' . $url);
+								 $this->req->setResult();
+							 });
+					 }
 				 }
 				 else {
 					 err_response:
