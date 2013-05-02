@@ -229,7 +229,7 @@ class CmpAccount extends Component {
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->header('Location: ' . $base_url);
-						 Daemon::log(__LINE__);
+						 Daemon::log($response);
 						 $this->req->setResult();
 						 return;
 					 }
