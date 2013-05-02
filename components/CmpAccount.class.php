@@ -228,9 +228,7 @@ class CmpAccount extends Component {
 					 }
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
-						 Daemon::log(__LINE__);
-						 $this->req->setResult();
-						 return;
+						 goto err_response;
 					 }
 					 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
 						 function () use ($response) {
