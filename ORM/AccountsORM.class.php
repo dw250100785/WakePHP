@@ -6,23 +6,24 @@
 class AccountsORM extends ORM {
 
 	public function init() {
-		$this->accounts = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
+		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
 	}
+
 	public function getAccountByName($username, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('username' => (string) $username),
+			'where' => array('username' => (string)$username),
 		));
 	}
-	
+
 	public function findAccounts($cb, $cond = array()) {
 		$this->accounts->find($cb, $cond);
 	}
-	
+
 	public function countAccounts($cb, $cond = array()) {
 		$this->accounts->count($cb, $cond);
-	}	
-	
+	}
+
 	public function deleteAccount($cond = array(), $cb = null) {
 		if (sizeof($cond)) {
 			if (isset($cond['_id']) && is_string($cond['_id'])) {
@@ -30,47 +31,47 @@ class AccountsORM extends ORM {
 			}
 			$this->accounts->remove($cond, $cb);
 		}
-	}	
-	
-	public function getRecentSignupsFromIP($ip, $cb) {
-	
-		$this->accounts->count($cb, array('where' => array('ip' => (string) $ip, 'regdate' => array('$gt' => time() - 3600))));
-		
 	}
-	
+
+	public function getRecentSignupsFromIP($ip, $cb) {
+
+		$this->accounts->count($cb, array('where' => array('ip' => (string)$ip, 'regdate' => array('$gt' => time() - 3600))));
+
+	}
+
 	public function getAccountByUnifiedName($username, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('unifiedusername' => $this->unifyUsername($username)),
+			'where' => array('unifiedusername' => $this->unifyUsername($username)),
 		));
 	}
-	
+
 	public function getAccountByUnifiedEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('unifiedemail' => $this->unifyEmail($email)),
+			'where' => array('unifiedemail' => $this->unifyEmail($email)),
 		));
 	}
-	
+
 	public function getAccountByEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('email' => $email),
+			'where' => array('email' => $email),
 		));
 	}
-	
+
 	public function getAccountById($id, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	array('_id' => $id),
+			'where' => array('_id' => $id),
 		));
 	}
-	
+
 	public function getAccount($find, $cb) {
 		$this->accounts->findOne($cb, array(
-				'where' =>	$find,
+			'where' => $find,
 		));
 	}
-	
+
 	public function getACLgroup($name, $cb) {
 		$this->aclgroups->findOne($cb, array(
-				'where' =>	array('name' => $name),
+			'where' => array('name' => $name),
 		));
 	}
 
@@ -79,33 +80,33 @@ class AccountsORM extends ORM {
 	 * @param string $password
 	 * @return bool
 	 */
-	public function checkPassword($account,$password) {
+	public function checkPassword($account, $password) {
 		if ($account && !isset($account['password'])) {
 			return false;
 		}
 		return crypt($password, $account['password']) === $account['password'];
 	}
-	
+
 	public function unifyUsername($username) {
 		static $equals = array(
-			'з3z',	'пn',			'оo0',	'еeё',
-			'б6b',	'хx',			'уyu',	'ийiu!ия1',
-			'мm',		'кk',			'аa',		'ьb',
-			'сcs',	'tт',			'йиu',	'i!1',
-			'рp',		'tт',			'нh'
+			'з3z', 'пn', 'оo0', 'еeё',
+			'б6b', 'хx', 'уyu', 'ийiu!ия1',
+			'мm', 'кk', 'аa', 'ьb',
+			'сcs', 'tт', 'йиu', 'i!1',
+			'рp', 'tт', 'нh'
 		);
-		$result = mb_strtolower(preg_replace_callback('~(['.implode('])|([',$equals).'])~u', function ($m) use ($equals) {
-			return '['.$equals[max(array_keys($m))-1].']';
+		$result = mb_strtolower(preg_replace_callback('~([' . implode('])|([', $equals) . '])~u', function ($m) use ($equals) {
+			return '[' . $equals[max(array_keys($m)) - 1] . ']';
 		}, $username), 'UTF-8');
 		return $result;
 	}
-	
+
 	public function unifyEmail($email) {
 		static $hosts = array(
 			'googlemail.com' => 'gmail.com'
 		);
 		$email = mb_strtolower($email, 'UTF-8');
-		
+
 		list ($name, $host) = explode('@', $email . '@');
 		if (($p = strpos($name, '+')) !== false) {
 			$name = substr($name, 0, $p);
@@ -119,11 +120,11 @@ class AccountsORM extends ORM {
 
 		return $name . '@' . $host;
 	}
-	
+
 	public function confirmAccount($account, $cb = null) {
 		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
 	}
-	
+
 	public function addACLgroupToAccount($account, $group, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new MongoId($account['_id']);
@@ -133,14 +134,14 @@ class AccountsORM extends ORM {
 		}
 		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
 	}
-	
+
 	public function updateAccount($account, $update, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new MongoId($account['_id']);
 		}
 		$this->accounts->update($account, $update, 0, $cb);
 	}
-	   
+
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
 			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
@@ -171,13 +172,36 @@ class AccountsORM extends ORM {
 			unset($account['_id']);
 			Daemon::log(Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
-		} else {
+		}
+		else {
 			$this->accounts->upsert($cond, $account, false, $cb);
 		}
 	}
-	
+
+	public function getAccountBase($req) {
+		$account = [
+			'email'            => '',
+			'username'         => '',
+			'location'         => '',
+			'password'         => '',
+			'confirmationcode' => $code = substr(md5($_SERVER['REMOTE_ADDR'] . "\x00"
+															 . Daemon::uniqueid() . "\x00"
+															 . $this->appInstance->config->cryptsalt->value . "\x00"
+															 . microtime(true) . "\x00"
+															 . mt_rand(0, mt_getrandmax()))
+				, 0, 6),
+			'regdate'          => time(),
+			'etime'            => time(),
+			'ip'               => $req->attrs->server['REMOTE_ADDR'],
+			'subscription'     => 'daily',
+			'aclgroups'        => array('Users'),
+			'acl'              => array(),
+		];
+		return $account;
+	}
+
 	public function saveACLgroup($group) {
-		$this->aclgroups->upsert(array('name' => $group['name']),array('$set' => $group));
+		$this->aclgroups->upsert(array('name' => $group['name']), array('$set' => $group));
 	}
 
 }

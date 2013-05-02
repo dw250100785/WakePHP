@@ -289,7 +289,8 @@ class CmpAccount extends Component {
 						$cb();
 					};
 					if (!$account) {
-						$account = array_merge($credentials, $user_data);
+						$account = $this->appInstance->accounts->getAccountBase($this->req);
+						$account = array_merge($account, $credentials, $user_data);
 						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
 							$this->appInstance->accounts->getAccount($credentials, $loginTo);
 						});
@@ -305,7 +306,7 @@ class CmpAccount extends Component {
 		$header = 'OAuth ';
 		$params =
 				['oauth_consumer_key'     => $this->config->twitter_app_key->value,
-				 'oauth_nonce'            => md5(uniqid(rand(), true)),
+				 'oauth_nonce'            => md5(Daemon::uniqid()),
 				 'oauth_signature_method' => 'HMAC-SHA1',
 				 'oauth_timestamp'        => time(),
 				 'oauth_version'          => '1.0'
