@@ -198,8 +198,8 @@ class CmpAccount extends Component {
 			 'resultcb' => function ($conn, $success) use ($url, $base_url, $redirect_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 $response_status = $conn->responseCode;
-					 if ($response_status > 299) {
+					 if ($conn->responseCode > 299) {
+						 Daemon::log($response);
 						 /** try to fix timestamp difference */
 						 if (!empty($conn->headers['HTTP_DATE'])) {
 							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
@@ -227,9 +227,8 @@ class CmpAccount extends Component {
 						 }
 					 }
 					 /** @var AuthTokensORM $this->appInstance->authtokens */
-					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+					 elseif (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->header('Location: ' . $base_url);
-						 Daemon::log($response);
 						 $this->req->setResult();
 						 return;
 					 }
