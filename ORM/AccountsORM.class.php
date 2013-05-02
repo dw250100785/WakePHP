@@ -179,13 +179,13 @@ class AccountsORM extends ORM {
 	}
 
 	public function getAccountBase($req) {
-		$account = [
+		return [
 			'email'            => '',
 			'username'         => '',
 			'location'         => '',
 			'password'         => '',
-			'confirmationcode' => $code = substr(md5($_SERVER['REMOTE_ADDR'] . "\x00"
-															 . Daemon::uniqueid() . "\x00"
+			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
+															 . Daemon::uniqid() . "\x00"
 															 . $this->appInstance->config->cryptsalt->value . "\x00"
 															 . microtime(true) . "\x00"
 															 . mt_rand(0, mt_getrandmax()))
@@ -197,7 +197,6 @@ class AccountsORM extends ORM {
 			'aclgroups'        => array('Users'),
 			'acl'              => array(),
 		];
-		return $account;
 	}
 
 	public function saveACLgroup($group) {
