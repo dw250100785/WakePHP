@@ -1,5 +1,5 @@
 <?php
-
+namespace WakePHP\core;
 /**
  * Component
  */
@@ -44,14 +44,14 @@ class Component {
 
 			if (!isset($this->config->{$k})) {
 			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
+					$this->config->{$k} = new \Daemon_ConfigEntry($v);
 				} else {
 					$this->config->{$k} = $v;
 				}
 			} else {
 				$current = $this->config->{$k};
 			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
+					$this->config->{$k} = new \Daemon_ConfigEntry($v);
 				} else {
 					$this->config->{$k} = $v;
 				}
@@ -67,13 +67,13 @@ class Component {
 			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 			return null;
 		}
-		$this->{$event} = new DeferredEvent($this->{$event.'Event'}());
+		$this->{$event} = new \DeferredEvent($this->{$event.'Event'}());
 		$this->{$event}->component = $this;
 		return $this->{$event};
 	}
 	public function cleanup() {
 		foreach ($this as $key => $property) {
-			if ($property instanceof DeferredEvent) {
+			if ($property instanceof \DeferredEvent) {
 				$property->cleanup();
 			}
 			unset($this->{$key});

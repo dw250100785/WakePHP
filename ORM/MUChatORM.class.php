@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\ORM;
+
+use WakePHP\core\ORM;
 
 /**
  * MUChatORM

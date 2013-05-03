@@ -1,9 +1,9 @@
 <?php
-
+namespace WakePHP\core;
 /**
  * Block instance class.	
  */
-class Block implements ArrayAccess {
+class Block implements \ArrayAccess {
 
 	public $html = '';
 	
@@ -140,7 +140,7 @@ class Block implements ArrayAccess {
 		$this->req->onSleep();
 	}
 	public function getBlock($block) {
-		$block['tag'] = (string) new MongoId;
+		$block['tag'] = (string) new \MongoId;
 		$this->addedBlocks[] = $block;
 		if (isset($block['name'])) {
 			$this->addedBlocksNames[] = $block['name'];

@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\ORM;
+
+use WakePHP\core\ORM;
 
 /**
  * SessionsORM
@@ -11,15 +14,15 @@ class SessionsORM extends ORM {
 	}
 	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb,array(
-				'where' =>	array('_id' => new MongoId($id))
+				'where' =>	array('_id' => new \MongoId($id))
 		));
 	}
 	public function saveSession($session) {
-		$this->sessions->upsert(array('_id' => new MongoId($session['_id'])), $session);
+		$this->sessions->upsert(array('_id' => new \MongoId($session['_id'])), $session);
 	}
 	public function startSession() {
 		$doc = array(
-			'_id'		=> new MongoId(),
+			'_id'		=> new \MongoId(),
 			'ctime'	=> time(),
 		);
 		$this->saveSession($doc);

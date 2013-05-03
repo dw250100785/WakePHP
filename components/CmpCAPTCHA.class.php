@@ -1,9 +1,9 @@
 <?php
-
+namespace WakePHP\components;
 /**
  * CAPTCHA component
  */
-class CmpCAPTCHA extends AsyncServer {
+class CmpCAPTCHA extends \AsyncServer {
 
 	/**
 	 * Function to get default config options from application
@@ -12,7 +12,7 @@ class CmpCAPTCHA extends AsyncServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			'privatekey' => new Daemon_ConfigEntry(''),
+			'privatekey' => new \Daemon_ConfigEntry(''),
 		);
 	}
 	
@@ -76,7 +76,7 @@ class CmpCAPTCHA extends AsyncServer {
 	}
 }
 
-class CmpCAPTCHASession extends SocketSession {
+class CmpCAPTCHASession extends \SocketSession {
 
 	const PSTATE_FIRSTLINE = 1;
 	const PSTATE_HEADERS = 2;
@@ -104,8 +104,8 @@ class CmpCAPTCHASession extends SocketSession {
 		$body =  http_build_query(array(
 			'privatekey' => $this->config->privatekey->value,
 			'remoteip' => $this->appInstance->req->attrs->server['REMOTE_ADDR'],
-			'challenge' => Request::getString($this->appInstance->req->attrs->request['recaptcha_challenge_field']),
-			'response' => Request::getString($this->appInstance->req->attrs->request['recaptcha_response_field']),
+			'challenge' => \Request::getString($this->appInstance->req->attrs->request['recaptcha_challenge_field']),
+			'response' => \Request::getString($this->appInstance->req->attrs->request['recaptcha_response_field']),
     ));
 		$this->writeln('POST /recaptcha/api/verify HTTP/1.0');
 		$this->writeln('Host: www.google.com');
@@ -121,7 +121,7 @@ class CmpCAPTCHASession extends SocketSession {
 	}
 	/**
 	 * Called when new data received
-	 * @param string New data
+	 * @param string $buf New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -143,7 +143,7 @@ class CmpCAPTCHASession extends SocketSession {
 				$e = explode(': ',$line);
 				
 				if (isset($e[1])) {
-					$this->headers['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
+					$this->headers['HTTP_' . strtoupper(strtr($e[0], \HTTPRequest::$htr))] = $e[1];
 				}
 			}
 		}

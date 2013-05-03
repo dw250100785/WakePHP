@@ -1,11 +1,13 @@
 <?php
+namespace WakePHP\blocks;
+
+use WakePHP\core\Block;
+
 class BlockGenericAuthDep extends Block {
 
 	public function init() {
-		
-		$block = $this;
-		$this->req->components->Account->onAuth(function($result) use ($block) {
-			$block->runTemplate();
+		$this->req->components->Account->onAuth(function ($result) {
+			$this->runTemplate();
 		});
 	}
 

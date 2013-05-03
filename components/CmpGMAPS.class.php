@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\components;
+
+use WakePHP\core\Component;
 
 /**
  * GMAPS component
@@ -9,7 +12,7 @@ class CmpGMAPS extends Component {
 	 * @return void
 	 */
 	public function init() {
-		$this->httpclient = HTTPClient::getInstance();
+		$this->httpclient = \HTTPClient::getInstance();
 	}
 
 	/**
