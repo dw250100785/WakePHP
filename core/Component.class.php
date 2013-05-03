@@ -67,13 +67,13 @@ class Component {
 			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 			return null;
 		}
-		$this->{$event} = new DeferredEvent($this->{$event.'Event'}());
+		$this->{$event} = new \DeferredEvent($this->{$event.'Event'}());
 		$this->{$event}->component = $this;
 		return $this->{$event};
 	}
 	public function cleanup() {
 		foreach ($this as $key => $property) {
-			if ($property instanceof DeferredEvent) {
+			if ($property instanceof \DeferredEvent) {
 				$property->cleanup();
 			}
 			unset($this->{$key});

@@ -45,10 +45,10 @@ class WakePHP extends \AppInstance {
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
-			$this->backendServer = BackendServer::getInstance($this->config->BackendServer, true, $this);
+			$this->backendServer = \BackendServer::getInstance($this->config->BackendServer, true, $this);
 		}
 		if (isset($this->config->BackendClient)) {
-			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, true, $this);
+			$this->backendClient = \BackendClient::getInstance($this->config->BackendClient, true, $this);
 		}
 		
 		foreach (glob($appInstance->config->ormdir->value.'*ORM.class.php') as $file) {
