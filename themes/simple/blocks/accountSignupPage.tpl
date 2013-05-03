@@ -8,7 +8,7 @@
 	<div class="fieldname"><span class="i18n">E-Mail</span>:</div>
 	{if isset($quicky.session.twitterName)}
 	<div class="fieldcontrols twitterName">
-		<span>{$quicky.session.twitterName}</span>
+		 <span>{$quicky.session.twitterName}</span>
 	</div>
 	{/if}
 	<br class="clearfloat"/><br/><br/>
