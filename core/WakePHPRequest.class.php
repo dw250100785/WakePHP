@@ -1,9 +1,9 @@
 <?php
-
+namespace WakePHP\core;
 /**
  * Request class.
  */
-class WakePHPRequest extends HTTPRequest {
+class WakePHPRequest extends \HTTPRequest {
 
 	public $locale;
 	public $path;
@@ -30,17 +30,17 @@ class WakePHPRequest extends HTTPRequest {
 	public $rid;
 	public $account;
 	private static $emulMode = false;
-	
+
 	/**
 	 * Constructor
-	 * @param object Parent AppInstance.
-	 * @param object Upstream.
-	 * @param object Source request.
-	 * @return void
+	 * @param null|string $appInstance
+	 * @param object $upstream.
+	 * @param $parent
+	 * @return \WakePHP\core\WakePHPRequest
 	 */
 	public function __construct($appInstance, $upstream, $parent = null) {
 		if (self::$emulMode) {
-			Daemon::log('emulMode');
+			\Daemon::log('emulMode');
 			return;
 		}
 		parent::__construct($appInstance, $upstream, $parent);
@@ -49,7 +49,7 @@ class WakePHPRequest extends HTTPRequest {
 	public function init() {
 		try {
 			$this->header('Content-Type: text/html');
-		} catch (RequestHeadersAlreadySent $e) {}
+		} catch (\RequestHeadersAlreadySent $e) {}
 		
 		$this->req = $this;
 		
@@ -69,7 +69,7 @@ class WakePHPRequest extends HTTPRequest {
 	}
 
 	public function exportObject() {
-		$req = new stdClass;
+		$req = new \stdClass;
 		$req->attrs = $this->attrs;
 		return $req;
 	}
@@ -105,7 +105,7 @@ class WakePHPRequest extends HTTPRequest {
 		} else {
 			if ($this->backendClientInited) {
 				if ($this->backendClientCbs === null) {
-					$this->backendClientCbs = new StackCallbacks;
+					$this->backendClientCbs = new \StackCallbacks;
 				}
 				$this->backendClientCbs->push($fc);
 			} else {
@@ -155,7 +155,7 @@ class WakePHPRequest extends HTTPRequest {
 
 
 	public function strtotime($str) {
-		return Strtotime::parse($str);
+		return \Strtotime::parse($str);
 	}
 	
 	public function onReadyBlock($obj) {
@@ -194,7 +194,7 @@ class WakePHPRequest extends HTTPRequest {
 
 	public function checkDomainMatch($domain = null, $pattern = null) {
 		if ($domain === null) {
-			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
+			$domain = parse_url(\Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
 		}
 		if ($pattern === null) {
 			$pattern = $this->appInstance->config->cookiedomain->value;
@@ -222,7 +222,7 @@ class WakePHPRequest extends HTTPRequest {
 		$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 		
-			$this->locale = Request::getString($this->attrs->request['LC']);
+			$this->locale = \Request::getString($this->attrs->request['LC']);
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->locale = $this->appInstance->config->defaultlocale->value;
 			}
@@ -262,7 +262,7 @@ class WakePHPRequest extends HTTPRequest {
 				try {
 					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
 				}
-				catch (RequestHeadersAlreadySent $e) {}
+				catch (\RequestHeadersAlreadySent $e) {}
 				$this->finish();
 				return;
 			}
@@ -295,16 +295,16 @@ class WakePHPRequest extends HTTPRequest {
 			try {
 				$this->header('Content-Type: text/json');
 			}
-			catch (RequestHeadersAlreadySent $e) {}
+			catch (\RequestHeadersAlreadySent $e) {}
 			$this->html = json_encode($result);
 		}
 		elseif ($this->dataType === 'xml') {
-			$converter = new Array2XML();
+			$converter = new \Array2XML();
 			$converter->setRootName($this->xmlRootName);
 			try {
 				$this->header('Content-Type: text/xml');
 			}
-			catch (RequestHeadersAlreadySent $e) {}
+			catch (\RequestHeadersAlreadySent $e) {}
 			$this->html = $converter->convert($result);
 		}
 		else {
@@ -320,7 +320,7 @@ class WakePHPRequest extends HTTPRequest {
 		if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
 			$class = 'Block';
 		}
-		$block['tag'] = (string) new MongoId;
+		$block['tag'] = (string) new \MongoId;
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
 		new $class($block, $this);
@@ -335,7 +335,7 @@ class WakePHPRequest extends HTTPRequest {
 			try {
 				$this->header('404 Not Found');
 			}
-			catch (RequestHeadersAlreadySent $e) {}
+			catch (\RequestHeadersAlreadySent $e) {}
 			$this->appInstance->blocks->getBlock(array(
 				'theme' => $this->theme,
 				'path' => '/404',
@@ -370,6 +370,6 @@ class WakePHPRequest extends HTTPRequest {
 		}
 	}
 	public function __destruct() {
-		 Daemon::log('destruct - '.$this->path);
+		 \Daemon::log('destruct - '.$this->path);
 	}
 }

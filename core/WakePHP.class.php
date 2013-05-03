@@ -1,9 +1,13 @@
 <?php
+namespace WakePHP\core;
+
+use WakePHP\ORM\AccountsORM;
+use WakePHP\ORM\SessionsORM;
 
 /**
  * Main class of application (Quicky, MongoClient, ...)
  */
-class WakePHP extends AppInstance {
+class WakePHP extends \AppInstance {
 
 	public $statistics;
 	public $blocks;
@@ -20,7 +24,7 @@ class WakePHP extends AppInstance {
 	public $components;
 	public $backendServer;
 	public $backendClient;
-	/** @var HTTPClient */
+	/** @var \HTTPClient */
 	public $httpclient;
 
 	public function onReady() {
@@ -32,12 +36,12 @@ class WakePHP extends AppInstance {
 		}
 	}
 	public function init() {
-		Daemon::log(get_class($this) . ' up.');
+		\Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors','On');
 		$appInstance = $this;
-		$appInstance->db = MongoClientAsync::getInstance();
+		$appInstance->db = \MongoClientAsync::getInstance();
 		$appInstance->dbname = $this->config->dbname->value;
-		$appInstance->ipcId = sprintf('%x',crc32(Daemon::$process->getPid().'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
+		$appInstance->ipcId = sprintf('%x',crc32(\Daemon::$process->getPid().'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
@@ -53,11 +57,11 @@ class WakePHP extends AppInstance {
 			$this->{$prop} = new $class($this);
 		}
 
-		$appInstance->LockClient = LockClient::getInstance();
+		$appInstance->LockClient = \LockClient::getInstance();
 		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function($jobname, $command, $client) use ($appInstance)
 		{
 			foreach (glob($appInstance->config->themesdir->value.'*/blocks/*') as $file) {
-				Daemon::$process->fileWatcher->addWatch($file, array($appInstance,'onBlockFileChanged'));
+				\Daemon::$process->fileWatcher->addWatch($file, array($appInstance,'onBlockFileChanged'));
 			}
 		});
 		$this->locales = array_map('basename', glob($appInstance->config->localedir->value.'*', GLOB_ONLYDIR));
@@ -67,7 +71,7 @@ class WakePHP extends AppInstance {
 		if (!in_array('en', $this->locales, true)) {
 			$this->locales[] = 'en';
 		}
-		$req = new stdClass; // @TODO: refactor this shit
+		$req = new \stdClass; // @TODO: refactor this shit
 		$req->appInstance = $appInstance;
 		$appInstance->components = new Components($req);
 		foreach ($appInstance->config as $k => $c) {
@@ -78,7 +82,7 @@ class WakePHP extends AppInstance {
 			}
 		}
 		$this->serializer = 'igbinary';
-		$this->httpclient = HTTPClient::getInstance();
+		$this->httpclient = \HTTPClient::getInstance();
 	}
 	public function getLocaleName($lc) {
 		if (!in_array($lc, $this->locales, true)) {
@@ -109,7 +113,7 @@ class WakePHP extends AppInstance {
 		});
 	}
 	public function onBlockFileChanged($file) {
-		Daemon::log('changed - '.$file);
+		\Daemon::log('changed - '.$file);
 		$blockName = pathinfo($file, PATHINFO_FILENAME);
 		$ext = pathinfo($file, PATHINFO_EXTENSION);
 		$decoder = function($json) {
@@ -131,7 +135,7 @@ class WakePHP extends AppInstance {
 			$this->blocks->saveBlock($block);
 		}
 		elseif ($ext === 'tpl') {
-			Daemon::log('update');
+			\Daemon::log('update');
 			$this->blocks->saveBlock(array(
 				'name' => $blockName,
 				'template' => file_get_contents($file)
@@ -140,7 +144,7 @@ class WakePHP extends AppInstance {
 	}
 	public function getQuickyInstance() {
 		require_once $this->config->utilsdir->value . 'lang_om_number.php';
-		$tpl = new Quicky;
+		$tpl = new \Quicky;
 		$tpl->load_filter('pre','optimize');
 		$tpl->template_dir = $this->config->themesdir->value;
 		$tpl->compile_dir = '/tmp/templates_c/';
@@ -166,8 +170,8 @@ class WakePHP extends AppInstance {
 	
 	/**
 	 * Function handles incoming Remote Procedure Calls
-	 * @param string Method name.
-	 * @param array Arguments.
+	 * @param string $method Method name.
+	 * @param array $args Arguments.
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
@@ -184,8 +188,8 @@ class WakePHP extends AppInstance {
 
 	/**
 	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
+	 * @param object $req Request.
+	 * @param object $upstream Upstream application instance.
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
@@ -194,8 +198,8 @@ class WakePHP extends AppInstance {
 	
 	/**
 	 * Handles the output from downstream requests.
-	 * @param object Request.
-	 * @param string The output.
+	 * @param object $r Request.
+	 * @param string $s The output.
 	 * @return void
 	 */
 	public function requestOut($r, $s) {

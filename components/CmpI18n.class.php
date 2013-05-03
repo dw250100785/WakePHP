@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\components;
+
+use WakePHP\core\Component;
 
 /**
  * I18n component

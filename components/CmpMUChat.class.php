@@ -1,4 +1,5 @@
 <?php
+namespace WakePHP\components;
 /*
 DRAFT:
 
@@ -8,7 +9,9 @@ DRAFT:
  db.createCollection("muchatevents", {capped:true, size:100000})
 */
 
-class CmpMUChat extends AppInstance {
+use WakePHP\ORM\MUChatORM;
+
+class CmpMUChat extends \AppInstance {
  
 	public $sessions = array();
 
@@ -45,14 +48,14 @@ class CmpMUChat extends AppInstance {
 		$this->req = $req;
 		$this->appInstance = $req->appInstance;
 		$this->dbname =& $this->appInstance->dbname;
-		Daemon::log(__CLASS__ . ' up.');
+		\Daemon::log(__CLASS__ . ' up.');
 		$this->db = $this->appInstance->db;
 		$this->ORM = new MUChatORM($this);
 		$this->tags = array();
 		$this->minMsgInterval = 1;
 
-		$this->cache = MemcacheClient::getInstance();
-		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid .'-' . microtime(true)));
+		$this->cache = \MemcacheClient::getInstance();
+		$this->ipcId = sprintf('%x', crc32(\Daemon::$process->pid .'-' . microtime(true)));
 		
 		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
 		$defaults = $this->getConfigDefaults();
@@ -146,7 +149,7 @@ class CmpMUChat extends AppInstance {
 	public function onReady() {
 	
 		if ($this->config->enable->value) {
-			$this->WS = WebSocketServer::getInstance();
+			$this->WS = \WebSocketServer::getInstance();
 			if ($this->WS) {
 				$this->WS->addRoute('MUChat', array($this, 'onHandshake'));
 			}
@@ -156,7 +159,7 @@ class CmpMUChat extends AppInstance {
 			
 			$req = new MUChat_IdleCheck($appInstance, $appInstance);
 			
-			$this->LockClient = LockClient::getInstance();
+			$this->LockClient = \LockClient::getInstance();
 			
 			$this->LockClient->job(__CLASS__,true,function($jobname) use ($appInstance) {
 				$appInstance->pushRequest(new MUChat_UpdateStat($appInstance, $appInstance));
@@ -253,7 +256,7 @@ class MUChatTag {
 			try {
 				$this->cursor->getMore();
 			}
-			catch (MongoClientSessionFinished $e) {
+			catch (\MongoClientSessionFinished $e) {
 				$this->cursor = false;
 			}
 		}
@@ -281,9 +284,9 @@ class MUChatSession {
 	public function __construct($client, $appInstance) {
 	
 		$this->client = $client;
-		$this->lastMsgIDs = new SplStack();
+		$this->lastMsgIDs = new \SplStack();
 		$this->appInstance = $appInstance;
-		$this->sid = new MongoId();
+		$this->sid = new \MongoId();
 		$this->updateSession(array(
 			'atime' => microtime(true),
 			'ltime' => microtime(true),
@@ -570,7 +573,7 @@ class MUChatSession {
 						return;
 					}
 					$session->updateAvailTags();     
-					Daemon::log('Incorrect auth. data.');
+					\Daemon::log('Incorrect auth. data.');
 					$session->setUsername($authkey['username'], false, $packet['tab']);
 				});
 			});
@@ -868,7 +871,7 @@ class MUChatSession {
 	}
 }
 
-class MUChat_MsgQueueRequest extends Request {
+class MUChat_MsgQueueRequest extends \Request {
 	public function run() {
 		foreach ($this->appInstance->tags as $tag) {
 			$tag->touch();
@@ -876,7 +879,7 @@ class MUChat_MsgQueueRequest extends Request {
 		$this->sleep(0.1);
 	}
 }
-class MUChat_IdleCheck extends Request {
+class MUChat_IdleCheck extends \Request {
 	public function run() {
 		$appInstance = $this->appInstance;
 		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->find(function($cursor) use ($appInstance) {
@@ -896,7 +899,7 @@ class MUChat_IdleCheck extends Request {
 		$this->sleep(5);
 	}
 }
-class MUChat_UpdateStat extends Request {
+class MUChat_UpdateStat extends \Request {
 	
 	public function run() {
 	

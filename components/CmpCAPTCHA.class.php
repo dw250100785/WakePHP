@@ -1,9 +1,9 @@
 <?php
-
+namespace WakePHP\components;
 /**
  * CAPTCHA component
  */
-class CmpCAPTCHA extends AsyncServer {
+class CmpCAPTCHA extends \AsyncServer {
 
 	/**
 	 * Function to get default config options from application
@@ -76,7 +76,7 @@ class CmpCAPTCHA extends AsyncServer {
 	}
 }
 
-class CmpCAPTCHASession extends SocketSession {
+class CmpCAPTCHASession extends \SocketSession {
 
 	const PSTATE_FIRSTLINE = 1;
 	const PSTATE_HEADERS = 2;

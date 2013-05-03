@@ -1,5 +1,5 @@
 <?php
-
+namespace WakePHP\core;
 /**
  * Component
  */
@@ -44,14 +44,14 @@ class Component {
 
 			if (!isset($this->config->{$k})) {
 			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
+					$this->config->{$k} = new \Daemon_ConfigEntry($v);
 				} else {
 					$this->config->{$k} = $v;
 				}
 			} else {
 				$current = $this->config->{$k};
 			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
+					$this->config->{$k} = new \Daemon_ConfigEntry($v);
 				} else {
 					$this->config->{$k} = $v;
 				}

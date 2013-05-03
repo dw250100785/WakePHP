@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\ORM;
+
+use WakePHP\core\ORM;
 
 /**
  * BlocksORM
@@ -12,7 +15,7 @@ class BlocksORM extends ORM {
 	}
 	public function getBlock($find, $cb) {
 		if (isset($find['_id']) && is_string($find['_id'])) {
-			$find['_id'] = new MongoId($find['_id']);
+			$find['_id'] = new \MongoId($find['_id']);
 		}
 		$this->blocks->findOne($cb, array('where' => $find));
 	}

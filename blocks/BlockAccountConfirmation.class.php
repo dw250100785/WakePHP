@@ -1,46 +1,49 @@
 <?php
+namespace WakePHP\blocks;
+
+use WakePHP\core\Block;
+
 class BlockAccountConfirmation extends Block {
 
 	public function init() {
-		
-		$block = $this;
-		$block->req->components->Account->onAuth(function($result) use ($block) {
-			if (isset($block->req->attrs->request['email'])) {
-				$email = Request::getString($block->req->attrs->request['email']);
+
+		$this->req->components->Account->onAuth(function ($result) {
+			if (isset($this->req->attrs->request['email'])) {
+				$email = \Request::getString($this->req->attrs->request['email']);
 			}
 			else {
-				if (!$block->req->account['logged']) {
-					$block->req->header('Location: /'.$block->req->locale.'/account/login');
-					$block->req->finish();
+				if (!$this->req->account['logged']) {
+					$this->req->header('Location: /' . $this->req->locale . '/account/login');
+					$this->req->finish();
 					return;
 				}
-				$email = $block->req->account['email'];
+				$email = $this->req->account['email'];
 			}
-			$block->assign('status', 'standby');
-			if (!isset($block->req->attrs->request['code'])) {
-				$block->runTemplate();
+			$this->assign('status', 'standby');
+			if (!isset($this->req->attrs->request['code'])) {
+				$this->runTemplate();
 				return;
 			}
-			$block->req->appInstance->accounts->confirmAccount(array(
-				'email' => $email,
-				'confirmationcode' => trim($block->req->attrs->request['code'])
-			), function ($result) use ($block, $email) {
+			$this->req->appInstance->accounts->confirmAccount(array(
+																  'email'            => $email,
+																  'confirmationcode' => trim($this->req->attrs->request['code'])
+															  ), function ($result) use ($this, $email) {
 				if ($result['updatedExisting']) {
-					$block->success();
+					$this->success();
 				}
 				else {
-					$block->req->appInstance->accounts->getAccountByEmail($email, function ($account) use ($block) {
-						
-						$block->assign('status', isset($account['confirmationcode']) ? 'incorrectCode' : ($account ? 'alreadyConfirmed' : 'accountNotFound'));
-						$block->runTemplate();
-						
+					$this->req->appInstance->accounts->getAccountByEmail($email, function ($account) {
+
+						$this->assign('status', isset($account['confirmationcode']) ? 'incorrectCode' : ($account ? 'alreadyConfirmed' : 'accountNotFound'));
+						$this->runTemplate();
 					});
 				}
 			});
 		});
 	}
+
 	public function success() {
-		$this->req->header('Location: /'.$this->req->locale.'/account/profile');
+		$this->req->header('Location: /' . $this->req->locale . '/account/profile');
 		$this->req->finish();
 	}
 

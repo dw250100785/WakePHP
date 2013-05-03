@@ -1,4 +1,5 @@
 <?php
+namespace WakePHP\core;
 
 /**
  * Account component
@@ -6,11 +7,13 @@
 class Components {
 
 	public $req;
+
 	public function __construct($req) {
 		$this->req = $req;
 	}
+
 	public function __get($name) {
-		$class = 'Cmp'.$name;
+		$class = '\\WakePHP\\components\\' . $name;
 		if (!class_exists($class)) {
 			return false;
 		}

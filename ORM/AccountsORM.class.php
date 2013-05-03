@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\ORM;
+
+use WakePHP\core\ORM;
 
 /**
  * AccountsORM
@@ -27,7 +30,7 @@ class AccountsORM extends ORM {
 	public function deleteAccount($cond = array(), $cb = null) {
 		if (sizeof($cond)) {
 			if (isset($cond['_id']) && is_string($cond['_id'])) {
-				$cond['_id'] = new MongoId($cond['_id']);
+				$cond['_id'] = new \MongoId($cond['_id']);
 			}
 			$this->accounts->remove($cond, $cb);
 		}
@@ -127,7 +130,7 @@ class AccountsORM extends ORM {
 
 	public function addACLgroupToAccount($account, $group, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new MongoId($account['_id']);
+			$account['_id'] = new \MongoId($account['_id']);
 		}
 		if (!is_string($group)) {
 			return;
@@ -137,7 +140,7 @@ class AccountsORM extends ORM {
 
 	public function updateAccount($account, $update, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new MongoId($account['_id']);
+			$account['_id'] = new \MongoId($account['_id']);
 		}
 		$this->accounts->update($account, $update, 0, $cb);
 	}
@@ -150,7 +153,7 @@ class AccountsORM extends ORM {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		}
 		if (isset($account['regdate']) && is_string($account['regdate'])) {
-			$account['regdate'] = Strtotime::parse($account['regdate']);
+			$account['regdate'] = \Strtotime::parse($account['regdate']);
 		}
 		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
 			$account['aclgroups'] = array_filter(preg_split('~\s*[,;]\s*~s', $account['aclgroups']), 'strlen');
@@ -161,7 +164,7 @@ class AccountsORM extends ORM {
 
 		if (isset($account['_id'])) {
 			if (is_string($account['_id'])) {
-				$account['_id'] = new MongoId($account['_id']);
+				$account['_id'] = new \MongoId($account['_id']);
 			}
 			$cond = array('_id' => $account['_id']);
 		}
@@ -170,7 +173,7 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			Daemon::log(Debug::dump($account));
+			\Daemon::log(\Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		}
 		else {
@@ -185,7 +188,7 @@ class AccountsORM extends ORM {
 			'location'         => '',
 			'password'         => '',
 			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
-															 . Daemon::uniqid() . "\x00"
+															 . \Daemon::uniqid() . "\x00"
 															 . $this->appInstance->config->cryptsalt->value . "\x00"
 															 . microtime(true) . "\x00"
 															 . mt_rand(0, mt_getrandmax()))

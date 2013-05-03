@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\blocks;
+
+use WakePHP\core\Block;
 
 class BlockPagetook extends Block {
 
