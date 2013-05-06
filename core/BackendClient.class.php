@@ -1,5 +1,7 @@
 <?php
-class BackendClient extends NetworkClient {
+namespace WakePHP\core;
+
+class BackendClient extends \NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -8,15 +10,17 @@ class BackendClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return [
 			// @todo add description strings
-			'servers'               =>  '127.0.0.1',
-			'port'					=> 9999,
-			'maxconnperserv'		=> 32
+			'servers'        => '127.0.0.1',
+			'port'           => 9999,
+			'maxconnperserv' => 32
 		];
 	}
 }
-class BackendClientConnection extends Connection {
-	
+
+class BackendClientConnection extends \Connection {
+
 	public $reqCounter = 0;
+
 	public function onPacket($p) {
 		if (!is_array($p)) {
 			return;
@@ -24,71 +28,74 @@ class BackendClientConnection extends Connection {
 		if ($p['type'] === 'propertyUpdated') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				Daemon::log(__METHOD__.': Undefined request #'.$rid);
+				\Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
 				return;
-			}	
-			$req = $this->requests[$rid];
+			}
+			$req               = $this->requests[$rid];
 			$req->{$p['prop']} = $p['val'];
 		}
 		elseif ($p['type'] === 'readyBlock') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				Daemon::log(__METHOD__.': Undefined request #'.$rid);
+				\Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
 				return;
 			}
 			$req = $this->requests[$rid];
 			$bid = $p['bid'];
 			if (!isset($req->queries[$bid])) {
-				Daemon::log(__METHOD__.': >>>>> Undefined block #'.$rid.'-'.$bid.': '.json_encode($p));
+				\Daemon::log(__METHOD__ . ': >>>>> Undefined block #' . $rid . '-' . $bid . ': ' . json_encode($p));
 				return;
 			}
 			$block = $req->queries[$bid];
-			$block->runTemplate(); 
+			$block->runTemplate();
 			unset($req->queries[$bid]);
 			//Daemon::log(__METHOD__.': Unsetting block #'.$rid.'-'.$bid . ': '. json_encode($p));
 		}
 	}
-	
+
 	public function onFinish() {
 		$this->queries = null;
 	}
-	
+
 	public function beginRequest($req) {
-		Daemon::log('beginRequest');
+		\Daemon::log('beginRequest');
 		if ($this->reqCounter === PHP_INT_MAX) {
 			$this->reqCounter = 0;
 		}
-		$id = ++$this->reqCounter;
-		$req->rid = $id;
+		$id                  = ++$this->reqCounter;
+		$req->rid            = $id;
 		$this->requests[$id] = $req;
 		$this->sendPacket([
-			'type' => 'startReq',
-			'rid' => $id,
-			'req' => $req->exportObject(),
-		]);
+							  'type' => 'startReq',
+							  'rid'  => $id,
+							  'req'  => $req->exportObject(),
+						  ]);
 	}
+
 	public function endRequest($req) {
 		unset($this->requests[$req->rid]);
 		$this->sendPacket([
-			'type' => 'endRequest',
-			'rid' => $req->rid,
-		]);
+							  'type' => 'endRequest',
+							  'rid'  => $req->rid,
+						  ]);
 	}
+
 	public function getBlock($rid, $block) {
 		if (!isset($this->requests[$rid])) {
-			Daemon::log(__METHOD__.': Unregistered request #'.$rid);
+			\Daemon::log(__METHOD__ . ': Unregistered request #' . $rid);
 		}
-		$req = $this->requests[$rid];
-		$bid = ++$req->queriesCnt;
+		$req                = $this->requests[$rid];
+		$bid                = ++$req->queriesCnt;
 		$req->queries[$bid] = $block;
 		//Daemon::log('Creating query '.@json_encode([$rid, $bid, $block['name'], $block['type']]));
 		$this->sendPacket([
-			'type' => 'getBlock',
-			'rid' => $rid,
-			'bid' => $bid,
-			'block' => $block->exportObject(),
-		]);
+							  'type'  => 'getBlock',
+							  'rid'   => $rid,
+							  'bid'   => $bid,
+							  'block' => $block->exportObject(),
+						  ]);
 	}
+
 	public function sendPacket($p) {
 		$data = igbinary_serialize($p);
 		$this->write(pack('N', strlen($data)) . $data);
@@ -108,9 +115,9 @@ class BackendClientConnection extends Connection {
 			return; // not ready yet
 		}
 
-		$u = unpack('N', $this->buf);
+		$u    = unpack('N', $this->buf);
 		$size = $u[1];
-		
+
 		if (strlen($this->buf) < 4 + $size) {
 			return; // no ready yet;
 		}

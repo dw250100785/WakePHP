@@ -2,6 +2,16 @@
 namespace WakePHP\core;
 
 class OAuth {
+	/**
+	 * It's not my decision to write static method.
+	 * @param $method
+	 * @param $url
+	 * @param $oauth_params
+	 * @param $app_secret
+	 * @param string $user_token
+	 * @param array $request_params will be merged into oauth params
+	 * @return mixed
+	 */
 	public static function getSignature($method, $url, $oauth_params, $app_secret, $user_token = '', $request_params = array()) {
 		$method = strtoupper($method);
 		$params = array_merge($request_params, $oauth_params);

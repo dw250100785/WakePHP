@@ -1,4 +1,5 @@
 <?php
+namespace WakePHP\core;
 
 abstract class ExternalAuthAgent {
 
@@ -8,6 +9,5 @@ abstract class ExternalAuthAgent {
 
 		$this->appInstance = $appInstance;
 	}
-	
-	
+
 }
