@@ -3,8 +3,8 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\Request;
-use PHPDaemon\RequestHeadersAlreadySent;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Request\RequestHeadersAlreadySent;
+use PHPDaemon\Structures\StackCallbacks;
 use WakePHP\Utils\Array2XML;
 
 /**
