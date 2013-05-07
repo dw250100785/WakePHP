@@ -1,6 +1,8 @@
 <?php
 namespace WakePHP\Components;
 
+use PHPDaemon\Daemon\ConfigEntry;
+
 /**
  * CAPTCHA component
  */
@@ -13,7 +15,7 @@ class CmpCAPTCHA extends AsyncServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			'privatekey' => new \Daemon_ConfigEntry(''),
+			'privatekey' => new ConfigEntry(''),
 		);
 	}
 
