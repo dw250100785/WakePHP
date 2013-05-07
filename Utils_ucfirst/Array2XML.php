@@ -1,30 +1,32 @@
 <?php
-/**
- * Этот скрипт содержит класс, предназначенный для преобразования PHP массивов в
- * XML формат. Поддерживаются многомерные массивы.
- * 
- * Пример использования:
- * 
- *
- * @author Стаценко Владимир http://www.simplecoding.org <vova_33@gala.net>
- * @version 0.1
- */
+namespace WakePHP\Utils;
+
+	/**
+	 * Этот скрипт содержит класс, предназначенный для преобразования PHP массивов в
+	 * XML формат. Поддерживаются многомерные массивы.
+	 *
+	 * Пример использования:
+	 *
+	 *
+	 * @author  Стаценко Владимир http://www.simplecoding.org <vova_33@gala.net>
+	 * @version 0.1
+	 */
 
 /**
  * Этот класс предназначен для преобразования PHP массива в XML формат
  */
 class Array2XML {
-	
+
 	private $writer;
 	private $version = '1.0';
 	private $encoding = 'UTF-8';
 	private $rootName = 'root';
-	
+
 	//конструктор
 	function __construct() {
-		$this->writer = new XMLWriter();
+		$this->writer = new \XMLWriter();
 	}
-	
+
 	/**
 	 * Преобразование PHP массива в XML формат.
 	 * Если исходный массив пуст, то XML файл будет содержать только корневой тег.
@@ -42,7 +44,7 @@ class Array2XML {
 		$this->writer->endElement();
 		return $this->writer->outputMemory();
 	}
-	
+
 	/**
 	 * Установка версии XML
 	 *
@@ -51,7 +53,7 @@ class Array2XML {
 	public function setVersion($version) {
 		$this->version = $version;
 	}
-	
+
 	/**
 	 * Установка кодировки
 	 *
@@ -60,7 +62,7 @@ class Array2XML {
 	public function setEncoding($encoding) {
 		$this->encoding = $encoding;
 	}
-	
+
 	/**
 	 * Установка имени корневого тега
 	 *
@@ -69,15 +71,15 @@ class Array2XML {
 	public function setRootName($rootName) {
 		$this->rootName = $rootName;
 	}
-	
+
 	/*
 	 * Этот метод преобразует данные массива в XML строку.
 	 * Если массив многомерный, то метод вызывается рекурсивно.
 	 */
 	private function getXML($data, $parentKey) {
 		foreach ($data as $key => $val) {
-			$e = explode(' ', $key, 2);
-			$key = $e[0];
+			$e     = explode(' ', $key, 2);
+			$key   = $e[0];
 			$attrs = isset($e[1]) ? json_decode($e[1], true) : array();
 			if (is_numeric($key)) {
 				$key = rtrim(substr($parentKey, 0, -1), 'e');

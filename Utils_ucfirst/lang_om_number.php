@@ -1,4 +1,7 @@
 <?php
+namespace WakePHP\Utils;
+
+use PHPDaemon\Daemon;
 
 /**
  * lang_om_number function
@@ -26,4 +29,3 @@ function lang_om_number($number, $subject, $mode = 0, $withoutnum = false) {
 		return ((!$withoutnum) ? number_format($number) . ' ' : '') . $titles[$n];
 	}
 }
-

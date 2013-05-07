@@ -155,7 +155,7 @@ class AccountsORM extends ORM {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);
 		}
 		if (isset($account['regdate']) && is_string($account['regdate'])) {
-			$account['regdate'] = \Strtotime::parse($account['regdate']);
+			$account['regdate'] = \WakePHP\Utils\Strtotime::parse($account['regdate']);
 		}
 		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
 			$account['aclgroups'] = array_filter(preg_split('~\s*[,;]\s*~s', $account['aclgroups']), 'strlen');

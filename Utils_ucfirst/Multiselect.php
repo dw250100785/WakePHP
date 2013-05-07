@@ -1,4 +1,5 @@
 <?php
+namespace WakePHP\Utils;
 
 /**
  * Multiselect class.
@@ -18,7 +19,7 @@ class Multiselect {
 				continue;
 			}
 		}
-		return array_values($arr);		
+		return array_values($arr);
 	}
-	
+
 }

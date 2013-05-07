@@ -184,7 +184,7 @@ class WakePHPRequest extends \HTTPRequest {
 	}
 
 	public function strtotime($str) {
-		return \Strtotime::parse($str);
+		return \WakePHP\Utils\Strtotime::parse($str);
 	}
 
 	public function onReadyBlock($obj) {
