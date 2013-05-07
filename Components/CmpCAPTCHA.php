@@ -2,6 +2,7 @@
 namespace WakePHP\Components;
 
 use PHPDaemon\Daemon\ConfigEntry;
+use PHPDaemon\Request;
 
 /**
  * CAPTCHA component

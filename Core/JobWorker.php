@@ -3,6 +3,7 @@ namespace WakePHP\Core;
 
 use PHPDaemon\AppInstance;
 use PHPDaemon\Clients\MongoClientAsync;
+use PHPDaemon\Clients\MongoClientSessionFinished;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\Timer;
@@ -53,7 +54,7 @@ class JobWorker extends AppInstance {
 			elseif (!$JobManager->resultCursor->session->busy) {
 				try {
 					$JobManager->resultCursor->getMore();
-				} catch (\MongoClientSessionFinished $e) {
+				} catch (MongoClientSessionFinished $e) {
 					$JobManager->resultCursor = false;
 				}
 			}
