@@ -338,9 +338,7 @@ class WakePHPRequest extends \HTTPRequest {
 			$this->html = $converter->convert($result);
 		}
 		else {
-			$this->html = json_encode(array(
-										  'errmsg' => 'Unsupported data-type.'
-									  ));
+			$this->html = json_encode(['errmsg' => 'Unsupported data-type.']);
 		}
 		++$this->jobDone;
 		$this->wakeup();

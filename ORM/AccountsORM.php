@@ -1,6 +1,8 @@
 <?php
 namespace WakePHP\ORM;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
 use WakePHP\Core\ORM;
 
 /**
