@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Servers\NetworkServer;
+use PHPDaemon\NetworkServer;
 
 class BackendServer extends NetworkServer {
 	/**
