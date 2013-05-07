@@ -1,6 +1,7 @@
 <?php
-namespace WakePHP\blocks;
+namespace WakePHP\Blocks;
 
+use PHPDaemon\Request;
 use WakePHP\core\Block;
 
 class BlockAccountConfirmation extends Block {
@@ -9,7 +10,7 @@ class BlockAccountConfirmation extends Block {
 
 		$this->req->components->Account->onAuth(function ($result) {
 			if (isset($this->req->attrs->request['email'])) {
-				$email = \Request::getString($this->req->attrs->request['email']);
+				$email = Request::getString($this->req->attrs->request['email']);
 			}
 			else {
 				if (!$this->req->account['logged']) {

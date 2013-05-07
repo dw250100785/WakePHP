@@ -1,9 +1,8 @@
 <?php
-namespace WakePHP\blocks;
+namespace WakePHP\Blocks;
 
 use WakePHP\core\Block;
 
 class BlockText extends Block {
-
 
 }
