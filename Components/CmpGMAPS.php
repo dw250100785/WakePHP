@@ -2,7 +2,7 @@
 namespace WakePHP\Components;
 
 use PHPDaemon\Clients\HTTPClient;
-use WakePHP\core\Component;
+use WakePHP\Core\Component;
 
 /**
  * GMAPS component

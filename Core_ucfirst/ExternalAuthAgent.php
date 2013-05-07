@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
 
 abstract class ExternalAuthAgent {
 

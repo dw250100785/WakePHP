@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
 
 /**
  * DLM class.
@@ -30,7 +30,7 @@ class DLM {
 																										   ));
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
-			\Daemon_TimedEvent::setTimeout($this->resultEvent);
+			\PHPDaemon\Daemon\TimedEvent::setTimeout($this->resultEvent);
 		}
 	}
 }

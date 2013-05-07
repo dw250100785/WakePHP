@@ -1,5 +1,9 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
+
+use PHPDaemon\Daemon\ConfigEntry;
+use PHPDaemon\DeferredEvent;
+
 /**
  * Component
  */
@@ -10,18 +14,21 @@ class Component {
 	/** @var WakePHP */
 	public $appInstance;
 	public $config;
+
 	public function __construct($req) {
-		$this->req = $req;
+		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
-		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
-		$defaults = $this->getConfigDefaults();
+		$this->config      = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
+		$defaults          = $this->getConfigDefaults();
 		if ($defaults) {
 			$this->processDefaultConfig($defaults);
 		}
 		$this->init();
 	}
+
 	public function init() {
 	}
+
 	/**
 	 * Function to get default config options from application
 	 * Override to set your own
@@ -30,10 +37,12 @@ class Component {
 	protected function getConfigDefaults() {
 		return false;
 	}
+
 	public function checkReferer() {
 		return $this->req->checkDomainMatch();
 	}
-	 /**
+
+	/**
 	 * Process default config
 	 * @param array {"setting": "value"}
 	 * @return void
@@ -43,43 +52,49 @@ class Component {
 			$k = strtolower(str_replace('-', '', $k));
 
 			if (!isset($this->config->{$k})) {
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new \Daemon_ConfigEntry($v);
-				} else {
+				if (is_scalar($v)) {
+					$this->config->{$k} = new ConfigEntry($v);
+				}
+				else {
 					$this->config->{$k} = $v;
 				}
-			} else {
+			}
+			else {
 				$current = $this->config->{$k};
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new \Daemon_ConfigEntry($v);
-				} else {
+				if (is_scalar($v)) {
+					$this->config->{$k} = new ConfigEntry($v);
+				}
+				else {
 					$this->config->{$k} = $v;
 				}
-				
+
 				$this->config->{$k}->setHumanValue($current->value);
-				$this->config->{$k}->source = $current->source;
+				$this->config->{$k}->source   = $current->source;
 				$this->config->{$k}->revision = $current->revision;
 			}
 		}
 	}
+
 	public function __get($event) {
-		if (!method_exists($this, $event.'Event')) {
+		if (!method_exists($this, $event . 'Event')) {
 			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 			return null;
 		}
-		$this->{$event} = new \DeferredEvent($this->{$event.'Event'}());
+		$this->{$event}            = new DeferredEvent($this->{$event . 'Event'}());
 		$this->{$event}->component = $this;
 		return $this->{$event};
 	}
+
 	public function cleanup() {
 		foreach ($this as $key => $property) {
-			if ($property instanceof \DeferredEvent) {
+			if ($property instanceof DeferredEvent) {
 				$property->cleanup();
 			}
 			unset($this->{$key});
 		}
 	}
-	public function __call($event,$args) {
-		return call_user_func_array($this->{$event},$args);
+
+	public function __call($event, $args) {
+		return call_user_func_array($this->{$event}, $args);
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\core\ORM;
+use WakePHP\Core\ORM;
 
 /**
  * AccountsORM
@@ -173,7 +173,7 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			Daemon::log(\Debug::dump($account));
+			Daemon::log(Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		}
 		else {

@@ -1,23 +1,10 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
 
-class BackendClient extends \NetworkClient {
-	/**
-	 * Setting default config options
-	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return [
-			// @todo add description strings
-			'servers'        => '127.0.0.1',
-			'port'           => 9999,
-			'maxconnperserv' => 32
-		];
-	}
-}
+use PHPDaemon\Connection;
+use PHPDaemon\Daemon;
 
-class BackendClientConnection extends \Connection {
+class BackendClientConnection extends Connection {
 
 	public $reqCounter = 0;
 

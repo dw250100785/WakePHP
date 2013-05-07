@@ -2,7 +2,7 @@
 namespace WakePHP\Components;
 
 use PHPDaemon\Request;
-use WakePHP\core\Component;
+use WakePHP\Core\Component;
 
 /**
  * Blocks component

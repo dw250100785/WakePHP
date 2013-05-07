@@ -1,25 +1,11 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
 
-class BackendServer extends \NetworkServer {
-	/**
-	 * Setting default config options
-	 * Overriden from NetworkServer::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return array(
-			// @todo add description strings
-			'listen'         => '0.0.0.0',
-			'port'           => 9999,
-			'defaultcharset' => 'utf-8',
-			'expose'         => 1,
-		);
-	}
+use PHPDaemon\Connection;
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
 
-}
-
-class BackendServerConnection extends \Connection {
+class BackendServerConnection extends Connection {
 	public $requests = [];
 
 	public function init() {
@@ -41,7 +27,7 @@ class BackendServerConnection extends \Connection {
 		elseif ($p['type'] === 'getBlock') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
+				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . Debug::dump($rid));
 				return;
 			}
 			$req = $this->requests[$rid];
@@ -58,7 +44,7 @@ class BackendServerConnection extends \Connection {
 		elseif ($p['type'] == 'endRequest') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
+				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . Debug::dump($rid));
 				return;
 			}
 			$req = $this->requests[$rid];

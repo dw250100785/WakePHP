@@ -1,5 +1,10 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
+
+use PHPDaemon\Daemon;
+use PHPDaemon\Request;
+use PHPDaemon\RequestHeadersAlreadySent;
+use PHPDaemon\StackCallbacks;
 
 /**
  * Request class.
@@ -37,7 +42,7 @@ class WakePHPRequest extends \HTTPRequest {
 	 * @param null|string $appInstance
 	 * @param object $upstream.
 	 * @param $parent
-	 * @return \WakePHP\core\WakePHPRequest
+	 * @return \WakePHP\Core\WakePHPRequest
 	 */
 	public function __construct($appInstance, $upstream, $parent = null) {
 		if (self::$emulMode) {
@@ -50,7 +55,7 @@ class WakePHPRequest extends \HTTPRequest {
 	public function init() {
 		try {
 			$this->header('Content-Type: text/html');
-		} catch (\RequestHeadersAlreadySent $e) {
+		} catch (RequestHeadersAlreadySent $e) {
 		}
 
 		$this->req = $this;
@@ -110,7 +115,7 @@ class WakePHPRequest extends \HTTPRequest {
 		else {
 			if ($this->backendClientInited) {
 				if ($this->backendClientCbs === null) {
-					$this->backendClientCbs = new \StackCallbacks;
+					$this->backendClientCbs = new StackCallbacks();
 				}
 				$this->backendClientCbs->push($fc);
 			}
@@ -218,7 +223,7 @@ class WakePHPRequest extends \HTTPRequest {
 
 	public function checkDomainMatch($domain = null, $pattern = null) {
 		if ($domain === null) {
-			$domain = parse_url(\Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
+			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
 		}
 		if ($pattern === null) {
 			$pattern = $this->appInstance->config->cookiedomain->value;
@@ -247,7 +252,7 @@ class WakePHPRequest extends \HTTPRequest {
 		$e                = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
 		if (($e[0] === 'component') && isset($e[1])) {
 
-			$this->locale = \Request::getString($this->attrs->request['LC']);
+			$this->locale = Request::getString($this->attrs->request['LC']);
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->locale = $this->appInstance->config->defaultlocale->value;
 			}
@@ -286,7 +291,7 @@ class WakePHPRequest extends \HTTPRequest {
 			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				try {
 					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
-				} catch (\RequestHeadersAlreadySent $e) {
+				} catch (RequestHeadersAlreadySent $e) {
 				}
 				$this->finish();
 				return;
@@ -319,7 +324,7 @@ class WakePHPRequest extends \HTTPRequest {
 		if ($this->dataType === 'json') {
 			try {
 				$this->header('Content-Type: text/json');
-			} catch (\RequestHeadersAlreadySent $e) {
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->html = json_encode($result);
 		}
@@ -328,7 +333,7 @@ class WakePHPRequest extends \HTTPRequest {
 			$converter->setRootName($this->xmlRootName);
 			try {
 				$this->header('Content-Type: text/xml');
-			} catch (\RequestHeadersAlreadySent $e) {
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->html = $converter->convert($result);
 		}
@@ -359,7 +364,7 @@ class WakePHPRequest extends \HTTPRequest {
 			++$this->jobTotal;
 			try {
 				$this->header('404 Not Found');
-			} catch (\RequestHeadersAlreadySent $e) {
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->appInstance->blocks->getBlock(array(
 													 'theme' => $this->theme,

@@ -1,5 +1,9 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
+
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+use PHPDaemon\Timer;
 
 /**
  * JobManager class.
@@ -20,13 +24,13 @@ class JobManager {
 
 		$JobManager        = $this;
 		$appInstance       = $this->appInstance;
-		$this->resultEvent = \Timer::add(function ($event) use ($JobManager, $appInstance) {
+		$this->resultEvent = Timer::add(function ($event) use ($JobManager, $appInstance) {
 
 			if (!$JobManager->resultCursor) {
 				$appInstance->db->{$appInstance->config->dbname->value . '.jobresults'}->find(function ($cursor) use ($JobManager, $appInstance) {
 					$JobManager->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {
-						Daemon::log('items = ' . \Debug::dump($cursor->items));
+						Daemon::log('items = ' . Debug::dump($cursor->items));
 					}
 					foreach ($cursor->items as $k => &$item) {
 						$jobId = (string)$item['_id'];
@@ -73,7 +77,7 @@ class JobManager {
 																										   ));
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
-			\Daemon_TimedEvent::setTimeout($this->resultEvent);
+			\PHPDaemon\Daemon\TimedEvent::setTimeout($this->resultEvent);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 namespace WakePHP\Blocks;
 
 use PHPDaemon\Request;
-use WakePHP\core\Block;
+use WakePHP\Core\Block;
 
 class BlockAccountConfirmation extends Block {
 

@@ -1,10 +1,12 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
+
+use PHPDaemon\AppInstance;
 
 /**
  * Job worker
  */
-class JobWorker extends \AppInstance {
+class JobWorker extends AppInstance {
 
 	public $sessions;
 	public $db;
@@ -17,17 +19,17 @@ class JobWorker extends \AppInstance {
 		$this->dbname      = $this->config->dbname->value;
 		$this->jobqueue    = $this->db->{$this->dbname . '.jobqueue'};
 		$this->jobresults  = $this->db->{$this->dbname . '.jobqueue'};
-		$this->resultEvent = \Timer::add(function ($event) {
+		$this->resultEvent = Timer::add(function ($event) {
 
 			if (!$this->resultCursor) {
 				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) use ($JobManager, $appInstance) {
 					$JobManager->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {
-						Daemon::log('items = ' . \Debug::dump($cursor->items));
+						Daemon::log('items = ' . Debug::dump($cursor->items));
 					}
 					foreach ($cursor->items as $k => &$item) {
 						$jobId = (string)$item['_id'];
-						Daemon::log(\Debug::dump($item));
+						Daemon::log(Debug::dump($item));
 						unset($cursor->items[$k]);
 					}
 					/*if ($cursor->finished) {

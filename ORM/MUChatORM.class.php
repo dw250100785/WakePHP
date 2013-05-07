@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\core\ORM;
+use WakePHP\Core\ORM;
 
 /**
  * MUChatORM
@@ -12,16 +12,17 @@ class MUChatORM extends ORM {
 		$this->sessions = new SessionsORM($this->appInstance);
 		$this->accounts = new AccountsORM($this->appInstance);
 	}
+
 	public function getAuthKey($authkey, $cb) {
-		
+
 		$component = $this;
-		$this->sessions->getSessionById($authkey, function($session) use ($cb, $component) {
+		$this->sessions->getSessionById($authkey, function ($session) use ($cb, $component) {
 
 			if (!isset($session['accountId'])) {
 				$cb(false);
 				return;
 			}
-			$component->accounts->getAccountById($session['accountId'], function ($account) use  ($cb) {
+			$component->accounts->getAccountById($session['accountId'], function ($account) use ($cb) {
 				if (!$account) {
 					$cb(false);
 					return;
@@ -30,12 +31,12 @@ class MUChatORM extends ORM {
 					$account['username'] = strstr($account['email'], '@', true);
 				}
 				$cb(array(
-					'username' => $account['username'],
-					'tags' => array('mainroom','secondroom'),
-					'su' => in_array('Superusers', $account['aclgroups']),
-				));
+						'username' => $account['username'],
+						'tags'     => array('mainroom', 'secondroom'),
+						'su'       => in_array('Superusers', $account['aclgroups']),
+					));
 			});
-			
+
 		});
 	}
 }

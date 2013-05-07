@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\core;
+namespace WakePHP\Core;
 
 /**
  * Account component
@@ -13,7 +13,7 @@ class Components {
 	}
 
 	public function __get($name) {
-		$class = '\\WakePHP\\components\\' . $name;
+		$class = '\\WakePHP\\Components\\' . $name;
 		if (!class_exists($class)) {
 			return false;
 		}

@@ -4,9 +4,9 @@ namespace WakePHP\Components;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\Daemon;
 use PHPDaemon\Request;
-use WakePHP\core\Component;
-use WakePHP\core\DeferredEventCmp;
-use WakePHP\core\OAuth;
+use WakePHP\Core\Component;
+use WakePHP\Core\DeferredEventCmp;
+use WakePHP\Core\OAuth;
 
 /**
  * Account component
