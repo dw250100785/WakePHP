@@ -2,6 +2,10 @@
 namespace WakePHP\Core;
 
 use PHPDaemon\AppInstance;
+use PHPDaemon\Clients\MongoClientAsync;
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+use PHPDaemon\Timer;
 
 /**
  * Job worker
@@ -15,7 +19,7 @@ class JobWorker extends AppInstance {
 	public $components;
 
 	public function onReady() {
-		$this->db          = \MongoClientAsync::getInstance();
+		$this->db          = MongoClientAsync::getInstance();
 		$this->dbname      = $this->config->dbname->value;
 		$this->jobqueue    = $this->db->{$this->dbname . '.jobqueue'};
 		$this->jobresults  = $this->db->{$this->dbname . '.jobqueue'};

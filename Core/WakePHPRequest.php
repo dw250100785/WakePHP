@@ -5,6 +5,7 @@ use PHPDaemon\Daemon;
 use PHPDaemon\Request;
 use PHPDaemon\RequestHeadersAlreadySent;
 use PHPDaemon\StackCallbacks;
+use WakePHP\Utils\Array2XML;
 
 /**
  * Request class.
@@ -329,7 +330,7 @@ class WakePHPRequest extends \HTTPRequest {
 			$this->html = json_encode($result);
 		}
 		elseif ($this->dataType === 'xml') {
-			$converter = new \Array2XML();
+			$converter = new Array2XML();
 			$converter->setRootName($this->xmlRootName);
 			try {
 				$this->header('Content-Type: text/xml');
