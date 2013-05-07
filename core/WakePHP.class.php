@@ -37,12 +37,12 @@ class WakePHP extends \AppInstance {
 	}
 
 	public function init() {
-		\Daemon::log(get_class($this) . ' up.');
+		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
 		$appInstance             = $this;
 		$appInstance->db         = \MongoClientAsync::getInstance();
 		$appInstance->dbname     = $this->config->dbname->value;
-		$appInstance->ipcId      = sprintf('%x', crc32(\Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
+		$appInstance->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
@@ -61,7 +61,7 @@ class WakePHP extends \AppInstance {
 		$appInstance->LockClient = \LockClient::getInstance();
 		$appInstance->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) use ($appInstance) {
 			foreach (glob($appInstance->config->themesdir->value . '*/blocks/*') as $file) {
-				\Daemon::$process->fileWatcher->addWatch($file, array($appInstance, 'onBlockFileChanged'));
+				Daemon::$process->fileWatcher->addWatch($file, array($appInstance, 'onBlockFileChanged'));
 			}
 		});
 		$this->locales = array_map('basename', glob($appInstance->config->localedir->value . '*', GLOB_ONLYDIR));
@@ -117,7 +117,7 @@ class WakePHP extends \AppInstance {
 	}
 
 	public function onBlockFileChanged($file) {
-		\Daemon::log('changed - ' . $file);
+		Daemon::log('changed - ' . $file);
 		$blockName = pathinfo($file, PATHINFO_FILENAME);
 		$ext       = pathinfo($file, PATHINFO_EXTENSION);
 		$decoder   = function ($json) {
@@ -139,7 +139,7 @@ class WakePHP extends \AppInstance {
 			$this->blocks->saveBlock($block);
 		}
 		elseif ($ext === 'tpl') {
-			\Daemon::log('update');
+			Daemon::log('update');
 			$this->blocks->saveBlock(array(
 										 'name'     => $blockName,
 										 'template' => file_get_contents($file)

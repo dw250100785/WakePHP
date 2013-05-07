@@ -1,6 +1,7 @@
 <?php
-namespace WakePHP\components;
+namespace WakePHP\Components;
 
+use PHPDaemon\Clients\HTTPClient;
 use WakePHP\core\Component;
 
 /**
@@ -12,7 +13,7 @@ class CmpGMAPS extends Component {
 	 * @return void
 	 */
 	public function init() {
-		$this->httpclient = \HTTPClient::getInstance();
+		$this->httpclient = HTTPClient::getInstance();
 	}
 
 	/**
@@ -27,13 +28,13 @@ class CmpGMAPS extends Component {
 	public function geo($q, $cb) {
 		$this->httpclient->get(
 			['http://maps.google.com/maps/geo',
-				'q'			=> $q,
-				'output'	=> 'json',
-				'oe'		=> 'utf8',
-				'sensor'	=> 'false',
+				'q'      => $q,
+				'output' => 'json',
+				'oe'     => 'utf8',
+				'sensor' => 'false',
 			],
-			function($conn, $success) use ($cb) {
-				call_user_func($cb, json_decode($conn->body , true));
+			function ($conn, $success) use ($cb) {
+				call_user_func($cb, json_decode($conn->body, true));
 			}
 		);
 	}

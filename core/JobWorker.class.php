@@ -23,11 +23,11 @@ class JobWorker extends \AppInstance {
 				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) use ($JobManager, $appInstance) {
 					$JobManager->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {
-						\Daemon::log('items = ' . \Debug::dump($cursor->items));
+						Daemon::log('items = ' . \Debug::dump($cursor->items));
 					}
 					foreach ($cursor->items as $k => &$item) {
 						$jobId = (string)$item['_id'];
-						\Daemon::log(\Debug::dump($item));
+						Daemon::log(\Debug::dump($item));
 						unset($cursor->items[$k]);
 					}
 					/*if ($cursor->finished) {
@@ -84,7 +84,7 @@ class JobWorker extends \AppInstance {
 	}
 
 	public function init() {
-		\Daemon::log(get_class($this) . ' up.');
+		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
 	}
 

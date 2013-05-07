@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\components;
+namespace WakePHP\Components;
 
 use WakePHP\core\Component;
 
@@ -15,11 +15,11 @@ class CmpStatistics extends Component {
 	 */
 	public function execute() {
 		$this->pagehits->insert(array(
-			'url'     => $req->attrs->server['DOCUMENT_URI'],
-			'country' => $req->attrs->server['GEOIP_COUNTRY_CODE'],
-			'ip'      => $req->attrs->server['REMOTE_ADDR'],
-			'agent'   => $req->attrs->server['HTTP_USER_AGENT'],
-		));	
+									'url'     => $req->attrs->server['DOCUMENT_URI'],
+									'country' => $req->attrs->server['GEOIP_COUNTRY_CODE'],
+									'ip'      => $req->attrs->server['REMOTE_ADDR'],
+									'agent'   => $req->attrs->server['HTTP_USER_AGENT'],
+								));
 	}
 
 }

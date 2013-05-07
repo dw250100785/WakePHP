@@ -173,7 +173,7 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			\Daemon::log(\Debug::dump($account));
+			Daemon::log(\Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		}
 		else {
@@ -188,10 +188,10 @@ class AccountsORM extends ORM {
 			'location'         => '',
 			'password'         => '',
 			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
-															 . \Daemon::uniqid() . "\x00"
-															 . $this->appInstance->config->cryptsalt->value . "\x00"
-															 . microtime(true) . "\x00"
-															 . mt_rand(0, mt_getrandmax()))
+													 . Daemon::uniqid() . "\x00"
+													 . $this->appInstance->config->cryptsalt->value . "\x00"
+													 . microtime(true) . "\x00"
+													 . mt_rand(0, mt_getrandmax()))
 				, 0, 6),
 			'regdate'          => time(),
 			'etime'            => time(),

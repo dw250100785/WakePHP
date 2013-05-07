@@ -1,10 +1,10 @@
 <?php
-namespace WakePHP\components;
+namespace WakePHP\Components;
 
 /**
  * CAPTCHA component
  */
-class CmpCAPTCHA extends \AsyncServer {
+class CmpCAPTCHA extends AsyncServer {
 
 	/**
 	 * Function to get default config options from application
@@ -111,8 +111,8 @@ class CmpCAPTCHASession extends \SocketSession {
 		$body = http_build_query(array(
 									 'privatekey' => $this->config->privatekey->value,
 									 'remoteip'   => $this->appInstance->req->attrs->server['REMOTE_ADDR'],
-									 'challenge'  => \Request::getString($this->appInstance->req->attrs->request['recaptcha_challenge_field']),
-									 'response'   => \Request::getString($this->appInstance->req->attrs->request['recaptcha_response_field']),
+									 'challenge'  => Request::getString($this->appInstance->req->attrs->request['recaptcha_challenge_field']),
+									 'response'   => Request::getString($this->appInstance->req->attrs->request['recaptcha_response_field']),
 								 ));
 		$this->writeln('POST /recaptcha/api/verify HTTP/1.0');
 		$this->writeln('Host: www.google.com');

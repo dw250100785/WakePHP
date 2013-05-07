@@ -41,7 +41,7 @@ class BackendServerConnection extends \Connection {
 		elseif ($p['type'] === 'getBlock') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				\Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
+				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
 				return;
 			}
 			$req = $this->requests[$rid];
@@ -58,7 +58,7 @@ class BackendServerConnection extends \Connection {
 		elseif ($p['type'] == 'endRequest') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				\Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
+				Daemon::log(get_class($this) . '(' . spl_object_hash($this) . ')=>Unknown request: ' . \Debug::dump($rid));
 				return;
 			}
 			$req = $this->requests[$rid];

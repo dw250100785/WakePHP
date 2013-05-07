@@ -5,7 +5,7 @@
  */
 function lang_om_number($number, $subject, $mode = 0, $withoutnum = false) {
 	$titles = explode('|', $subject);
-	$lang   = \Daemon::$req->locale;
+	$lang   = Daemon::$req->locale;
 	if ($lang == 'en') {
 		return ((!$withoutnum) ? number_format($number) . ' ' : '') . (($number == 1) ? $titles[0] : $titles[1]);
 	}

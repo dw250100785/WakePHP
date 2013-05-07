@@ -28,7 +28,7 @@ class BackendClientConnection extends \Connection {
 		if ($p['type'] === 'propertyUpdated') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				\Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
+				Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
 				return;
 			}
 			$req               = $this->requests[$rid];
@@ -37,13 +37,13 @@ class BackendClientConnection extends \Connection {
 		elseif ($p['type'] === 'readyBlock') {
 			$rid = $p['rid'];
 			if (!isset($this->requests[$rid])) {
-				\Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
+				Daemon::log(__METHOD__ . ': Undefined request #' . $rid);
 				return;
 			}
 			$req = $this->requests[$rid];
 			$bid = $p['bid'];
 			if (!isset($req->queries[$bid])) {
-				\Daemon::log(__METHOD__ . ': >>>>> Undefined block #' . $rid . '-' . $bid . ': ' . json_encode($p));
+				Daemon::log(__METHOD__ . ': >>>>> Undefined block #' . $rid . '-' . $bid . ': ' . json_encode($p));
 				return;
 			}
 			$block = $req->queries[$bid];
@@ -58,7 +58,7 @@ class BackendClientConnection extends \Connection {
 	}
 
 	public function beginRequest($req) {
-		\Daemon::log('beginRequest');
+		Daemon::log('beginRequest');
 		if ($this->reqCounter === PHP_INT_MAX) {
 			$this->reqCounter = 0;
 		}
@@ -82,7 +82,7 @@ class BackendClientConnection extends \Connection {
 
 	public function getBlock($rid, $block) {
 		if (!isset($this->requests[$rid])) {
-			\Daemon::log(__METHOD__ . ': Unregistered request #' . $rid);
+			Daemon::log(__METHOD__ . ': Unregistered request #' . $rid);
 		}
 		$req                = $this->requests[$rid];
 		$bid                = ++$req->queriesCnt;
