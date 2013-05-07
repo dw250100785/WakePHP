@@ -14,7 +14,7 @@ use PHPDaemon\AppInstance;
 use PHPDaemon\Clients\LockClient;
 use PHPDaemon\Clients\MemcacheClient;
 use PHPDaemon\Daemon;
-use PHPDaemon\WebSocket\WebSocketServer;
+use PHPDaemon\Servers\WebSocketServer;
 use WakePHP\ORM\MUChatORM;
 
 class CmpMUChat extends AppInstance {
