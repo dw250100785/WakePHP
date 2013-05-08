@@ -4,5 +4,5 @@ namespace WakePHP\Core;
 /**
  * UndefinedEventCalledException class
  */
-class UndefinedEventCalledException extends \Exception {
+class UndefinedEventCalled extends \Exception {
 }

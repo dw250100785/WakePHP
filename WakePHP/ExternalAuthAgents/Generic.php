@@ -1,7 +1,7 @@
 <?php
-namespace WakePHP\Core;
+namespace WakePHP\ExternalAuthAgents;
 
-abstract class ExternalAuthAgent {
+abstract class Generic {
 
 	protected $appInstance;
 
