@@ -239,12 +239,9 @@ class CmpAccount extends Component {
 						 return;
 					 }
 					 else {
-						 $this->appInstance->authTokens->addToken($response['oauth_token'], $response['oauth_token_secret'],
-							 function () use ($response) {
-								 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-								 $this->req->header('Location: ' . $url);
-								 $this->req->setResult();
-							 });
+						 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+						 $this->req->header('Location: ' . $url);
+						 $this->req->setResult();
 					 }
 				 }
 				 else {
