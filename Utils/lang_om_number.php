@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Utils;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 /**
  * lang_om_number function

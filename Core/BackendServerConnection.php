@@ -1,9 +1,9 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Connection;
-use PHPDaemon\Daemon;
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+use PHPDaemon\Network\Connection;
 
 class BackendServerConnection extends Connection {
 	public $requests = [];

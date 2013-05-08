@@ -1,9 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Clients\NetworkClient;
-
-class BackendClient extends NetworkClient {
+class BackendClient extends \PHPDaemon\Network\Client {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

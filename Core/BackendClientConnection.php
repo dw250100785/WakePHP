@@ -1,8 +1,8 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Connection;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Network\Connection;
 
 class BackendClientConnection extends Connection {
 

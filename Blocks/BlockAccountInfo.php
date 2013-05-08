@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Blocks;
 
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Block;
 
 class BlockAccountInfo extends Block {

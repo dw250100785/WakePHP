@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Components;
 
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 
 /**

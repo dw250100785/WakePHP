@@ -1,12 +1,11 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\AppInstance;
-use PHPDaemon\Clients\MongoClientAsync;
-use PHPDaemon\Clients\MongoClientSessionFinished;
-use PHPDaemon\Daemon;
-use PHPDaemon\Debug;
-use PHPDaemon\Timer;
+use PHPDaemon\Clients\Mongo\ConnectionFinished;
+use PHPDaemon\Core\AppInstance;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\Timer;
 
 /**
  * Job worker
@@ -20,7 +19,7 @@ class JobWorker extends AppInstance {
 	public $components;
 
 	public function onReady() {
-		$this->db          = MongoClientAsync::getInstance();
+		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 		$this->dbname      = $this->config->dbname->value;
 		$this->jobqueue    = $this->db->{$this->dbname . '.jobqueue'};
 		$this->jobresults  = $this->db->{$this->dbname . '.jobqueue'};
@@ -54,7 +53,7 @@ class JobWorker extends AppInstance {
 			elseif (!$JobManager->resultCursor->session->busy) {
 				try {
 					$JobManager->resultCursor->getMore();
-				} catch (MongoClientSessionFinished $e) {
+				} catch (ConnectionFinished $e) {
 					$JobManager->resultCursor = false;
 				}
 			}

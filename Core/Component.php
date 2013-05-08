@@ -1,8 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Daemon\ConfigEntry;
-use PHPDaemon\DeferredEvent;
+use PHPDaemon\Core\DeferredEvent;
 
 /**
  * Component
@@ -53,7 +52,7 @@ class Component {
 
 			if (!isset($this->config->{$k})) {
 				if (is_scalar($v)) {
-					$this->config->{$k} = new ConfigEntry($v);
+					$this->config->{$k} = new \PHPDaemon\Config\Entry\Generic($v);
 				}
 				else {
 					$this->config->{$k} = $v;
@@ -62,7 +61,7 @@ class Component {
 			else {
 				$current = $this->config->{$k};
 				if (is_scalar($v)) {
-					$this->config->{$k} = new ConfigEntry($v);
+					$this->config->{$k} = new \PHPDaemon\Config\Entry\Generic($v);
 				}
 				else {
 					$this->config->{$k} = $v;

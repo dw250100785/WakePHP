@@ -1,11 +1,8 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\AppInstance;
-use PHPDaemon\Clients\HTTPClient;
-use PHPDaemon\Clients\LockClient;
-use PHPDaemon\Clients\MongoClientAsync;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\AppInstance;
+use PHPDaemon\Core\Daemon;
 use WakePHP\ORM\AccountsORM;
 use WakePHP\ORM\SessionsORM;
 
@@ -45,7 +42,7 @@ class WakePHP extends AppInstance {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
 		$appInstance             = $this;
-		$appInstance->db         = MongoClientAsync::getInstance();
+		$appInstance->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 		$appInstance->dbname     = $this->config->dbname->value;
 		$appInstance->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
@@ -63,7 +60,7 @@ class WakePHP extends AppInstance {
 			$this->{$prop} = new $class($this);
 		}
 
-		$appInstance->LockClient = LockClient::getInstance();
+		$appInstance->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 		$appInstance->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) use ($appInstance) {
 			foreach (glob($appInstance->config->themesdir->value . '*/blocks/*') as $file) {
 				Daemon::$process->fileWatcher->addWatch($file, array($appInstance, 'onBlockFileChanged'));
@@ -87,7 +84,7 @@ class WakePHP extends AppInstance {
 			}
 		}
 		$this->serializer = 'igbinary';
-		$this->httpclient = HTTPClient::getInstance();
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
 
 	public function getLocaleName($lc) {

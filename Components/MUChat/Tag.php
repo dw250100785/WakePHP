@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Components\Muchat;
 
-use PHPDaemon\Clients\MongoClientSessionFinished;
+use PHPDaemon\Clients\Mongo\ConnectionFinished;
 
 class Tag {
 	public $appInstance;
@@ -87,7 +87,7 @@ class Tag {
 		elseif (!$this->cursor->session->busy) {
 			try {
 				$this->cursor->getMore();
-			} catch (MongoClientSessionFinished $e) {
+			} catch (ConnectionFinished $e) {
 				$this->cursor = false;
 			}
 		}

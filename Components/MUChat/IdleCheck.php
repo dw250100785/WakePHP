@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Components\Muchat;
 
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic as Request;
 
 class IdleCheck extends Request {
 	public function run() {

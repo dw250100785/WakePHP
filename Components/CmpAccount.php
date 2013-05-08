@@ -1,9 +1,9 @@
 <?php
 namespace WakePHP\Components;
 
-use PHPDaemon\ComplexJob;
-use PHPDaemon\Daemon;
-use PHPDaemon\Request;
+use PHPDaemon\Core\ComplexJob;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
 use WakePHP\Core\OAuth;

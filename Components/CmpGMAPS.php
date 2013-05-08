@@ -1,7 +1,6 @@
 <?php
 namespace WakePHP\Components;
 
-use PHPDaemon\Clients\HTTPClient;
 use WakePHP\Core\Component;
 
 /**
@@ -13,7 +12,7 @@ class CmpGMAPS extends Component {
 	 * @return void
 	 */
 	public function init() {
-		$this->httpclient = HTTPClient::getInstance();
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
 
 	/**

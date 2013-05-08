@@ -10,11 +10,8 @@ DRAFT:
  db.createCollection("muchatevents", {capped:true, size:100000})
 */
 
-use PHPDaemon\AppInstance;
-use PHPDaemon\Clients\LockClient;
-use PHPDaemon\Clients\MemcacheClient;
-use PHPDaemon\Daemon;
-use PHPDaemon\Servers\WebSocketServer;
+use PHPDaemon\Core\AppInstance;
+use PHPDaemon\Core\Daemon;
 use WakePHP\ORM\MUChatORM;
 
 class CmpMUChat extends AppInstance {
@@ -61,7 +58,7 @@ class CmpMUChat extends AppInstance {
 		$this->tags           = array();
 		$this->minMsgInterval = 1;
 
-		$this->cache = MemcacheClient::getInstance();
+		$this->cache = \PHPDaemon\Clients\Memcache\Pool::getInstance();
 		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid . '-' . microtime(true)));
 
 		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
@@ -158,7 +155,7 @@ class CmpMUChat extends AppInstance {
 	public function onReady() {
 
 		if ($this->config->enable->value) {
-			$this->WS = WebSocketServer::getInstance();
+			$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance();
 			if ($this->WS) {
 				$this->WS->addRoute('MUChat', array($this, 'onHandshake'));
 			}
@@ -168,7 +165,7 @@ class CmpMUChat extends AppInstance {
 
 			$req = new Muchat\IdleCheck($appInstance, $appInstance);
 
-			$this->LockClient = LockClient::getInstance();
+			$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 
 			$this->LockClient->job(__CLASS__, true, function ($jobname) use ($appInstance) {
 				$appInstance->pushRequest(new Muchat\UpdateStat($appInstance, $appInstance));

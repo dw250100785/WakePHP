@@ -1,9 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\NetworkServer;
-
-class BackendServer extends NetworkServer {
+class BackendServer extends \PHPDaemon\Network\Server {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkServer::getConfigDefaults

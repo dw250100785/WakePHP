@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Components\Muchat;
 
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic as Request;
 
 class MsgQueueRequest extends Request {
 	public function run() {

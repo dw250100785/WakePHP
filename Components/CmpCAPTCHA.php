@@ -1,8 +1,8 @@
 <?php
 namespace WakePHP\Components;
 
-use PHPDaemon\Daemon\ConfigEntry;
-use PHPDaemon\Request;
+use PHPDaemon\Config\Entry;
+use PHPDaemon\Request\Generic as Request;
 
 /**
  * CAPTCHA component

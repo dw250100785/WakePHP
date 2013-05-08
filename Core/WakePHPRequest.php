@@ -1,8 +1,8 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Daemon;
-use PHPDaemon\Request;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Request\Generic as Request;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Structures\StackCallbacks;
 use WakePHP\Utils\Array2XML;
@@ -10,7 +10,7 @@ use WakePHP\Utils\Array2XML;
 /**
  * Request class.
  */
-class WakePHPRequest extends \HTTPRequest {
+class WakePHPRequest extends \PHPDaemon\HTTPRequest\Generic {
 
 	public $locale;
 	public $path;
@@ -40,7 +40,7 @@ class WakePHPRequest extends \HTTPRequest {
 
 	/**
 	 * Constructor
-	 * @param null|string $appInstance
+	 * @param null|object $appInstance
 	 * @param object $upstream.
 	 * @param $parent
 	 * @return \WakePHP\Core\WakePHPRequest

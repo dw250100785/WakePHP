@@ -1,10 +1,10 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\Clients\MongoClientSessionFinished;
-use PHPDaemon\Daemon;
-use PHPDaemon\Debug;
-use PHPDaemon\Timer;
+use PHPDaemon\Clients\Mongo\ConnectionFinished;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\Timer;
 
 /**
  * JobManager class.
@@ -55,7 +55,7 @@ class JobManager {
 			elseif (!$JobManager->resultCursor->session->busy) {
 				try {
 					$JobManager->resultCursor->getMore();
-				} catch (MongoClientSessionFinished $e) {
+				} catch (ConnectionFinished $e) {
 					$JobManager->resultCursor = false;
 				}
 			}
@@ -78,7 +78,7 @@ class JobManager {
 																										   ));
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
-			\PHPDaemon\Daemon\TimedEvent::setTimeout($this->resultEvent);
+			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent);
 		}
 	}
 }

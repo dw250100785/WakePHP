@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
-use PHPDaemon\DeferredEvent;
+use PHPDaemon\Core\DeferredEvent;
 
 class DeferredEventCmp extends DeferredEvent {
 	/** @var Component */

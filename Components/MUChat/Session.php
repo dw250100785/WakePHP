@@ -1,7 +1,7 @@
 <?php
 namespace WakePHP\Components\Muchat;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 class Session {
 
