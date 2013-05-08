@@ -134,6 +134,7 @@ class Block implements \ArrayAccess {
 						if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
 							$class = 'Block';
 						}
+						$class = '\\WakePHP\\Blocks\\' . $class;
 						new $class($block, $node);
 					}
 					unset($node->addedBlocks);
