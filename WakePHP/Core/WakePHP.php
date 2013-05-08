@@ -55,8 +55,9 @@ class WakePHP extends AppInstance {
 		}
 
 		foreach (glob($appInstance->config->ormdir->value . '*ORM.php') as $file) {
-			$class         = '\\WakePHP\\ORM\\' . strstr(basename($file), '.', true);
+			$class         = strstr(basename($file), '.', true);
 			$prop          = lcfirst(substr($class, 0, -3));
+			$class         = '\\WakePHP\\ORM\\' . $class;
 			$this->{$prop} = new $class($this);
 			Daemon::log('Class ORM: ' . $class);
 		}
