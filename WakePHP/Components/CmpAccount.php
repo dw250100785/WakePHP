@@ -19,7 +19,6 @@ class CmpAccount extends Component {
 	public function onAuthEvent() {
 		return function ($authEvent) {
 			/** @var DeferredEventCmp $authEvent */
-			Daemon::log('onAuthEvent!!');
 			$authEvent->component->onSessionRead(function ($sessionEvent) use ($authEvent) {
 				if (isset($authEvent->component->req->account)) {
 					$authEvent->setResult();

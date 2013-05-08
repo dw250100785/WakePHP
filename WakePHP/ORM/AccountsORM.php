@@ -175,7 +175,6 @@ class AccountsORM extends ORM {
 		}
 		if ($update) {
 			unset($account['_id']);
-			Daemon::log(Debug::dump($account));
 			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
 		}
 		else {
