@@ -11,6 +11,7 @@ DRAFT:
 */
 
 use PHPDaemon\Core\AppInstance;
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
 use WakePHP\ORM\MUChatORM;
 
@@ -58,10 +59,10 @@ class CmpMUChat extends AppInstance {
 		$this->tags           = array();
 		$this->minMsgInterval = 1;
 
-		$this->cache = \PHPDaemon\Clients\Memcache\Pool::getInstance();
-		$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid . '-' . microtime(true)));
-
-		$this->config = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
+		$this->cache  = \PHPDaemon\Clients\Memcache\Pool::getInstance();
+		$this->ipcId  = sprintf('%x', crc32(Daemon::$process->pid . '-' . microtime(true)));
+		$my_class     = ClassFinder::getClassBasename($this);
+		$this->config = isset($this->appInstance->config->{$my_class}) ? $this->appInstance->config->{$my_class} : null;
 		$defaults     = $this->getConfigDefaults();
 		if ($defaults) {
 			$this->processDefaultConfig($defaults);

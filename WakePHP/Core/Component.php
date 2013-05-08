@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\DeferredEvent;
 
 /**
@@ -17,7 +18,8 @@ class Component {
 	public function __construct($req) {
 		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
-		$this->config      = isset($this->appInstance->config->{get_class($this)}) ? $this->appInstance->config->{get_class($this)} : null;
+		$my_class          = ClassFinder::getClassBasename(get_class($this));
+		$this->config      = isset($this->appInstance->config->{$my_class}) ? $this->appInstance->config->{$my_class} : null;
 		$defaults          = $this->getConfigDefaults();
 		if ($defaults) {
 			$this->processDefaultConfig($defaults);

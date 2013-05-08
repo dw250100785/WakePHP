@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Structures\StackCallbacks;
@@ -90,7 +91,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			return false;
 		}
 
-		if (get_class($block) === 'Block') {
+		if (ClassFinder::getClassBasename($block) === 'Block') {
 			return false;
 		}
 
