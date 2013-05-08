@@ -1,5 +1,7 @@
 <?php
-namespace WakePHP\Core;
+namespace WakePHP\Blocks;
+
+use WakePHP\Core\Request;
 
 /**
  * Block instance class.

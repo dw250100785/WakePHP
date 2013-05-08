@@ -1,8 +1,6 @@
 <?php
 namespace WakePHP\Blocks;
 
-use WakePHP\Core\Block;
-
 class BlockPagetook extends Block {
 
 	public $nowrap = true;

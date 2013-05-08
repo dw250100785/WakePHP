@@ -351,6 +351,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$block['tag']    = (string)new \MongoId;
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
+		$class = '\\WakePHP\\Blocks\\' . $class;
 		new $class($block, $this);
 	}
 

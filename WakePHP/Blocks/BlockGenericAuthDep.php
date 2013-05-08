@@ -1,8 +1,6 @@
 <?php
 namespace WakePHP\Blocks;
 
-use WakePHP\Core\Block;
-
 class BlockGenericAuthDep extends Block {
 
 	public function init() {
