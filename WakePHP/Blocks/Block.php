@@ -104,7 +104,7 @@ class Block implements \ArrayAccess {
 				$cb = $cache[$this->cachekey];
 			}
 			else {
-				$cb                     = eval($this->templatePHP);
+				$cb = eval($this->templatePHP);
 				//\PHPdaemon\Core\Daemon::log(\PHPdaemon\Core\Debug::dump($this->templatePHP));
 				$cache[$this->cachekey] = $cb;
 			}
@@ -132,10 +132,9 @@ class Block implements \ArrayAccess {
 						if (isset($block['name']) && isset($dbprops[$block['name']])) {
 							$block = array_merge($block, $dbprops[$block['name']]);
 						}
-						if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
-							$class = 'Block';
+						if ((!isset($block['type'])) || (!class_exists($class = __NAMESPACE__ . '\\Block' . $block['type']))) {
+							$class = __NAMESPACE__ . '\\Block';
 						}
-						$class = '\\WakePHP\\Blocks\\' . $class;
 						new $class($block, $node);
 					}
 					unset($node->addedBlocks);

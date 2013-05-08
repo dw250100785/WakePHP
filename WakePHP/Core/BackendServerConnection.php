@@ -31,8 +31,8 @@ class BackendServerConnection extends Connection {
 				return;
 			}
 			$req = $this->requests[$rid];
-			if ((!isset($p['block']['type'])) || (!class_exists($class = 'Block' . $p['block']['type']))) {
-				$class = 'Block';
+			if ((!isset($p['block']['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block' . $p['block']['type']))) {
+				$class = '\\WakePHP\\Blocks\\Block';
 			}
 			$block       = new $class($p['block'], $req, true);
 			$block->_nid = $p['bid'];

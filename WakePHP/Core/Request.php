@@ -346,13 +346,12 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	public function addBlock($block) {
-		if ((!isset($block['type'])) || (!class_exists($class = 'Block' . $block['type']))) {
-			$class = 'Block';
+		if ((!isset($block['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block' . $block['type']))) {
+			$class = '\\WakePHP\\Blocks\\Block';
 		}
 		$block['tag']    = (string)new \MongoId;
 		$block['nowrap'] = true;
 		$this->html .= $block['tag'];
-		$class = '\\WakePHP\\Blocks\\' . $class;
 		new $class($block, $this);
 	}
 
