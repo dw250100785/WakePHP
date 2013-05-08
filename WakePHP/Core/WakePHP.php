@@ -58,6 +58,7 @@ class WakePHP extends AppInstance {
 			$class         = '\\WakePHP\\ORM\\' . strstr(basename($file), '.', true);
 			$prop          = lcfirst(substr($class, 0, -3));
 			$this->{$prop} = new $class($this);
+			Daemon::log('Class ORM: ' . $class);
 		}
 
 		$appInstance->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
