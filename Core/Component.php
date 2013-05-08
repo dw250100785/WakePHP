@@ -31,7 +31,7 @@ class Component {
 	/**
 	 * Function to get default config options from application
 	 * Override to set your own
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return false;

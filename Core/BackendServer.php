@@ -5,7 +5,7 @@ class BackendServer extends \PHPDaemon\Network\Server {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkServer::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return array(

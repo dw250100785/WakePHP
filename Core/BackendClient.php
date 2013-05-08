@@ -5,7 +5,7 @@ class BackendClient extends \PHPDaemon\Network\Client {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return [
