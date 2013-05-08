@@ -200,7 +200,7 @@ class WakePHP extends AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new WakePHPRequest($this, $upstream, $req);
+		return new Request($this, $upstream, $req);
 	}
 
 	/**

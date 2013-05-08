@@ -22,7 +22,7 @@ class Block implements \ArrayAccess {
 	public $parentNode;
 
 	public $inner = array();
-	/** @var  WakePHPRequest */
+	/** @var  Request */
 	public $req;
 
 	public $ready = false;
@@ -33,13 +33,15 @@ class Block implements \ArrayAccess {
 	public $addedBlocksNames = [];
 	public $attrs = [];
 
-	public function offsetSet($offset, $value) { }
+	public function offsetSet($offset, $value) {
+	}
 
 	public function offsetExists($offset) {
 		return isset($this->{$offset});
 	}
 
-	public function offsetUnset($offset) { }
+	public function offsetUnset($offset) {
+	}
 
 	public function offsetGet($offset) {
 		return $this->{$offset};

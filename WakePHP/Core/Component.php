@@ -8,7 +8,7 @@ use PHPDaemon\Core\DeferredEvent;
  */
 class Component {
 
-	/** @var  WakePHPRequest */
+	/** @var  Request */
 	public $req;
 	/** @var WakePHP */
 	public $appInstance;

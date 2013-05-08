@@ -19,7 +19,7 @@ class BackendServerConnection extends Connection {
 		if ($p['type'] === 'startReq') {
 			$rid = $p['rid'];
 			//Daemon::log(get_class($this) . '('.spl_object_hash($this).')=>startRequest: '.Debug::dump($rid));
-			$req                    = new WakePHPRequest($this->pool->appInstance, $this, $p['req']);
+			$req                    = new Request($this->pool->appInstance, $this, $p['req']);
 			$req->backendServerConn = $this;
 			$req->rid               = $rid;
 			$this->requests[$rid]   = $req;
