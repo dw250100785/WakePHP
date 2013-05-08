@@ -105,6 +105,7 @@ class Block implements \ArrayAccess {
 			}
 			else {
 				$cb                     = eval($this->templatePHP);
+				//\PHPdaemon\Core\Daemon::log(\PHPdaemon\Core\Debug::dump($this->templatePHP));
 				$cache[$this->cachekey] = $cb;
 			}
 			ob_start();

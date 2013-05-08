@@ -3,6 +3,8 @@ namespace WakePHP\Components;
 
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * Blocks component
@@ -24,6 +26,7 @@ class CmpBlocks extends Component {
 		if (!isset($roles[$role])) {
 			return false;
 		}
+		Daemon::log(Debug::dump([$this->req->account]));
 		foreach ($roles[$role] as $group) {
 			if (in_array($group, $this->req->account['aclgroups'], true)) {
 				return true;
