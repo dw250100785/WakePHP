@@ -6,7 +6,6 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
-use WakePHP\Core\OAuth;
 
 /**
  * Account component
@@ -192,64 +191,16 @@ class CmpAccount extends Component {
 		});
 	}
 
-	public function TwitterAuthController() {
-		$url          = $this->config->twitter_auth_url->value . 'oauth/request_token';
-		$base_url     = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url = $base_url . '/component/Account/TwitterAuthRedirect/json';
-		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
-		$this->req->header('Pragma: no-cache');
-		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		$this->appInstance->httpclient->post(
-			$url,
-			[],
-			['headers'  => ['Authorization: ' . $this->getTwitterAuthorizationHeader($url, ['oauth_callback' => $redirect_url])],
-			 'resultcb' => function ($conn, $success) use ($url, $base_url, $redirect_url) {
-				 if ($success) {
-					 parse_str($conn->body, $response);
-					 if ($conn->responseCode > 299) {
-						 /** try to fix timestamp difference */
-						 if (!empty($conn->headers['HTTP_DATE'])) {
-							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
-							 $this->appInstance->httpclient->post(
-								 $url, [],
-								 ['headers'  => ['Authorization: ' .
-										 $this->getTwitterAuthorizationHeader($url, ['oauth_callback' => $redirect_url, 'oauth_timestamp' => $timestamp])],
-								  'resultcb' => function ($conn, $success) use ($url, $base_url, $redirect_url) {
-									  $status = $conn->responseCode;
-									  if ($success && $status > 199 && $status < 300) {
-										  parse_str($conn->body, $response);
-										  $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-										  $this->req->header('Location: ' . $url);
-									  }
-									  else {
-										  $this->req->header('Location: ' . $base_url);
-									  }
-									  $this->req->setResult();
-								  }
-								 ]);
-						 }
-						 else {
-							 goto err_response;
-						 }
-					 }
-					 elseif (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
-						 $this->req->header('Location: ' . $base_url);
-						 $this->req->setResult();
-						 return;
-					 }
-					 else {
-						 $url = $this->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-						 $this->req->header('Location: ' . $url);
-						 $this->req->setResult();
-					 }
-				 }
-				 else {
-					 err_response:
-					 $this->req->header('Location: ' . $base_url);
-					 $this->req->setResult();
-					 return;
-				 }
-			 }]);
+	public function ExternalAuthController() {
+		$agent = Request::getString($this->req->attrs->get['agent']);
+		$class = '\\WakePHP\\ExternalAuthAgents\\' . $agent;
+		if (!ctype_alnum($agent) || !class_exists($class) || !(is_subclass_of($class, '\\WakePHP\\ExternalAuthAgents\\Generic'))) {
+			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
+			return;
+		}
+		/** @var \WakePHP\ExternalAuthAgents\Generic $AuthAgent */
+		$AuthAgent = new $class($this);
+		$AuthAgent->Auth();
 	}
 
 	public function checkReferer() {
@@ -305,27 +256,6 @@ class CmpAccount extends Component {
 					}
 				});
 		});
-	}
-
-	protected function getTwitterAuthorizationHeader($url, $oauth_params = array()) {
-		$header = 'OAuth ';
-		$params =
-				['oauth_consumer_key'     => $this->config->twitter_app_key->value,
-				 'oauth_nonce'            => md5(Daemon::uniqid()),
-				 'oauth_signature_method' => 'HMAC-SHA1',
-				 'oauth_timestamp'        => time(),
-				 'oauth_version'          => '1.0'
-				];
-		if (!empty($oauth_params)) {
-			$params = array_merge($params, $oauth_params);
-		}
-		$params['oauth_signature'] = OAuth::getSignature('POST', $url, $params, $this->config->twitter_app_secret->value);
-		$header_params             = [];
-		foreach ($params as $param => $value) {
-			$header_params[] = rawurlencode($param) . '="' . rawurlencode($value) . '"';
-		}
-		$header .= implode(', ', $header_params);
-		return $header;
 	}
 
 	public function ProfileController() {
