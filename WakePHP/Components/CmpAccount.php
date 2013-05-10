@@ -195,6 +195,7 @@ class CmpAccount extends Component {
 		if (!$AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this)) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
 		}
+		Daemon::log($AuthAgent);
 		$AuthAgent->auth();
 	}
 
