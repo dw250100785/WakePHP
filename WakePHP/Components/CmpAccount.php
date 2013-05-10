@@ -214,7 +214,7 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
-	protected function acceptUserAuthentication($credentials, $user_data, $cb) {
+	public function acceptUserAuthentication($credentials, $user_data, $cb) {
 		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
 			$this->appInstance->accounts->getAccount($credentials,
 				function ($account) use ($credentials, $user_data, $cb) {
