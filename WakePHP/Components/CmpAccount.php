@@ -3,7 +3,6 @@ namespace WakePHP\Components;
 
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
@@ -195,8 +194,8 @@ class CmpAccount extends Component {
 	public function ExternalAuthController() {
 		if (!($AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this))) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
+			return;
 		}
-		Daemon::log(Debug::dump($AuthAgent));
 		$AuthAgent->auth();
 	}
 
@@ -210,6 +209,7 @@ class CmpAccount extends Component {
 	public function ExternalAuthRedirect() {
 		if (!($AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this))) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
+			return;
 		}
 		$AuthAgent->redirect();
 	}
