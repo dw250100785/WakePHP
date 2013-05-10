@@ -94,7 +94,7 @@ class Twitter extends Generic {
 			$this->req->setResult();
 			return;
 		}
-		$url      = $this->config->twitter_auth_url->value . 'oauth/access_token';
+		$url      = $this->cmp->config->twitter_auth_url->value . 'oauth/access_token';
 		$base_url = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 		$this->appInstance->httpclient->post(
 			$url,
