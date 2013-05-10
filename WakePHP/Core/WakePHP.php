@@ -12,6 +12,7 @@ use WakePHP\ORM\SessionsORM;
 class WakePHP extends AppInstance {
 
 	public $statistics;
+	/** @var \WakePHP\ORM\BlocksORM */
 	public $blocks;
 	/** @var AccountsORM */
 	public $accounts;
@@ -24,9 +25,11 @@ class WakePHP extends AppInstance {
 	public $ipcId;
 	public $jobManager;
 	public $components;
+	/** @var BackendServer */
 	public $backendServer;
+	/** @var  BackendClient */
 	public $backendClient;
-	/** @var \HTTPClient */
+	/** @var \PHPDaemon\Clients\HTTP\Pool */
 	public $httpclient;
 
 	public function onReady() {
@@ -150,6 +153,9 @@ class WakePHP extends AppInstance {
 		}
 	}
 
+	/**
+	 * @return \Quicky
+	 */
 	public function getQuickyInstance() {
 		require_once $this->config->utilsdir->value . 'lang_om_number.php';
 		$tpl = new \Quicky;
