@@ -21,7 +21,7 @@ class WakePHP {
 	public function __call($m,$a) {
 		$this->sendPacket(array(
 					'op' => 'singleCall',
-					'appfullname' => get_class($this).($this->name?'-'.$this->name:''),
+					'appfullname' => '\\WakePHP\\Core\\WakePHP'.($this->name?'-'.$this->name:''),
 					'method' => $m,
 					'args' => $a
 		));

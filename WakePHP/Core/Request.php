@@ -53,6 +53,10 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		parent::__construct($appInstance, $upstream, $parent);
 	}
 
+	public function getBaseUrl() {
+		return ($this->req->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+	}
+
 	public function init() {
 		try {
 			$this->header('Content-Type: text/html');
