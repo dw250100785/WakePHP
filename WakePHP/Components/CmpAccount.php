@@ -192,47 +192,24 @@ class CmpAccount extends Component {
 	}
 
 	public function ExternalAuthController() {
-		$agent = Request::getString($this->req->attrs->get['agent']);
-		$class = '\\WakePHP\\ExternalAuthAgents\\' . $agent;
-		if (!ctype_alnum($agent) || !class_exists($class) || !(is_subclass_of($class, '\\WakePHP\\ExternalAuthAgents\\Generic'))) {
+		if (!$AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this)) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
-			return;
 		}
-		/** @var \WakePHP\ExternalAuthAgents\Generic $AuthAgent */
-		$AuthAgent = new $class($this);
-		$AuthAgent->Auth();
+		$AuthAgent->auth();
 	}
 
 	public function checkReferer() {
-		if ($this->req->controller === 'TwitterAuthRedirect') {
-			return (isset($_SERVER['HTTP_REFERER']) ? $this->req->checkDomainMatch(null, 'api.twitter.com') : true);
+		if ($this->req->controller === 'ExternalAuthRedirect') {
+			return true;
 		}
 		return $this->req->checkDomainMatch();
 	}
 
-	public function TwitterAuthRedirectController() {
-		$url      = $this->config->twitter_auth_url->value . 'oauth/access_token';
-		$base_url = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$this->appInstance->httpclient->post(
-			$url,
-			['oauth_verifier' => $_GET['oauth_verifier']],
-			['headers'  => ['Authorization: ' . $this->getTwitterAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
-			 'resultcb' => function ($conn, $success) use ($base_url) {
-				 if ($success) {
-					 parse_str($conn->body, $response);
-					 $user_twitter_id   = $response['user_id'];
-					 $user_twitter_name = $response['screen_name'];
-					 $this->acceptUserAuthentication(['twitterId' => $user_twitter_id],
-													 ['twitterName' => $user_twitter_name,
-													  'username'    => $user_twitter_name],
-						 function () use ($base_url) {
-							 $this->req->header('Location: ' . $base_url);
-							 $this->req->setResult();
-						 });
-				 }
-			 }
-			]
-		);
+	public function ExternalAuthRedirect() {
+		if (!$AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this)) {
+			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
+		}
+		$AuthAgent->redirect();
 	}
 
 	protected function acceptUserAuthentication($credentials, $user_data, $cb) {

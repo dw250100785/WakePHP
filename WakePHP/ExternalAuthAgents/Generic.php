@@ -16,5 +16,24 @@ abstract class Generic {
 		$this->appInstance = $cmp->appInstance;
 	}
 
-	abstract public function Auth();
+	/**
+	 * @param $agent
+	 * @param Component $cmp
+	 * @return \WakePHP\ExternalAuthAgents\Generic|bool
+	 */
+	public static function getAgent($agent, Component $cmp) {
+		$class = '\\WakePHP\\ExternalAuthAgents\\' . $agent;
+		if (!ctype_alnum($agent) || !class_exists($class) || !(is_subclass_of($class, '\\WakePHP\\ExternalAuthAgents\\Generic'))) {
+			return false;
+		}
+		return new $class($cmp);
+	}
+
+	abstract public function auth();
+
+	abstract public function redirect();
+
+	public function checkReferer($domain) {
+		return (isset($_SERVER['HTTP_REFERER']) ? $this->req->checkDomainMatch(null, $domain) : true);
+	}
 }

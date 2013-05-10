@@ -6,11 +6,11 @@ use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
 class Twitter extends Generic {
-	public function Auth() {
+	public function auth() {
 		$request_token_url = $this->cmp->config->twitter_auth_url->value . 'oauth/request_token';
 		$this->appInstance = $this->req->appInstance;
 		$base_url          = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url      = $base_url . '/component/Account/TwitterAuthRedirect/json';
+		$redirect_url      = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=twitter';
 		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->req->header('Pragma: no-cache');
 		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
@@ -87,5 +87,34 @@ class Twitter extends Generic {
 		}
 		$header .= implode(', ', $header_params);
 		return $header;
+	}
+
+	public function redirect() {
+		if (!$this->checkReferer('api.twitter.com')) {
+			$this->req->setResult();
+			return;
+		}
+		$url      = $this->config->twitter_auth_url->value . 'oauth/access_token';
+		$base_url = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+		$this->appInstance->httpclient->post(
+			$url,
+			['oauth_verifier' => $_GET['oauth_verifier']],
+			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
+			 'resultcb' => function ($conn, $success) use ($base_url) {
+				 if ($success) {
+					 parse_str($conn->body, $response);
+					 $user_twitter_id   = $response['user_id'];
+					 $user_twitter_name = $response['screen_name'];
+					 $this->req->components->account->acceptUserAuthentication(['twitterId' => $user_twitter_id],
+																			   ['twitterName' => $user_twitter_name,
+																				'username'    => $user_twitter_name],
+						 function () use ($base_url) {
+							 $this->req->header('Location: ' . $base_url);
+							 $this->req->setResult();
+						 });
+				 }
+			 }
+			]
+		);
 	}
 }
