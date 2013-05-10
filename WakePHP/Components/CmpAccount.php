@@ -68,6 +68,14 @@ class CmpAccount extends Component {
 		});
 	}
 
+	protected function getConfirmationCode($email) {
+		return substr(md5($email . "\x00"
+								  . $this->req->appInstance->config->cryptsalt->value . "\x00"
+								  . microtime(true) . "\x00"
+								  . mt_rand(0, mt_getrandmax()))
+			, 0, 6);
+	}
+
 	public function SignupController() {
 		$req = $this->req;
 		$this->onSessionStart(function ($sessionEvent) use ($req) {
@@ -79,6 +87,7 @@ class CmpAccount extends Component {
 					}
 				}
 				$req = $job->req;
+
 				if (sizeof($errors) === 0) {
 
 					$req->appInstance->accounts->saveAccount(
@@ -87,11 +96,7 @@ class CmpAccount extends Component {
 							'username'         => Request::getString($req->attrs->request['username']),
 							'location'         => $location = Request::getString($req->attrs->request['location']),
 							'password'         => $password = Request::getString($req->attrs->request['password']),
-							'confirmationcode' => $code = substr(md5($req->attrs->request['email'] . "\x00"
-																			 . $req->appInstance->config->cryptsalt->value . "\x00"
-																			 . microtime(true) . "\x00"
-																			 . mt_rand(0, mt_getrandmax()))
-								, 0, 6),
+							'confirmationcode' => $code = $this->getConfirmationCode($email),
 							'regdate'          => time(),
 							'etime'            => time(),
 							'ip'               => $req->attrs->server['REMOTE_ADDR'],
@@ -216,6 +221,14 @@ class CmpAccount extends Component {
 
 	public function acceptUserAuthentication($credentials, $user_data, $cb) {
 		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
+			if (!isset($credentials['email'])) {
+				$this->req->attrs->session['not_finished_signup'] = 1;
+				$this->req->attrs->session['credentials']         = $credentials;
+				$this->req->updatedSession                        = true;
+				$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
+				$this->req->setResult([]);
+				return;
+			}
 			$this->appInstance->accounts->getAccount($credentials,
 				function ($account) use ($credentials, $user_data, $cb) {
 					$loginTo = function ($account) use ($cb) {
@@ -235,6 +248,49 @@ class CmpAccount extends Component {
 					}
 				});
 		});
+	}
+
+	public function finishSignupController() {
+		$this->onSessionRead(function () {
+			if (!isset($_SESSION['not_finished_signup'])) {
+				$this->req->setResult(['success' => false,
+									   'errors'  => [
+										   'Session expired'
+									   ]
+									  ]);
+				return;
+			}
+			if (isset($_GET['email'])) {
+				$account = $this->appInstance->accounts->getAccountByUnifiedEmail($_GET['email'],
+					function ($account) {
+						if (!$account) {
+							$credentials          = $_SESSION['credentials'];
+							$credentials['email'] = $_GET['email'];
+							$this->appInstance->accounts->saveAccount($credentials, function ($lastError) {
+								if (!isset($lastError['ok'])) {
+									$this->req->setResult(['success' => false,
+														   'errors'  => [
+															   'Sorry, internal error.'
+														   ]]);
+									return;
+								}
+								$this->req->setResult(['success' => true]);
+								return;
+							});
+						}
+						else {
+							$code = $this->getConfirmationCode($_GET['email']);
+							$this->req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
+								'email'  => $account['email'],
+								'code'   => $code,
+								'locale' => $this->req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+							));
+
+						}
+					});
+			}
+		});
+
 	}
 
 	public function ProfileController() {
