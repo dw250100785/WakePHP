@@ -72,7 +72,7 @@ class Twitter extends Generic {
 		$header = 'OAuth ';
 		$params =
 				['oauth_consumer_key'     => $this->cmp->config->twitter_app_key->value,
-				 'oauth_nonce'            => md5(Daemon::uniqid()),
+				 'oauth_nonce'            => Daemon::uniqid(),
 				 'oauth_signature_method' => 'HMAC-SHA1',
 				 'oauth_timestamp'        => time(),
 				 'oauth_version'          => '1.0'
