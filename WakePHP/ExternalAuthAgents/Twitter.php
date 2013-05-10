@@ -10,7 +10,7 @@ class Twitter extends Generic {
 		$request_token_url = $this->cmp->config->twitter_auth_url->value . 'oauth/request_token';
 		$this->appInstance = $this->req->appInstance;
 		$base_url          = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url      = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=twitter';
+		$redirect_url      = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=Twitter';
 		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->req->header('Pragma: no-cache');
 		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
