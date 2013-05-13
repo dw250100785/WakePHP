@@ -6,7 +6,6 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
-use WakePHP\Core\Request;
 
 /**
  * Account component
