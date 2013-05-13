@@ -6,13 +6,12 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
+use WakePHP\Core\Request;
 
 /**
  * Account component
  */
 class CmpAccount extends Component {
-	const SIGN_UP_CODE_CONFIRM = 'code_confirmation';
-
 	/**
 	 * @return callable
 	 */
@@ -223,9 +222,9 @@ class CmpAccount extends Component {
 	public function acceptUserAuthentication($credentials, $user_data, $cb) {
 		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
 			if (!isset($credentials['email'])) {
-				$this->req->attrs->session['not_finished_signup'] = 1;
-				$this->req->attrs->session['credentials']         = $credentials;
-				$this->req->updatedSession                        = true;
+				$_SESSION['not_finished_signup'] = 1;
+				$_SESSION['credentials']         = $credentials;
+				$this->req->updatedSession       = true;
 				$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
 				$this->req->setResult([]);
 				return;
@@ -233,8 +232,8 @@ class CmpAccount extends Component {
 			$this->appInstance->accounts->getAccount($credentials,
 				function ($account) use ($credentials, $user_data, $cb) {
 					$loginTo = function ($account) use ($cb) {
-						$this->req->attrs->session['accountId'] = $account['_id'];
-						$this->req->updatedSession              = true;
+						$_SESSION['accountId']     = $account['_id'];
+						$this->req->updatedSession = true;
 						$cb();
 					};
 					if (!$account) {
@@ -261,13 +260,15 @@ class CmpAccount extends Component {
 									  ]);
 				return;
 			}
-			if (isset($_GET['email'])) {
-				$account = $this->appInstance->accounts->getAccountByUnifiedEmail($_GET['email'],
-					function ($account) {
+			if (($email = Request::getString($_GET['email'])) !== '') {
+				if (!isset($_SESSION['credentials']['email'])) {
+					$_SESSION['credentials']['email'] = $email;
+					$this->req->updatedSession        = true;
+				}
+				$account = $this->appInstance->accounts->getAccountByUnifiedEmail($email,
+					function ($account) use ($email) {
 						if (!$account) {
-							$credentials          = $_SESSION['credentials'];
-							$credentials['email'] = $_GET['email'];
-							$this->appInstance->accounts->saveAccount($credentials, function ($lastError) {
+							$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
 								if (!isset($lastError['ok'])) {
 									$this->req->setResult(['success' => false,
 														   'errors'  => [
@@ -275,31 +276,46 @@ class CmpAccount extends Component {
 														   ]]);
 									return;
 								}
-								else {
-									$this->req->setResult(['success' => true]);
-									return;
-								}
+								$this->req->setResult(['success' => true]);
+								return;
 							});
 						}
 						else {
-							$this->req->attrs->session['not_finished_signup'] = null;
-							$this->req->updatedSession                        = true;
-							if (isset($this->req->attrs->session['confirmation_code']) && isset($_GET['code'])) {
-								$users_code  = $_GET['code'];
-								$stored_code = $this->req->attrs->session['confirmation_code'];
-								if ($users_code === $stored_code) {
-									//convert account to "usual"
+							if (isset($account['confirmationcode']) && isset($_GET['code'])) {
+								$users_code  = Request::getString($_GET['code']);
+								$stored_code = $account['confirmationcode'];
+								if ($users_code !== $stored_code) {
+									$this->req->setResult(['success' => false,
+														   'errors'  => [
+															   'Wrong code.'
+														   ]]);
+									return;
 								}
-								unset($this->req->attrs->session['credentials']);
+								//convert account to "usual"
+								$this->appInstance->accounts->confirmAccount($_SESSION['credentials']);
+								unset($_SESSION['not_finished_signup']);
+								unset($_SESSION['credentials']);
+								$this->req->updatedSession = true;
 							}
 							else {
-								$code                                           = $this->getConfirmationCode($_GET['email']);
-								$this->req->attrs->session['confirmation_code'] = $code;
-								$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
-									'email'  => $account['email'],
-									'code'   => $code,
-									'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
-								));
+								$code                        = $this->getConfirmationCode($_GET['email']);
+								$account['confirmationcode'] = $code;
+								$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
+									if (!isset($lastError['ok'])) {
+										$this->req->setResult(['success' => false,
+															   'errors'  => [
+																   'Sorry, internal error.'
+															   ]]);
+										return;
+									}
+									$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
+										'email'  => $account['email'],
+										'code'   => $code,
+										'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+									));
+									$this->req->setResult(['success' => true]);
+									return;
+								});
 							}
 						}
 					});
