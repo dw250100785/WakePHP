@@ -283,8 +283,8 @@ class CmpAccount extends Component {
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code.']]);
 						return;
 					}
-					//convert account to "usual"
 					$this->appInstance->accounts->confirmAccount($_SESSION['credentials']);
+					$_SESSION['accountId'] = $account['_id'];
 					unset($_SESSION['not_finished_signup']);
 					unset($_SESSION['credentials']);
 					$this->req->updatedSession = true;

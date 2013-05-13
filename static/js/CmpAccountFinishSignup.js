@@ -13,7 +13,7 @@ $(function () {
 							.removeClass('denyMsg').addClass('allowMsg')
 							.text(_('Verification request has been sent to your mailbox.'))
 							.slideDown(300, function () {
-								           $(this).delay(2000).hide(1000, function () {
+								           $(this).delay(6000).hide(1000, function () {
 									           $('.codeField', $form).slideDown(300);
 								           });
 							           });
@@ -24,7 +24,7 @@ $(function () {
 						$('.popupMsg', $form)
 							.removeClass('denyMsg').addClass('allowMsg')
 							.text(_('Thank you, email has been verified.'))
-							.slideDown(300).delay(2000).hide(0, function () {
+							.slideDown(300).delay(3000).hide(0, function () {
 								                                 var backUrl = $.urlParam('backurl');
 								                                 if (backUrl!=null)
 								                                 {
@@ -32,7 +32,7 @@ $(function () {
 								                                 }
 								                                 else
 								                                 {
-									                                 location.href = '/'+$('html').attr('lang')+'/account/login';
+									                                 location.href = '/'+$('html').attr('lang');
 								                                 }
 							                                 });
 					}
