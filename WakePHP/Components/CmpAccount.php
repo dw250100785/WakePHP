@@ -11,6 +11,7 @@ use WakePHP\Core\DeferredEventCmp;
  * Account component
  */
 class CmpAccount extends Component {
+	const SIGN_UP_CODE_CONFIRM = 'code_confirmation';
 
 	/**
 	 * @return callable
@@ -279,16 +280,27 @@ class CmpAccount extends Component {
 							});
 						}
 						else {
-							$code = $this->getConfirmationCode($_GET['email']);
-							$this->req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
-								'email'  => $account['email'],
-								'code'   => $code,
-								'locale' => $this->req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
-							));
-
+							if ($this->req->attrs->session['not_finished_signup'] == self::SIGN_UP_CODE_CONFIRM) {
+								$users_code = $_GET['code'];
+								//code verification
+								$this->req->attrs->session['not_finished_signup'] = null;
+								unset($this->req->attrs->session['credentials']);
+								$this->req->updatedSession = true;
+							}
+							else {
+								$code                                             = $this->getConfirmationCode($_GET['email']);
+								$this->req->attrs->session['not_finished_signup'] = self::SIGN_UP_CODE_CONFIRM;
+								$this->req->updatedSession                        = true;
+								$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
+									'email'  => $account['email'],
+									'code'   => $code,
+									'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+								));
+							}
 						}
 					});
 			}
+
 		});
 
 	}
