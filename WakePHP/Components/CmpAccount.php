@@ -252,76 +252,61 @@ class CmpAccount extends Component {
 	public function finishSignupController() {
 		$this->onSessionRead(function () {
 			if (!isset($_SESSION['not_finished_signup'])) {
-				$this->req->setResult(['success' => false,
-									   'errors'  => [
-										   'Session expired'
-									   ]
-									  ]);
+				$this->req->setResult(['success' => false, 'errors'  => ['Session expired']]);
 				return;
 			}
-			if (($email = Request::getString($_GET['email'])) !== '') {
-				if (!isset($_SESSION['credentials']['email'])) {
-					$_SESSION['credentials']['email'] = $email;
-					$this->req->updatedSession        = true;
-				}
-				$account = $this->appInstance->accounts->getAccountByUnifiedEmail($email,
-					function ($account) use ($email) {
-						if (!$account) {
-							$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
-								if (!isset($lastError['ok'])) {
-									$this->req->setResult(['success' => false,
-														   'errors'  => [
-															   'Sorry, internal error.'
-														   ]]);
-									return;
-								}
-								$this->req->setResult(['success' => true]);
-								return;
-							});
-						}
-						else {
-							if (isset($account['confirmationcode']) && isset($_GET['code'])) {
-								$users_code  = Request::getString($_GET['code']);
-								$stored_code = $account['confirmationcode'];
-								if ($users_code !== $stored_code) {
-									$this->req->setResult(['success' => false,
-														   'errors'  => [
-															   'Wrong code.'
-														   ]]);
-									return;
-								}
-								//convert account to "usual"
-								$this->appInstance->accounts->confirmAccount($_SESSION['credentials']);
-								unset($_SESSION['not_finished_signup']);
-								unset($_SESSION['credentials']);
-								$this->req->updatedSession = true;
-								$this->req->setResult(['success' => true]);
-								return;
-							}
-							$code                        = $this->getConfirmationCode($_GET['email']);
-							$account['confirmationcode'] = $code;
-							$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
-								if (!isset($lastError['ok'])) {
-									$this->req->setResult(['success' => false,
-														   'errors'  => [
-															   'Sorry, internal error.'
-														   ]]);
-									return;
-								}
-								$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
-									'email'  => $account['email'],
-									'code'   => $code,
-									'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
-								));
-								$this->req->setResult(['success' => true]);
-								return;
-							});
-						}
-					});
+			if (($email = Request::getString($_GET['email'])) === '') {
+				$this->req->setResult(['success' => false, 'errors'  => ['Empty E-Mail']]);
+				return;	
 			}
-
+			if (!isset($_SESSION['credentials']['email'])) {
+				$_SESSION['credentials']['email'] = $email;
+				$this->req->updatedSession        = true;
+			}
+			$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
+				if (!$account) {
+					$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
+						if (!isset($lastError['ok'])) {
+							$this->req->setResult(['success' => false, 'errors'  => ['Sorry, internal error.']]);
+							return;
+						}
+						$this->req->setResult(['success' => true]);
+						return;
+					});
+					return;
+				}
+				if (isset($account['confirmationcode']) && isset($_GET['code'])) {
+					$users_code  = Request::getString($_GET['code']);
+					$stored_code = $account['confirmationcode'];
+					if ($users_code !== $stored_code) {
+						$this->req->setResult(['success' => false, 'errors'  => ['Wrong code.']]);
+						return;
+					}
+					//convert account to "usual"
+					$this->appInstance->accounts->confirmAccount($_SESSION['credentials']);
+					unset($_SESSION['not_finished_signup']);
+					unset($_SESSION['credentials']);
+					$this->req->updatedSession = true;
+					$this->req->setResult(['success' => true]);
+					return;
+				}
+				$code                        = $this->getConfirmationCode($_GET['email']);
+				$account['confirmationcode'] = $code;
+				$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
+					if (!isset($lastError['ok'])) {
+						$this->req->setResult(['success' => false, 'errors'  => ['Sorry, internal error.']]);
+						return;
+					}
+					$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
+						'email'  => $account['email'],
+						'code'   => $code,
+						'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+					));
+					$this->req->setResult(['success' => true]);
+					return;
+				});
+			});
 		});
-
 	}
 
 	public function ProfileController() {
