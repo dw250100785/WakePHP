@@ -5,14 +5,37 @@ $(function () {
 		$form.ajaxFormController({success: function (result, statusText, xhr, $form) {
 			if (result.success)
 			{
-				var backUrl = $.urlParam('backurl');
-				if (backUrl!=null)
+				if (result.status!=null)
 				{
-					location.href = backUrl;
-				}
-				else
-				{
-					location.href = '/'+$('html').attr('lang')+'/';
+					if (result.status=='sent')
+					{
+						$('.popupMsg', $form)
+							.removeClass('denyMsg').addClass('allowMsg')
+							.text(_('Verification request has been sent to your mailbox.'))
+							.slideDown(300, function () {
+								           $(this).delay(2000).hide(1000, function () {
+									           $('.codeField', $form).slideDown(300);
+								           });
+							           });
+					}
+					else if (result.status=='verified')
+					{
+						$('button', $form).attr('disabled', '1');
+						$('.popupMsg', $form)
+							.removeClass('denyMsg').addClass('allowMsg')
+							.text(_('Thank you, email has been verified.'))
+							.slideDown(300).delay(2000).hide(0, function () {
+								                                 var backUrl = $.urlParam('backurl');
+								                                 if (backUrl!=null)
+								                                 {
+									                                 location.href = backUrl;
+								                                 }
+								                                 else
+								                                 {
+									                                 location.href = '/'+$('html').attr('lang')+'/account/login';
+								                                 }
+							                                 });
+					}
 				}
 			}
 			else

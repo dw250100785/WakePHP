@@ -260,16 +260,12 @@ class CmpAccount extends Component {
 				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
 				return;
 			}
-			Daemon::log(__LINE__);
 			if (!isset($_SESSION['credentials']['email'])) {
 				$_SESSION['credentials']['email'] = $email;
 				$this->req->updatedSession        = true;
 			}
-			Daemon::log(__LINE__);
 			$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
-				Daemon::log(__LINE__);
 				if (!$account) {
-					Daemon::log(__LINE__);
 					$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
 						Daemon::log('last_error:' . Debug::dump($lastError));
 						if (!isset($lastError['ok'])) {
@@ -279,16 +275,13 @@ class CmpAccount extends Component {
 						$this->req->setResult(['success' => true]);
 						return;
 					});
-					Daemon::log(__LINE__);
 					return;
 				}
 				if (isset($account['confirmationcode']) && isset($_REQUEST['code'])) {
-					Daemon::log(__LINE__);
 					$users_code  = Request::getString($_REQUEST['code']);
 					$stored_code = $account['confirmationcode'];
 					if ($users_code !== $stored_code) {
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code.']]);
-						Daemon::log(__LINE__);
 						return;
 					}
 					//convert account to "usual"
@@ -296,32 +289,25 @@ class CmpAccount extends Component {
 					unset($_SESSION['not_finished_signup']);
 					unset($_SESSION['credentials']);
 					$this->req->updatedSession = true;
-					$this->req->setResult(['success' => true]);
-					Daemon::log(__LINE__);
+					$this->req->setResult(['success' => true, 'status' => 'verified']);
 					return;
 				}
-				Daemon::log(__LINE__);
 				$code                        = $this->getConfirmationCode($_REQUEST['email']);
 				$account['confirmationcode'] = $code;
 				$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
-					Daemon::log(__LINE__);
 					if (!isset($lastError['ok'])) {
 						$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
 						return;
 					}
-					Daemon::log(__LINE__);
 					$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
 						'email'  => $account['email'],
 						'code'   => $code,
 						'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
 					));
-					Daemon::log(__LINE__);
-					$this->req->setResult(['success' => true]);
+					$this->req->setResult(['success' => true, 'status' => 'sent']);
 					return;
 				});
-				Daemon::log(__LINE__);
 			});
-			Daemon::log(__LINE__);
 		});
 	}
 

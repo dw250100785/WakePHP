@@ -10,6 +10,11 @@
 	{/if}
 	<div class="fieldname"><span class="i18n">E-Mail</span>:</div>
 	<input type="text" name="email" size="25"/><br/><br/>
+
+	<div class="codeField"{if !isset($quicky.request.code)} style="display:none"{/if}>
+		<div class="fieldname"><span class="i18n">Code</span>:</div>
+		<input type="code" name="code" size="10" value="{$quicky.requeststring.code|escape}"/><br/>
+	</div>
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Finish</button>
 </form>
