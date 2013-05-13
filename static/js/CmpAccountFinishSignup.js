@@ -32,7 +32,7 @@ $(function () {
 								                                 }
 								                                 else
 								                                 {
-									                                 location.href = '/'+$('html').attr('lang');
+									                                 location.href = '/'+$('html').attr('lang')+'/';
 								                                 }
 							                                 });
 					}
