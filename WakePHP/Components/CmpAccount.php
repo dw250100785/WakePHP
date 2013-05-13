@@ -278,7 +278,7 @@ class CmpAccount extends Component {
 					return;
 				}
 				$users_code = Request::getString($_REQUEST['code']);
-				if (isset($account['confirmationcode']) && $users_code) {
+				if (isset($account['confirmationcode']) && $users_code !== '') {
 					if ($users_code !== $account['confirmationcode']) {
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code.']]);
 						return;
