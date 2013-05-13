@@ -1,6 +1,6 @@
 {getBlock name="PageStart"}
 <script src="/js/CmpAccountFinishSignup.js" type="text/javascript"></script>
-<form action="Account/finishSignup" class="AccountFinishSignupForm" method="post">
+<form action="/{$req->locale}/account/finishSignup" class="AccountFinishSignupForm" method="post">
 	<h1 class="i18n">{$block->title|escape}</h1>
 
 	{if $req->account.logged}
