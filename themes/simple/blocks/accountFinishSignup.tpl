@@ -11,6 +11,6 @@
 	<div class="fieldname"><span class="i18n">E-Mail</span>:</div>
 	<input type="text" name="email" size="25"/><br/><br/>
 	<br/>
-	<button type="submit" class="i18n" disabled="disabled">Finish</button>
+	<button type="submit" class="i18n">Finish</button>
 </form>
 {getBlock name="PageEnd"}
