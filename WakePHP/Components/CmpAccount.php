@@ -256,7 +256,7 @@ class CmpAccount extends Component {
 				$this->req->setResult(['success' => false, 'errors' => ['Session expired']]);
 				return;
 			}
-			if (($email = Request::getString($_GET['email'])) === '') {
+			if (($email = Request::getString($_REQUEST['email'])) === '') {
 				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
 				return;
 			}
@@ -282,9 +282,9 @@ class CmpAccount extends Component {
 					Daemon::log(__LINE__);
 					return;
 				}
-				if (isset($account['confirmationcode']) && isset($_GET['code'])) {
+				if (isset($account['confirmationcode']) && isset($_REQUEST['code'])) {
 					Daemon::log(__LINE__);
-					$users_code  = Request::getString($_GET['code']);
+					$users_code  = Request::getString($_REQUEST['code']);
 					$stored_code = $account['confirmationcode'];
 					if ($users_code !== $stored_code) {
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code.']]);
@@ -301,7 +301,7 @@ class CmpAccount extends Component {
 					return;
 				}
 				Daemon::log(__LINE__);
-				$code                        = $this->getConfirmationCode($_GET['email']);
+				$code                        = $this->getConfirmationCode($_REQUEST['email']);
 				$account['confirmationcode'] = $code;
 				$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
 					Daemon::log(__LINE__);
