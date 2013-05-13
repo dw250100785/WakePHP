@@ -1,3 +1,4 @@
+{getBlock name="PageStart"}
 <script src="/js/CmpAccountFinishSignup.js" type="text/javascript"></script>
 <form action="Account/finishSignup" method="post">
 	<h1 class="i18n">{$block->title|escape}</h1>
@@ -12,3 +13,4 @@
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Finish</button>
 </form>
+{getBlock name="PageEnd"}

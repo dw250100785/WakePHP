@@ -1,6 +1,6 @@
 $(function () {
 
-	$('.AccountLoginForm form').each(function (i, form) {
+	$('form.AccountLoginForm').each(function (i, form) {
 		var $form = $(form);
 		$form.ajaxFormController({success: function (result, statusText, xhr, $form) {
 			if (result.success)
