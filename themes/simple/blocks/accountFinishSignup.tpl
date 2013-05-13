@@ -17,5 +17,6 @@
 	</div>
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Finish</button>
+	<div class="popupMsg" style="display:none"></div>
 </form>
 {getBlock name="PageEnd"}
