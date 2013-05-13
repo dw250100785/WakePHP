@@ -3,6 +3,7 @@ namespace WakePHP\Components;
 
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
@@ -252,34 +253,42 @@ class CmpAccount extends Component {
 	public function finishSignupController() {
 		$this->onSessionRead(function () {
 			if (!isset($_SESSION['not_finished_signup'])) {
-				$this->req->setResult(['success' => false, 'errors'  => ['Session expired']]);
+				$this->req->setResult(['success' => false, 'errors' => ['Session expired']]);
 				return;
 			}
 			if (($email = Request::getString($_GET['email'])) === '') {
-				$this->req->setResult(['success' => false, 'errors'  => ['Empty E-Mail']]);
-				return;	
+				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
+				return;
 			}
+			Daemon::log(__LINE__);
 			if (!isset($_SESSION['credentials']['email'])) {
 				$_SESSION['credentials']['email'] = $email;
 				$this->req->updatedSession        = true;
 			}
+			Daemon::log(__LINE__);
 			$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
+				Daemon::log(__LINE__);
 				if (!$account) {
+					Daemon::log(__LINE__);
 					$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
+						Daemon::log('last_error:' . Debug::dump($lastError));
 						if (!isset($lastError['ok'])) {
-							$this->req->setResult(['success' => false, 'errors'  => ['Sorry, internal error.']]);
+							$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
 							return;
 						}
 						$this->req->setResult(['success' => true]);
 						return;
 					});
+					Daemon::log(__LINE__);
 					return;
 				}
 				if (isset($account['confirmationcode']) && isset($_GET['code'])) {
+					Daemon::log(__LINE__);
 					$users_code  = Request::getString($_GET['code']);
 					$stored_code = $account['confirmationcode'];
 					if ($users_code !== $stored_code) {
-						$this->req->setResult(['success' => false, 'errors'  => ['Wrong code.']]);
+						$this->req->setResult(['success' => false, 'errors' => ['Wrong code.']]);
+						Daemon::log(__LINE__);
 						return;
 					}
 					//convert account to "usual"
@@ -288,24 +297,31 @@ class CmpAccount extends Component {
 					unset($_SESSION['credentials']);
 					$this->req->updatedSession = true;
 					$this->req->setResult(['success' => true]);
+					Daemon::log(__LINE__);
 					return;
 				}
+				Daemon::log(__LINE__);
 				$code                        = $this->getConfirmationCode($_GET['email']);
 				$account['confirmationcode'] = $code;
 				$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
+					Daemon::log(__LINE__);
 					if (!isset($lastError['ok'])) {
-						$this->req->setResult(['success' => false, 'errors'  => ['Sorry, internal error.']]);
+						$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
 						return;
 					}
+					Daemon::log(__LINE__);
 					$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
 						'email'  => $account['email'],
 						'code'   => $code,
 						'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
 					));
+					Daemon::log(__LINE__);
 					$this->req->setResult(['success' => true]);
 					return;
 				});
+				Daemon::log(__LINE__);
 			});
+			Daemon::log(__LINE__);
 		});
 	}
 
