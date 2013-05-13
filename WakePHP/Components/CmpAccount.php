@@ -298,26 +298,24 @@ class CmpAccount extends Component {
 								$this->req->setResult(['success' => true]);
 								return;
 							}
-							else {
-								$code                        = $this->getConfirmationCode($_GET['email']);
-								$account['confirmationcode'] = $code;
-								$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
-									if (!isset($lastError['ok'])) {
-										$this->req->setResult(['success' => false,
-															   'errors'  => [
-																   'Sorry, internal error.'
-															   ]]);
-										return;
-									}
-									$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
-										'email'  => $account['email'],
-										'code'   => $code,
-										'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
-									));
-									$this->req->setResult(['success' => true]);
+							$code                        = $this->getConfirmationCode($_GET['email']);
+							$account['confirmationcode'] = $code;
+							$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($account, $code) {
+								if (!isset($lastError['ok'])) {
+									$this->req->setResult(['success' => false,
+														   'errors'  => [
+															   'Sorry, internal error.'
+														   ]]);
 									return;
-								});
-							}
+								}
+								$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $account['email'], array(
+									'email'  => $account['email'],
+									'code'   => $code,
+									'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+								));
+								$this->req->setResult(['success' => true]);
+								return;
+							});
 						}
 					});
 			}
