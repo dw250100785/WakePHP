@@ -295,6 +295,7 @@ class CmpAccount extends Component {
 								unset($_SESSION['not_finished_signup']);
 								unset($_SESSION['credentials']);
 								$this->req->updatedSession = true;
+								$this->req->setResult();
 							}
 							else {
 								$code                        = $this->getConfirmationCode($_GET['email']);
