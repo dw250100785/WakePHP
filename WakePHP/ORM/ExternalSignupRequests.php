@@ -24,4 +24,8 @@ class ExternalSignupRequests extends ORM {
 	public function deleteById($id, $cb = null) {
 		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
 	}
+
+	public function init() {
+		$this->externalSignupRequests->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
+	}
 }
