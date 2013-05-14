@@ -2,7 +2,6 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
@@ -104,11 +103,14 @@ class Twitter extends Generic {
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
 			 'resultcb' => function ($conn, $success) use ($base_url) {
 				 if (!$success) {
-					 $this->req->setResult();
+					 $this->req->setResult(['error' => 'request declined']);
 					 return;
 				 }
 				 parse_str($conn->body, $response);
-				 Daemon::log(Debug::dump($response));
+				 if (!isset($response['user_id'])) {
+					 $this->req->setResult(['error' => 'no user_id']);
+					 return;
+				 }
 				 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
 																		   ['username' => $response['screen_name']],
 					 function () use ($base_url) {

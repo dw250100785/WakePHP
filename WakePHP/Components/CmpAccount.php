@@ -232,7 +232,7 @@ class CmpAccount extends Component {
 			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => $crd]],
 				function ($account) use ($ns, $id, $cb, $crd, $add) {
 					if ($account) {
-						$this->loginAs($account);
+						$this->loginAs($account, $cb);
 						return;
 					}
 					if (!isset($add['email'])) {
@@ -243,10 +243,10 @@ class CmpAccount extends Component {
 						$this->req->setResult([]);
 						return;
 					}
-					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add) {
+					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add, $cb) {
 							if ($account) {
-								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function () use ($account) {
-									$this->loginAs($account);
+								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function () use ($account, $cb) {
+									$this->loginAs($account, $cb);
 								});
 								return;
 							}
@@ -256,9 +256,9 @@ class CmpAccount extends Component {
 								$newAccount[$k] = $v;
 							}
 							$newAccount['credentials'] = [$crd,];
-							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add) {
-								$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) {
-									$this->loginAs($account);
+							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add, $cb) {
+								$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($cb) {
+									$this->loginAs($account, $cb);
 								});
 							});
 						}
