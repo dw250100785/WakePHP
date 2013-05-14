@@ -2,6 +2,7 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
@@ -106,15 +107,14 @@ class Twitter extends Generic {
 					 $this->req->setResult();
 					 return;
 				 }
-				 if ($success) {
-					 parse_str($conn->body, $response);
-					 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
-																			   ['username' => $response['screen_name']],
-						 function () use ($base_url) {
-							 $this->req->header('Location: ' . $base_url);
-							 $this->req->setResult();
-						 });
-				 }
+				 parse_str($conn->body, $response);
+				 Daemon::log(Debug::dump($response));
+				 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
+																		   ['username' => $response['screen_name']],
+					 function () use ($base_url) {
+						 $this->req->header('Location: ' . $base_url);
+						 $this->req->setResult();
+					 });
 			 }
 			]
 		);
