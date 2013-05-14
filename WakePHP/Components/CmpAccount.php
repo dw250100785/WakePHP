@@ -259,12 +259,7 @@ class CmpAccount extends Component {
 							foreach ($add as $k => $v) { // @TODO: ???
 								$newAccount[$k] = $v;
 							}
-							$newAccount['credentials'] = [
-								[
-									'ns' => $ns,
-									'id' => $id,
-								],
-							];
+							$newAccount['credentials'] = [$crd,];
 							$this->appInstance->accounts->saveAccount($newAccount, function () use ($loginTo, $add) {
 								$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) {
 									$this->loginAs($account);
