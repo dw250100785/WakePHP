@@ -3,6 +3,7 @@ namespace WakePHP\Components;
 
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
@@ -333,7 +334,7 @@ class CmpAccount extends Component {
 						});
 					}
 					else {
-						Daemon::log($user_code);
+						Daemon::log(Debug::dump($user_code));
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code']]);
 						return;
 					}
