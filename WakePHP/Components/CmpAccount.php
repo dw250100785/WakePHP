@@ -333,6 +333,7 @@ class CmpAccount extends Component {
 						});
 					}
 					else {
+						Daemon::log($user_code);
 						$this->req->setResult(['success' => false, 'errors' => ['Wrong code']]);
 						return;
 					}
