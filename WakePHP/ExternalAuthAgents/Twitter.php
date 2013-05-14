@@ -21,34 +21,35 @@ class Twitter extends Generic {
 			 'resultcb' => function ($conn, $success) use ($request_token_url, $base_url, $redirect_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 if ($conn->responseCode > 299) {
-						 /** try to fix timestamp difference */
-						 if (!empty($conn->headers['HTTP_DATE'])) {
-							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
-							 $this->appInstance->httpclient->post(
-								 $request_token_url, [],
-								 ['headers'  => ['Authorization: ' .
-										 $this->getAuthorizationHeader($request_token_url, ['oauth_callback' => $redirect_url, 'oauth_timestamp' => $timestamp])],
-								  'resultcb' => function ($conn, $success) use ($base_url, $redirect_url) {
-									  $status = $conn->responseCode;
-									  if ($success && $status > 199 && $status < 300) {
-										  parse_str($conn->body, $response);
-										  $this->req->header('Location: '
-																	 . $this->cmp->config->twitter_auth_url->value
-																	 . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']));
-									  }
-									  else {
-										  $this->req->header('Location: ' . $base_url);
-									  }
-									  $this->req->setResult();
-								  }
-								 ]);
-						 }
-						 else {
-							 goto err_response;
-						 }
-					 }
-					 elseif (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+//					 if ($conn->responseCode > 299) {
+//						 /** try to fix timestamp difference */
+//						 if (!empty($conn->headers['HTTP_DATE'])) {
+//							 $timestamp = strtotime($conn->headers['HTTP_DATE']);
+//							 $this->appInstance->httpclient->post(
+//								 $request_token_url, [],
+//								 ['headers'  => ['Authorization: ' .
+//										 $this->getAuthorizationHeader($request_token_url, ['oauth_callback' => $redirect_url, 'oauth_timestamp' => $timestamp])],
+//								  'resultcb' => function ($conn, $success) use ($base_url, $redirect_url) {
+//									  $status = $conn->responseCode;
+//									  if ($success && $status > 199 && $status < 300) {
+//										  parse_str($conn->body, $response);
+//										  $this->req->header('Location: '
+//																	 . $this->cmp->config->twitter_auth_url->value
+//																	 . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']));
+//									  }
+//									  else {
+//										  $this->req->header('Location: ' . $base_url);
+//									  }
+//									  $this->req->setResult();
+//								  }
+//								 ]);
+//						 }
+//						 else {
+//							 goto err_response;
+//						 }
+//					 }
+//					 else
+					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->header('Location: ' . $base_url);
 						 $this->req->setResult();
 						 return;
@@ -101,14 +102,18 @@ class Twitter extends Generic {
 			['oauth_verifier' => $_GET['oauth_verifier']],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
 			 'resultcb' => function ($conn, $success) use ($base_url) {
+				 if (!$success) {
+					 $this->req->setResult();
+					 return;
+				 }
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
-					 	['username' => $response['screen_name']],
-						function () use ($base_url) {
-							$this->req->header('Location: ' . $base_url);
-							$this->req->setResult();
-						});
+																			   ['username' => $response['screen_name']],
+						 function () use ($base_url) {
+							 $this->req->header('Location: ' . $base_url);
+							 $this->req->setResult();
+						 });
 				 }
 			 }
 			]
