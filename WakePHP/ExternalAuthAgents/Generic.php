@@ -33,8 +33,6 @@ abstract class Generic {
 
 	abstract public function redirect();
 
-	abstract public function getUniqueId($credentials);
-
 	public function checkReferer($domain) {
 		return (isset($_SERVER['HTTP_REFERER']) ? $this->req->checkDomainMatch(null, $domain) : true);
 	}
