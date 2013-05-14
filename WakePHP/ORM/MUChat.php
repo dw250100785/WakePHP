@@ -4,13 +4,13 @@ namespace WakePHP\ORM;
 use WakePHP\Core\ORM;
 
 /**
- * MUChatORM
+ * MUChat
  */
-class MUChatORM extends ORM {
+class MUChat extends ORM {
 
 	public function init() {
-		$this->sessions = new SessionsORM($this->appInstance);
-		$this->accounts = new AccountsORM($this->appInstance);
+		$this->sessions = new Sessions($this->appInstance);
+		$this->accounts = new Accounts($this->appInstance);
 	}
 
 	public function getAuthKey($authkey, $cb) {

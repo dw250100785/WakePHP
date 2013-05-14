@@ -4,9 +4,9 @@ namespace WakePHP\ORM;
 use WakePHP\Core\ORM;
 
 /**
- * SessionsORM
+ * Sessions
  */
-class SessionsORM extends ORM {
+class Sessions extends ORM {
 	public $sessions;
 
 	public function init() {

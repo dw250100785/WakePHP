@@ -4,9 +4,9 @@ namespace WakePHP\ORM;
 use WakePHP\Core\ORM;
 
 /**
- * BlocksORM
+ * Blocks
  */
-class BlocksORM extends ORM {
+class Blocks extends ORM {
 
 	public $blocks;
 
@@ -47,7 +47,8 @@ class BlocksORM extends ORM {
 		if (isset($block['template'])) {
 
 			$tpl = $this->appInstance->getQuickyInstance();
-			$tpl->register_function('getblock', function ($args) { });
+			$tpl->register_function('getblock', function ($args) {
+			});
 			$block['templatePHP'] = 'return function($tpl) {
 			$var = &$tpl->_tpl_vars;
 			$config = &$tpl->_tpl_config;

@@ -5,9 +5,9 @@ use PHPDaemon\Core\Daemon;
 use WakePHP\Core\ORM;
 
 /**
- * AccountsORM
+ * Accounts
  */
-class AccountsORM extends ORM {
+class Accounts extends ORM {
 
 	public function init() {
 		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};

@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\Components\Muchat;
+namespace WakePHP\Components\MUChat;
 
 use PHPDaemon\Request\Generic as Request;
 

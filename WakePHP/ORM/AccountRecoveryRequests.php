@@ -4,9 +4,9 @@ namespace WakePHP\ORM;
 use WakePHP\Core\ORM;
 
 /**
- * AccountRecoveryRequestsORM
+ * AccountRecoveryRequests
  */
-class AccountRecoveryRequestsORM extends ORM {
+class AccountRecoveryRequests extends ORM {
 
 	public function init() {
 		$this->accountRecoveryRequests = $this->appInstance->db->{$this->appInstance->dbname . '.accountRecoveryRequests'};

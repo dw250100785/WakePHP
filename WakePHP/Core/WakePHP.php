@@ -3,8 +3,8 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
-use WakePHP\ORM\AccountsORM;
-use WakePHP\ORM\SessionsORM;
+use WakePHP\ORM\Accounts;
+use WakePHP\ORM\Sessions;
 
 /**
  * Main class of application (Quicky, MongoClient, ...)
@@ -12,11 +12,11 @@ use WakePHP\ORM\SessionsORM;
 class WakePHP extends AppInstance {
 
 	public $statistics;
-	/** @var \WakePHP\ORM\BlocksORM */
+	/** @var \WakePHP\ORM\Blocks */
 	public $blocks;
-	/** @var AccountsORM */
+	/** @var Accounts */
 	public $accounts;
-	/** @var SessionsORM */
+	/** @var Sessions */
 	public $sessions;
 	public $db;
 	public $dbname;
