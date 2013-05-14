@@ -139,6 +139,17 @@ class Accounts extends ORM {
 		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
 	}
 
+	public function addCredentialsToAccount($account, $credentials, $cb = null) {
+		if (isset($account['_id'])) {
+			$find = ['_id' => is_string($account['_id']) ? new \MongoId($account['_id']) : $account['_id']];
+		} else {
+			$find = ['email' => $account['email']];
+		} else {
+			$find = $account;
+		}
+		$this->accounts->update($find, ['$push' => ['credentials' => $credentials]], 0, $cb);
+	}
+
 	public function updateAccount($account, $update, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new \MongoId($account['_id']);

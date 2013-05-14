@@ -219,16 +219,21 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
+	public function loginAs($account) {
+		$_SESSION['accountId']     = $account['_id'];
+		$this->req->updatedSession = true;
+		if ($cb !== null) {
+			call_user_func($cb);
+		}
+	}
+
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
 		$this->onSessionStart(function () use ($ns, $id, $add, $cb) {
-			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => ['ns' => $ns, 'id' => $id]]],
-				function ($account) use ($ns, $id, $cb, $add) {
+			$crd = ['ns' => $ns, 'id' => $id];
+			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => $crd]],
+				function ($account) use ($ns, $id, $cb, $crd, $add) {
 					if ($account) {
-						$_SESSION['accountId']     = $account['_id'];
-						$this->req->updatedSession = true;
-						if ($cb !== null) {
-							call_user_func($cb);
-						}
+						$this->loginAs($account);
 						return;
 					}
 					if (!isset($add['email'])) {
@@ -242,18 +247,30 @@ class CmpAccount extends Component {
 						$this->req->setResult([]);
 						return;
 					}
-					$account = $this->appInstance->accounts->getAccountBase($this->req);
-					foreach ($add as $k => $v) { // @TODO: ???
-						$account[$k] = $v;
-					}
-					$account['credentials'] = [
-						[
-							'ns' => $ns,
-							'id' => $id,
-						],
-					];
-					$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
-						$this->appInstance->accounts->getAccountByEmail($credentials['email'], $loginTo);
+					$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) use ($crd, $add){
+							if ($account) {
+								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function() use ($account) {
+									$this->loginAs($account);
+								});
+								return;
+							}
+
+							$newAccount = $this->appInstance->accounts->getAccountBase($this->req);
+							foreach ($add as $k => $v) { // @TODO: ???
+								$newAccount[$k] = $v;
+							}
+							$newAccount['credentials'] = [
+								[
+									'ns' => $ns,
+									'id' => $id,
+								],
+							];
+							$this->appInstance->accounts->saveAccount($newAccount, function () use ($loginTo, $add) {
+								$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) {
+									$this->loginAs($account);
+								});
+							});
+						}
 					});
 				});
 		});
