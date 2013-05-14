@@ -6,4 +6,3 @@ How to add ORM class (data object)
 1. Class MyEntity should be inherited from \WakePHP\Core\ORM    
 1. In next launch WakePHP will scan folder ORM and load objects.    
 1. We can obtain this ORM object by calling $appInstance->myEntity (first symbol in entity name is lowercased).  
-  

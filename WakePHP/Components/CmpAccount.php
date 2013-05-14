@@ -260,6 +260,7 @@ class CmpAccount extends Component {
 				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
 				return;
 			}
+			$this->appInstance->externalSignupRequests->save();
 			if (!isset($_SESSION['credentials']['email'])) {
 				$_SESSION['credentials']['email'] = $email;
 				$this->req->updatedSession        = true;

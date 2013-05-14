@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\ORM;
 
+use PHPDaemon\Clients\Mongo\Collection;
 use WakePHP\Core\ORM;
 
 /**
@@ -8,7 +9,7 @@ use WakePHP\Core\ORM;
  */
 class Blocks extends ORM {
 
-	/** @var \MongoCollection */
+	/** @var Collection */
 	public $blocks;
 
 	public function init() {
