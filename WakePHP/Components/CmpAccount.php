@@ -219,7 +219,7 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
-	public function acceptUserAuthentication($credentials, $user_data, $cb) {
+	public function acceptUserAuthentication($ns, $id, $user_data, $cb) {
 		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
 			if (!isset($credentials['email'])) {
 				$_SESSION['not_finished_signup'] = 1;

@@ -103,15 +103,12 @@ class Twitter extends Generic {
 			 'resultcb' => function ($conn, $success) use ($base_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
-					 $user_twitter_id   = $response['user_id'];
-					 $user_twitter_name = $response['screen_name'];
-					 $this->req->components->account->acceptUserAuthentication(['twitterId' => $user_twitter_id],
-																			   ['twitterName' => $user_twitter_name,
-																				'username'    => $user_twitter_name],
-						 function () use ($base_url) {
-							 $this->req->header('Location: ' . $base_url);
-							 $this->req->setResult();
-						 });
+					 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
+					 	['username' => $response['screen_name']],
+						function () use ($base_url) {
+							$this->req->header('Location: ' . $base_url);
+							$this->req->setResult();
+						});
 				 }
 			 }
 			]
