@@ -304,7 +304,12 @@ class CmpAccount extends Component {
 				}
 				else {
 					if ('' !== ($user_code = Request::getString($_REQUEST['code']))) {
-						$this->req->setResult(['success' => false, 'errors' => ['Waiting for code']]);
+						$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
+							'email'  => $email,
+							'code'   => $request['code'],
+							'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+						]);
+						$this->req->setResult(['success' => true, 'status' => 'sent']);
 						return;
 					}
 					if ($user_code === $request['code']) {
