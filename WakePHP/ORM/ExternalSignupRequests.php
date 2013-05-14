@@ -21,11 +21,19 @@ class ExternalSignupRequests extends ORM {
 		$this->externalSignupRequests->findOne($cb, ['where' => ['_id' => new \MongoId($id)]]);
 	}
 
+	public function getRequestByEmail($email, $cb = null) {
+		$this->externalSignupRequests->findOne($cb, ['where' => ['email' => $email]]);
+	}
+
 	public function deleteById($id, $cb = null) {
 		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
 	}
 
 	public function init() {
 		$this->externalSignupRequests->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
+	}
+
+	public function remove(array $cond, $cb = null) {
+		$this->externalSignupRequests->remove($cond, $cb);
 	}
 }

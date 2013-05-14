@@ -105,9 +105,8 @@ class Twitter extends Generic {
 					 parse_str($conn->body, $response);
 					 $user_twitter_id   = $response['user_id'];
 					 $user_twitter_name = $response['screen_name'];
-					 $this->req->components->account->acceptUserAuthentication(['twitterId' => $user_twitter_id],
-																			   ['twitterName' => $user_twitter_name,
-																				'username'    => $user_twitter_name],
+					 $credentials       = ['twitterId' => $user_twitter_id, 'twitterName' => $user_twitter_name];
+					 $this->req->components->account->acceptUserAuthentication($credentials,
 						 function () use ($base_url) {
 							 $this->req->header('Location: ' . $base_url);
 							 $this->req->setResult();
@@ -116,5 +115,9 @@ class Twitter extends Generic {
 			 }
 			]
 		);
+	}
+
+	public function getUniqueId($credentials) {
+		return 'twitter:' . $credentials['twitterId'];
 	}
 }

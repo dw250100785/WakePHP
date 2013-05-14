@@ -4,6 +4,7 @@ namespace WakePHP\Core;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use WakePHP\ORM\Accounts;
+use WakePHP\ORM\ExternalSignupRequests;
 use WakePHP\ORM\Sessions;
 
 /**
@@ -31,6 +32,8 @@ class WakePHP extends AppInstance {
 	public $backendClient;
 	/** @var \PHPDaemon\Clients\HTTP\Pool */
 	public $httpclient;
+	/** @var ExternalSignupRequests */
+	public $externalSignupRequests;
 
 	public function onReady() {
 		if (isset($this->backendServer)) {

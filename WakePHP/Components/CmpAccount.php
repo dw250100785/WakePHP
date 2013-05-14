@@ -219,8 +219,8 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
-	public function acceptUserAuthentication($credentials, $user_data, $cb) {
-		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
+	public function acceptUserAuthentication($credentials, $cb) {
+		$this->onSessionStart(function () use ($credentials, $cb) {
 			if (!isset($credentials['email'])) {
 				$_SESSION['not_finished_signup'] = 1;
 				$_SESSION['credentials']         = $credentials;
@@ -229,8 +229,8 @@ class CmpAccount extends Component {
 				$this->req->setResult([]);
 				return;
 			}
-			$this->appInstance->accounts->getAccount($credentials,
-				function ($account) use ($credentials, $user_data, $cb) {
+			$this->appInstance->accounts->getAccountByEmail($credentials['email'],
+				function ($account) use ($credentials, $cb) {
 					$loginTo = function ($account) use ($cb) {
 						$_SESSION['accountId']     = $account['_id'];
 						$this->req->updatedSession = true;
@@ -238,9 +238,9 @@ class CmpAccount extends Component {
 					};
 					if (!$account) {
 						$account = $this->appInstance->accounts->getAccountBase($this->req);
-						$account = array_merge($account, $credentials, $user_data);
+						$account = array_merge($account, $credentials);
 						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
-							$this->appInstance->accounts->getAccount($credentials, $loginTo);
+							$this->appInstance->accounts->getAccountByEmail($credentials['email'], $loginTo);
 						});
 					}
 					else {
@@ -260,11 +260,20 @@ class CmpAccount extends Component {
 				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
 				return;
 			}
-			$this->appInstance->externalSignupRequests->save();
 			if (!isset($_SESSION['credentials']['email'])) {
 				$_SESSION['credentials']['email'] = $email;
 				$this->req->updatedSession        = true;
 			}
+
+			//send
+
+			$this->appInstance->externalSignupRequests->remove(['credentials' => ['external_unique_id']]);
+			$this->appInstance->externalSignupRequests->getRequestByUniqueID($email, function ($request) use ($email) {
+				if (!$request) {
+					$this->appInstance->externalSignupRequests->save(['email' => $email, 'credentials']);
+				}
+			});
+
 			$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
 				if (!$account) {
 					$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {
