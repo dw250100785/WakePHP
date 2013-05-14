@@ -316,16 +316,17 @@ class CmpAccount extends Component {
 						$account                = $this->appInstance->accounts->getAccountBase($this->req);
 						$account['email']       = $email;
 						$account['credentials'] = [$credentials];
-						$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($email) {
+						$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($email, $request) {
 							if (!isset($lastError['ok'])) {
 								$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
 								return;
 							}
-							$this->appInstance->accounts->getAccountByEmail($email, function ($account) {
+							$this->appInstance->accounts->getAccountByEmail($email, function ($account) use ($request) {
 								if (!$account) {
 									$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
 									return;
 								}
+								$this->appInstance->externalSignupRequests->remove(['_id' => new \MongoId($request['_id'])]);
 								$this->loginAs($account);
 								$this->req->setResult(['success' => true, 'status' => 'verified']);
 								return;
