@@ -55,13 +55,12 @@ class Facebook extends Generic {
 		}
 		$base_url     = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 		$redirect_url = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=Facebook';
-		$url          = $this->cmp->config->facebook_code_exchange_url->value . '?'
-				. 'client_id=' . $this->cmp->config->facebook_app_key->value
-				. '&redirect_uri=' . rawurlencode($redirect_url)
-				. '&client_secret=' . rawurlencode($this->cmp->config->facebook_app_secret->value)
-				. '&code=' . $_GET['code'];
 		$this->appInstance->httpclient->get(
-			$url,
+			[$this->cmp->config->facebook_code_exchange_url->value,
+				'client_id'     => $this->cmp->config->facebook_app_key->value,
+				'redirect_uri'  => $redirect_url,
+				'client_secret' => $this->cmp->config->facebook_app_secret->value,
+				'code'          => $_GET['code']],
 			['resultcb' => function ($conn, $success) use ($base_url) {
 				if (!$success) {
 					$this->req->setResult(['error' => 'request declined']);
