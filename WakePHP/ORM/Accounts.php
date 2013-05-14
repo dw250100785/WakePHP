@@ -142,9 +142,11 @@ class Accounts extends ORM {
 	public function addCredentialsToAccount($account, $credentials, $cb = null) {
 		if (isset($account['_id'])) {
 			$find = ['_id' => is_string($account['_id']) ? new \MongoId($account['_id']) : $account['_id']];
-		} else {
+		}
+		elseif (isset($account['email'])) {
 			$find = ['email' => $account['email']];
-		} else {
+		}
+		else {
 			$find = $account;
 		}
 		$this->accounts->update($find, ['$push' => ['credentials' => $credentials]], 0, $cb);
