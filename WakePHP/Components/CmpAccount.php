@@ -218,7 +218,7 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
-	public function loginAs($account) {
+	public function loginAs($account, $cb = null) {
 		$_SESSION['accountId']     = $account['_id'];
 		$this->req->updatedSession = true;
 		if ($cb !== null) {
