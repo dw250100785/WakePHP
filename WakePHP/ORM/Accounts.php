@@ -9,6 +9,11 @@ use WakePHP\Core\ORM;
  */
 class Accounts extends ORM {
 
+	/** @var \PHPDaemon\Clients\Mongo\Collection */
+	protected $accounts;
+	/** @var \PHPDaemon\Clients\Mongo\Collection */
+	protected $aclgroups;
+
 	public function init() {
 		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
