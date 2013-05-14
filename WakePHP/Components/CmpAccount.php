@@ -219,33 +219,42 @@ class CmpAccount extends Component {
 		$AuthAgent->redirect();
 	}
 
-	public function acceptUserAuthentication($ns, $id, $user_data, $cb) {
-		$this->onSessionStart(function () use ($credentials, $user_data, $cb) {
-			if (!isset($credentials['email'])) {
-				$_SESSION['not_finished_signup'] = 1;
-				$_SESSION['credentials']         = $credentials;
-				$this->req->updatedSession       = true;
-				$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
-				$this->req->setResult([]);
-				return;
-			}
-			$this->appInstance->accounts->getAccount($credentials,
-				function ($account) use ($credentials, $user_data, $cb) {
-					$loginTo = function ($account) use ($cb) {
+	public function acceptUserAuthentication($ns, $id, $add, $cb) {
+		$this->onSessionStart(function () use ($ns, $id, $add, $cb) {
+			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => ['ns' => $ns, 'id' => $id]]],
+				function ($account) use ($ns, $id, $cb) {
+					if ($account) {
 						$_SESSION['accountId']     = $account['_id'];
 						$this->req->updatedSession = true;
-						$cb();
-					};
-					if (!$account) {
-						$account = $this->appInstance->accounts->getAccountBase($this->req);
-						$account = array_merge($account, $credentials, $user_data);
-						$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
-							$this->appInstance->accounts->getAccount($credentials, $loginTo);
-						});
+						if ($cb !== null) {
+							call_user_func($cb);
+						}
+						return;
 					}
-					else {
-						$loginTo($account);
+					if (!isset($add['email'])) {
+						$_SESSION['extAuth'] = [
+							'ns' => $ns,
+							'id' => $id,
+						];
+						$_SESSION['extAuthAdd'] = $add;
+						$this->req->updatedSession       = true;
+						$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
+						$this->req->setResult([]);
+						return;
 					}
+					$account = $this->appInstance->accounts->getAccountBase($this->req);
+					foreach ($add as $k => $v) { // @TODO: ???
+						$account[$k] = $v;
+					}
+					$account['credentials'] = [
+						[
+							'ns' => $ns,
+							'id' => $id,
+						],
+					];
+					$this->appInstance->accounts->saveAccount($account, function () use ($loginTo, $credentials) {
+						$this->appInstance->accounts->getAccountByEmail($credentials['email'], $loginTo);
+					});
 				});
 		});
 	}
@@ -264,6 +273,16 @@ class CmpAccount extends Component {
 				$_SESSION['credentials']['email'] = $email;
 				$this->req->updatedSession        = true;
 			}
+
+			//send
+
+			$this->appInstance->externalSignupRequests->remove(['credentials' => ['external_unique_id']]);
+			$this->appInstance->externalSignupRequests->getRequestByUniqueID($email, function ($request) use ($email) {
+				if (!$request) {
+					$this->appInstance->externalSignupRequests->save(['email' => $email, 'credentials']);
+				}
+			});
+
 			$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
 				if (!$account) {
 					$this->appInstance->accounts->saveAccount($_SESSION['credentials'], function ($lastError) {

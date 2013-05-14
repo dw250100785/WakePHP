@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\Components\Muchat;
+namespace WakePHP\Components\MUChat;
 
 class AntifloodPlugin {
 	public function onMessage() {

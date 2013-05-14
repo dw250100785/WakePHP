@@ -1,13 +1,15 @@
 <?php
 namespace WakePHP\ORM;
 
+use PHPDaemon\Clients\Mongo\Collection;
 use WakePHP\Core\ORM;
 
 /**
- * BlocksORM
+ * Blocks
  */
-class BlocksORM extends ORM {
+class Blocks extends ORM {
 
+	/** @var Collection */
 	public $blocks;
 
 	public function init() {
@@ -47,7 +49,8 @@ class BlocksORM extends ORM {
 		if (isset($block['template'])) {
 
 			$tpl = $this->appInstance->getQuickyInstance();
-			$tpl->register_function('getblock', function ($args) { });
+			$tpl->register_function('getblock', function ($args) {
+			});
 			$block['templatePHP'] = 'return function($tpl) {
 			$var = &$tpl->_tpl_vars;
 			$config = &$tpl->_tpl_config;

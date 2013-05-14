@@ -114,4 +114,8 @@ class Twitter extends Generic {
 			]
 		);
 	}
+
+	public function getUniqueId($credentials) {
+		return 'twitter:' . $credentials['twitterId'];
+	}
 }

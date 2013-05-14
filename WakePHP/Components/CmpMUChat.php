@@ -13,7 +13,9 @@ DRAFT:
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
-use WakePHP\ORM\MUChatORM;
+use WakePHP\Components\MUChat\Tag;
+use WakePHP\Core\Request;
+use WakePHP\ORM\MUChat;
 
 class CmpMUChat extends AppInstance {
 
@@ -49,13 +51,16 @@ class CmpMUChat extends AppInstance {
 		);
 	}
 
+	/**
+	 * @param Request $req
+	 */
 	public function __construct($req) {
 		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
 		$this->dbname      =& $this->appInstance->dbname;
 		Daemon::log(__CLASS__ . ' up.');
 		$this->db             = $this->appInstance->db;
-		$this->ORM            = new MUChatORM($this);
+		$this->ORM            = new MUChat($this);
 		$this->tags           = array();
 		$this->minMsgInterval = 1;
 
@@ -78,7 +83,7 @@ class CmpMUChat extends AppInstance {
 		if (isset($this->tags[$name])) {
 			return $this->tags[$name];
 		}
-		return $this->tags[$name] = new MUChat\Tag($name, $this);
+		return $this->tags[$name] = new Tag($name, $this);
 
 	}
 
