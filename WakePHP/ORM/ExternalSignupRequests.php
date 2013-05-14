@@ -36,4 +36,8 @@ class ExternalSignupRequests extends ORM {
 	public function remove(array $cond, $cb = null) {
 		$this->externalSignupRequests->remove($cond, $cb);
 	}
+
+	public function getRequestByCredentials(array $credentials, $cb = null) {
+		$this->externalSignupRequests->findOne($cb, ['credentials' => ['$elemMatch' => $credentials]]);
+	}
 }
