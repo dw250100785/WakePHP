@@ -237,10 +237,7 @@ class CmpAccount extends Component {
 						return;
 					}
 					if (!isset($add['email'])) {
-						$_SESSION['extAuth']       = [
-							'ns' => $ns,
-							'id' => $id,
-						];
+						$_SESSION['extAuth']       = $crd;
 						$_SESSION['extAuthAdd']    = $add;
 						$this->req->updatedSession = true;
 						$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
@@ -260,7 +257,7 @@ class CmpAccount extends Component {
 								$newAccount[$k] = $v;
 							}
 							$newAccount['credentials'] = [$crd,];
-							$this->appInstance->accounts->saveAccount($newAccount, function () use ($loginTo, $add) {
+							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add) {
 								$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) {
 									$this->loginAs($account);
 								});
