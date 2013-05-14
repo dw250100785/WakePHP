@@ -15,9 +15,9 @@ class ExternalSignupRequests extends ORM {
 	 */
 	public function save(array $request, $cb = null) {
 		if (!isset($request['_id'])) {
-			$request['_id'] = null;
+			$request['_id'] = new \MongoId();
 		}
-		$this->externalSignupRequests->upsert(['_id' => new \MongoId($request['_id'])], $request, false, $cb);
+		$this->externalSignupRequests->upsert(['_id' => $request['_id']], $request, false, $cb);
 	}
 
 	public function getRequestById($id, $cb = null) {
