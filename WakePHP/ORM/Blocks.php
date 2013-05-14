@@ -8,6 +8,7 @@ use WakePHP\Core\ORM;
  */
 class Blocks extends ORM {
 
+	/** @var \MongoCollection */
 	public $blocks;
 
 	public function init() {
