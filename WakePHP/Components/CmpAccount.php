@@ -222,7 +222,7 @@ class CmpAccount extends Component {
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
 		$this->onSessionStart(function () use ($ns, $id, $add, $cb) {
 			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => ['ns' => $ns, 'id' => $id]]],
-				function ($account) use ($ns, $id, $cb) {
+				function ($account) use ($ns, $id, $cb, $add) {
 					if ($account) {
 						$_SESSION['accountId']     = $account['_id'];
 						$this->req->updatedSession = true;
@@ -232,12 +232,12 @@ class CmpAccount extends Component {
 						return;
 					}
 					if (!isset($add['email'])) {
-						$_SESSION['extAuth'] = [
+						$_SESSION['extAuth']       = [
 							'ns' => $ns,
 							'id' => $id,
 						];
-						$_SESSION['extAuthAdd'] = $add;
-						$this->req->updatedSession       = true;
+						$_SESSION['extAuthAdd']    = $add;
+						$this->req->updatedSession = true;
 						$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
 						$this->req->setResult([]);
 						return;
