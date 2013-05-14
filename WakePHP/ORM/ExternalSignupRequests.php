@@ -14,6 +14,9 @@ class ExternalSignupRequests extends ORM {
 	 * @param callable|null $cb
 	 */
 	public function save(array $request, $cb = null) {
+		if (!isset($request['_id'])) {
+			$request['_id'] = null;
+		}
 		$this->externalSignupRequests->upsert(['_id' => new \MongoId($request['_id'])], $request, false, $cb);
 	}
 
