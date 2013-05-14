@@ -244,9 +244,9 @@ class CmpAccount extends Component {
 						$this->req->setResult([]);
 						return;
 					}
-					$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) use ($crd, $add){
+					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add) {
 							if ($account) {
-								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function() use ($account) {
+								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function () use ($account) {
 									$this->loginAs($account);
 								});
 								return;
@@ -258,12 +258,12 @@ class CmpAccount extends Component {
 							}
 							$newAccount['credentials'] = [$crd,];
 							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add) {
-								$this->appInstance->accounts->getAccountByEmail($add['email'], function($account) {
+								$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) {
 									$this->loginAs($account);
 								});
 							});
 						}
-					});
+					);
 				});
 		});
 	}
