@@ -17,4 +17,6 @@
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Log in</button>
 	{getBlock name="TwitterAuth"}
+	<br/>
+	{getBlock name="FacebookAuth"}
 </form>

@@ -1,0 +1,1 @@
+<a href="/component/Account/ExternalAuth?agent=Facebook" class="button facebook-auth-button">Authenticate via Facebook</a>
