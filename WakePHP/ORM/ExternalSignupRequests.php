@@ -30,6 +30,7 @@ class ExternalSignupRequests extends ORM {
 	}
 
 	public function init() {
+		$this->externalSignupRequests = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
 		$this->externalSignupRequests->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
 	}
 
