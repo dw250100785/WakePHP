@@ -269,7 +269,7 @@ class CmpAccount extends Component {
 
 	public function finishSignupController() {
 		$this->onSessionRead(function () {
-			if (!isset($_SESSION['not_finished_signup'])) {
+			if (!isset($_SESSION['extAuth'])) {
 				$this->req->setResult(['success' => false, 'errors' => ['Session expired']]);
 				return;
 			}
