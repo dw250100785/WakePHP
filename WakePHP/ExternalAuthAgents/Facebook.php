@@ -24,7 +24,8 @@ class Facebook extends Generic {
 			$this->req->setResult(['error' => 'Wrong referer']);
 			return;
 		}
-		if (!isset($_GET['code'])) {
+		$code = Request::getString($_GET['code']);
+		if ($code === '') {
 			Daemon::log('Authentication failed');
 			$this->req->status(401);
 			$this->req->setResult(['error' => 'Authenticaion failed']);
@@ -35,7 +36,7 @@ class Facebook extends Generic {
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
 				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook',
 				'client_secret' => $this->cmp->config->facebook_app_secret->value,
-				'code'          => Request::getString($_GET['code'])],
+				'code'          => $code],
 			function ($conn, $success) {
 				if (!$success) {
 					$this->req->status(400);
@@ -55,7 +56,9 @@ class Facebook extends Generic {
 						'access_token' => $response['access_token']
 					],
 					function ($conn, $success) {
-						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id'])) {
+						$response = json_decode($conn->body, true);
+						$id       = Request::getString($response['id']);
+						if (!$success || !is_array($response) || empty($id)) {
 							$this->req->status(302);
 							$this->req->header('Location: ' . $this->req->getBaseUrl());
 							$this->req->setResult(['error' => 'Unrecognized response']);
@@ -63,12 +66,12 @@ class Facebook extends Generic {
 						}
 						$data = [];
 						if (isset($response['name'])) {
-							$data['username'] = $response['name'];
+							$data['username'] = Request::getString($response['name']);
 						}
 						if (isset($response['email'])) {
-							$data['email'] = $response['email'];
+							$data['email'] = Request::getString($response['email']);
 						}
-						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
+						$this->req->components->account->acceptUserAuthentication('facebook', $id, $data,
 							function () {
 								$this->req->status(302);
 								$this->req->header('Location: ' . $this->req->getBaseUrl());
