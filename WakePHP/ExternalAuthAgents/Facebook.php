@@ -7,7 +7,7 @@ use WakePHP\Core\Request;
 class Facebook extends Generic {
 	public function auth() {
 		$request_token_url = $this->cmp->config->facebook_auth_url->value . '?' .
-				http_build_query(['client_id'     => trim($this->cmp->config->facebook_app_key->value),
+				http_build_query(['client_id'     => $this->cmp->config->facebook_app_key->value,
 								  'response_type' => 'code',
 								  'scope'         => 'email',
 								  'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook']);
