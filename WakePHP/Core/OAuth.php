@@ -23,8 +23,7 @@ class OAuth {
 		}
 		$signature_base .= rawurlencode(implode('&', $signature_params));
 		$signing_key = rawurlencode($app_secret) . '&' . ($user_token ? rawurlencode($user_token) : '');
-		$signature   = str_replace(['+', '%7E'], ['%20', '~'], base64_encode(
-			hash_hmac('sha1', $signature_base, $signing_key, true)));
+		$signature   = base64_encode(hash_hmac('sha1', $signature_base, $signing_key, true));
 		return $signature;
 	}
 }
