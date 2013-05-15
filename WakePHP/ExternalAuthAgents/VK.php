@@ -43,7 +43,7 @@ class VK extends Generic {
 					return;
 				}
 				Daemon::log($conn->body);
-				$response     = json_decode($conn->body, true);
+				$response     = json_decode(rtrim($conn->body), true);
 				$user_id      = Request::getString($response['user_id']);
 				$access_token = Request::getString($response['access_token']);
 				if ($user_id === '' || $access_token === '') {
