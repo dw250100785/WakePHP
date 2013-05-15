@@ -82,7 +82,12 @@ class Facebook extends Generic
 					return;
 				}
 				Daemon::log($_SERVER['HTTP_REFERER']);
-				$this->appInstance->httpclient->get([$this->cmp->config->facebook_graph_api->value],
+				$this->appInstance->httpclient->get(
+					[$this->cmp->config->facebook_graph_api->value.'/me',
+						'fields'       => 'id,name,email',
+						'format'       => 'json',
+						'access_token' => $response['access_token']
+					],
 					['resultcb' => function ($conn, $success) use ($base_url)
 					{
 						Daemon::log($conn->body);
@@ -90,13 +95,13 @@ class Facebook extends Generic
 						$this->req->setResult();
 						return;
 					}]);
-				$this->req->components->account->acceptUserAuthentication('facebook', $response['user_id'],
-					['username' => $response['screen_name']],
-					function () use ($base_url)
-					{
-						$this->req->header('Location: '.$base_url);
-						$this->req->setResult();
-					});
+//				$this->req->components->account->acceptUserAuthentication('facebook', $response['user_id'],
+//					['username' => $response['screen_name']],
+//					function () use ($base_url)
+//					{
+//						$this->req->header('Location: '.$base_url);
+//						$this->req->setResult();
+//					});
 			}
 			]
 		);
