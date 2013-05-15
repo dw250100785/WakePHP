@@ -52,7 +52,7 @@ class Facebook extends Generic
 	public function redirect()
 	{
 		$base_url = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
-		if (!$this->checkReferer($base_url))
+		if (!$this->checkReferer($this->appInstance->config->domain->value))
 		{
 			Daemon::log(Debug::dump($_SERVER['HTTP_REFERER']));
 			$this->req->setResult(['error' => 'Wrong referer']);
