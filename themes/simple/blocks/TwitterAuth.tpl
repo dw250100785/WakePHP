@@ -1,1 +1,0 @@
-<a href="/component/Account/ExternalAuth?agent=Twitter" class="button twitter-auth-button">Authenticate via Twitter</a>

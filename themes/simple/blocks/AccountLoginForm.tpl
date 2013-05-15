@@ -16,7 +16,9 @@
 	<a href="/{$req->locale}/account/recovery" class="forgotPasswordButton i18n">Forgot your password?</a><br/>
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Log in</button>
-	{getBlock name="TwitterAuth"}
+	<a href="/component/Account/ExternalAuth?agent=Twitter" class="button twitter-auth-button">Authenticate via Twitter</a>
 	<br/>
-	{getBlock name="FacebookAuth"}
+	<a href="/component/Account/ExternalAuth?agent=Facebook" class="button facebook-auth-button">Authenticate via Facebook</a>
+	<br/>
+	<a href="/component/Account/ExternalAuth?agent=Вконтактик" class="button vk-auth-button">Authenticate via Vkontakte</a>
 </form>
