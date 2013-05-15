@@ -26,20 +26,18 @@ class Twitter extends Generic {
 					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->status(302);
 						 $this->req->header('Location: ' . $this->req->getBaseUrl());
-						 $this->req->setResult();
+						 $this->req->setResult([]);
+						 return;
 					 }
-					 else {
-						 $request_token_url = 'https://api.twitter.com/oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
-						 $this->req->status(302);
-						 $this->req->header('Location: ' . $request_token_url);
-						 $this->req->setResult();
-					 }
+					 $request_token_url = 'https://api.twitter.com/oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+					 $this->req->status(302);
+					 $this->req->header('Location: ' . $request_token_url);
+					 $this->req->setResult([]);
 				 }
 				 else {
-					 err_response:
 					 $this->req->status(302);
 					 $this->req->header('Location: ' . $this->req->getBaseUrl());
-					 $this->req->setResult();
+					 $this->req->setResult([]);
 					 return;
 				 }
 			 }]);
@@ -68,7 +66,7 @@ class Twitter extends Generic {
 
 	public function redirect() {
 		if (!$this->checkReferer('api.twitter.com')) {
-			$this->req->setResult();
+			$this->req->setResult([]);
 			return;
 		}
 		$url = 'https://api.twitter.com/oauth/access_token';
@@ -95,7 +93,7 @@ class Twitter extends Generic {
 				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data,
 					 function () {
 						 $this->req->header('Location: ' . $this->req->getBaseUrl());
-						 $this->req->setResult();
+						 $this->req->setResult([]);
 					 });
 			 }
 			]
