@@ -46,9 +46,9 @@ class VK extends Generic {
 				Daemon::log(Debug::dump($conn->body));
 				$response = json_decode(rtrim($conn->body), true);
 				Daemon::log(Debug::dump($response));
-				$user_id      = Request::getString($response['user_id']);
+				$user_id      = isset($response['user_id']) ? (int)$response['user_id'] : 0;
 				$access_token = Request::getString($response['access_token']);
-				if ($user_id === '' || $access_token === '') {
+				if ($user_id === 0 || $access_token === '') {
 					$this->req->status(403);
 					$this->req->setResult(['error' => 'no access token or user id']);
 					return;
