@@ -25,7 +25,6 @@ class Twitter extends Generic {
 					 return;
 				 }
 				 if ($conn->responseCode > 299) {
-					 Daemon::log('Wrong timestamp! Twitter authentication was declined.');
 					 Daemon::log($conn->responseCode . ': ' . $conn->body);
 					 $this->req->status(400);
 					 $this->req->setResult([]);
@@ -45,7 +44,6 @@ class Twitter extends Generic {
 	}
 
 	protected function getAuthorizationHeader($url, $oauth_params = []) {
-		$header = 'OAuth ';
 		$params =
 				['oauth_consumer_key'     => $this->cmp->config->twitter_app_key->value,
 				 'oauth_nonce'            => Daemon::uniqid(),
@@ -61,7 +59,7 @@ class Twitter extends Generic {
 		foreach ($params as $param => $value) {
 			$header_params[] = rawurlencode($param) . '="' . rawurlencode($value) . '"';
 		}
-		$header .= implode(', ', $header_params);
+		$header = 'OAuth ' . rawurlencode(implode(', ', $header_params));
 		return $header;
 	}
 
