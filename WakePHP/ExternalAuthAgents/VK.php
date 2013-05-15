@@ -42,7 +42,7 @@ class VK extends Generic {
 					$this->req->setResult(['error' => 'request declined']);
 					return;
 				}
-				parse_str($conn->body, $response);
+				$response     = json_decode($conn->body, true);
 				$user_id      = Request::getString($response['user_id']);
 				$access_token = Request::getString($response['access_token']);
 				if ($user_id === '' || $access_token === '') {
