@@ -66,6 +66,7 @@ class Twitter extends Generic {
 
 	public function redirect() {
 		if (!$this->checkReferer('api.twitter.com')) {
+			$this->req->status(400);
 			$this->req->setResult([]);
 			return;
 		}
@@ -76,12 +77,14 @@ class Twitter extends Generic {
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => Request::getString($_GET['oauth_token'])])],
 			 'resultcb' => function ($conn, $success) {
 				 if (!$success) {
+					 $this->req->status(403);
 					 $this->req->setResult(['error' => 'request declined']);
 					 return;
 				 }
 				 parse_str($conn->body, $response);
 				 $user_id = Request::getString($response['user_id']);
 				 if ($user_id === '') {
+					 $this->req->status(400);
 					 $this->req->setResult(['error' => 'no user_id']);
 					 return;
 				 }
@@ -92,6 +95,7 @@ class Twitter extends Generic {
 
 				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data,
 					 function () {
+						 $this->req->status(302);
 						 $this->req->header('Location: ' . $this->req->getBaseUrl());
 						 $this->req->setResult([]);
 					 });
