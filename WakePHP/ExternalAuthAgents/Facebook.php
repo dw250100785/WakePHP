@@ -11,7 +11,7 @@ class Facebook extends Generic
 		$base_url          = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
 		$redirect_url      = $base_url.'/component/Account/ExternalAuthRedirect/json?agent=Facebook';
 		$request_token_url = $this->cmp->config->facebook_auth_url->value.'?'
-				.'client_id='.$this->cmp->config->facebook_app_key->value
+				.'client_id='.rawurlencode($this->cmp->config->facebook_app_key->value)
 				.'&response_type=code'
 				.'&scope=email'
 				.'&redirect_uri='.rawurlencode($redirect_url);
@@ -25,7 +25,6 @@ class Facebook extends Generic
 
 	public function redirect()
 	{
-
 		if (!$this->checkReferer($this->appInstance->config->domain->value))
 		{
 			$this->req->setResult(['error' => 'Wrong referer']);
@@ -68,6 +67,7 @@ class Facebook extends Generic
 					{
 						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id']))
 						{
+							$this->req->status(302);
 							$this->req->header('Location: '.$base_url);
 							$this->req->setResult(['error' => 'Unrecognized response']);
 							return;
@@ -78,6 +78,7 @@ class Facebook extends Generic
 						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
 							function () use ($base_url)
 							{
+								$this->req->status(302);
 								$this->req->header('Location: '.$base_url);
 								$this->req->setResult();
 								return;
