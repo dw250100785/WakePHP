@@ -16,6 +16,7 @@
 	<a href="/{$req->locale}/account/recovery" class="forgotPasswordButton i18n">Forgot your password?</a><br/>
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Log in</button>
+	<br/>
 	<a href="/component/Account/ExternalAuth?agent=Twitter" class="button twitter-auth-button">Authenticate via Twitter</a>
 	<br/>
 	<a href="/component/Account/ExternalAuth?agent=Facebook" class="button facebook-auth-button">Authenticate via Facebook</a>
