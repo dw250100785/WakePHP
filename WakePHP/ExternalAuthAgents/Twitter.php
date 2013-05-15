@@ -26,6 +26,7 @@ class Twitter extends Generic {
 				 }
 				 if ($conn->responseCode > 299) {
 					 Daemon::log('Wrong timestamp! Twitter authentication was declined.');
+					 Daemon::log($conn->responseCode . ': ' . $conn->body);
 					 $this->req->status(400);
 					 $this->req->setResult([]);
 					 return;
