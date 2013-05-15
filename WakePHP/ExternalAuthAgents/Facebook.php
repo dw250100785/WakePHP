@@ -6,13 +6,12 @@ use WakePHP\Core\Request;
 
 class Facebook extends Generic {
 	public function auth() {
-		$base_url          = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url      = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=Facebook';
-		$request_token_url = $this->cmp->config->facebook_auth_url->value . '?'
-				. 'client_id=' . rawurlencode($this->cmp->config->facebook_app_key->value)
-				. '&response_type=code'
-				. '&scope=email'
-				. '&redirect_uri=' . rawurlencode($redirect_url);
+		$request_token_url = $this->cmp->config->facebook_auth_url->value . '?' .
+				http_build_query(['client_id'     => trim($this->cmp->config->facebook_app_key->value),
+								  'response_type' => 'code',
+								  'scope'         => 'email',
+								  'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook']);
+		$this->req->status(302);
 		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->req->header('Pragma: no-cache');
 		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
@@ -27,24 +26,25 @@ class Facebook extends Generic {
 		}
 		if (!isset($_GET['code'])) {
 			Daemon::log('Authentication failed');
+			$this->req->status(401);
 			$this->req->setResult(['error' => 'Authenticaion failed']);
 			return;
 		}
-		$base_url     = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=Facebook';
 		$this->appInstance->httpclient->get(
 			[$this->cmp->config->facebook_code_exchange_url->value,
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
-				'redirect_uri'  => $redirect_url,
+				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook',
 				'client_secret' => $this->cmp->config->facebook_app_secret->value,
-				'code'          => $_GET['code']],
-			['resultcb' => function ($conn, $success) use ($base_url) {
+				'code'          => Request::getString($_GET['code'])],
+			['resultcb' => function ($conn, $success) {
 				if (!$success) {
+					$this->req->status(400);
 					$this->req->setResult(['error' => 'request declined']);
 					return;
 				}
 				parse_str($conn->body, $response);
 				if (!isset($response['access_token'])) {
+					$this->req->status(403);
 					$this->req->setResult(['error' => 'no access_token']);
 					return;
 				}
@@ -54,10 +54,10 @@ class Facebook extends Generic {
 						'format'       => 'json',
 						'access_token' => $response['access_token']
 					],
-					['resultcb' => function ($conn, $success) use ($base_url) {
+					['resultcb' => function ($conn, $success) {
 						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id'])) {
 							$this->req->status(302);
-							$this->req->header('Location: ' . $base_url);
+							$this->req->header('Location: ' . $this->req->getBaseUrl());
 							$this->req->setResult(['error' => 'Unrecognized response']);
 							return;
 						}
@@ -69,9 +69,9 @@ class Facebook extends Generic {
 							$data['email'] = $response['email'];
 						}
 						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
-							function () use ($base_url) {
+							function () {
 								$this->req->status(302);
-								$this->req->header('Location: ' . $base_url);
+								$this->req->header('Location: ' . $this->req->getBaseUrl());
 								$this->req->setResult();
 								return;
 							});
