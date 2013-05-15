@@ -82,6 +82,7 @@ class Facebook extends Generic
 					$this->req->setResult(['error' => 'no access_token']);
 					return;
 				}
+				Daemon::log('token: '.$response['access_token']);
 				$this->appInstance->httpclient->get(
 					[$this->cmp->config->facebook_graph_api->value.'/me',
 						'fields'       => 'id,name,email',
@@ -90,20 +91,25 @@ class Facebook extends Generic
 					],
 					['resultcb' => function ($conn, $success) use ($base_url)
 					{
+						Daemon::log(__LINE__);
 						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id']))
 						{
+							Daemon::log(__LINE__);
 							$this->req->header('Location: '.$base_url);
 							$this->req->setResult(['error' => 'Unrecognized response']);
 							return;
 						}
+						Daemon::log(__LINE__);
 						$data = [];
 						if (isset($response['name'])) $data['username'] = $response['name'];
 						if (isset($response['email'])) $data['email'] = $response['email'];
 						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
 							function () use ($base_url)
 							{
+								Daemon::log(__LINE__);
 								$this->req->header('Location: '.$base_url);
 								$this->req->setResult();
+								return;
 							});
 					}]);
 			}
