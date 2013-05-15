@@ -36,7 +36,7 @@ class Facebook extends Generic {
 				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook',
 				'client_secret' => $this->cmp->config->facebook_app_secret->value,
 				'code'          => Request::getString($_GET['code'])],
-			['resultcb' => function ($conn, $success) {
+			function ($conn, $success) {
 				if (!$success) {
 					$this->req->status(400);
 					$this->req->setResult(['error' => 'request declined']);
@@ -54,7 +54,7 @@ class Facebook extends Generic {
 						'format'       => 'json',
 						'access_token' => $response['access_token']
 					],
-					['resultcb' => function ($conn, $success) {
+					function ($conn, $success) {
 						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id'])) {
 							$this->req->status(302);
 							$this->req->header('Location: ' . $this->req->getBaseUrl());
@@ -72,12 +72,11 @@ class Facebook extends Generic {
 							function () {
 								$this->req->status(302);
 								$this->req->header('Location: ' . $this->req->getBaseUrl());
-								$this->req->setResult();
+								$this->req->setResult([]);
 								return;
 							});
-					}]);
+					});
 			}
-			]
 		);
 	}
 }
