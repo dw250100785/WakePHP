@@ -2,7 +2,6 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use WakePHP\Core\Request;
 
 class VK extends Generic {
@@ -43,9 +42,7 @@ class VK extends Generic {
 					$this->req->setResult(['error' => 'request declined']);
 					return;
 				}
-				Daemon::log(Debug::dump($conn->body));
-				$response = json_decode(rtrim($conn->body), true);
-				Daemon::log(Debug::dump($response));
+				$response     = json_decode(rtrim($conn->body), true);
 				$user_id      = isset($response['user_id']) ? (int)$response['user_id'] : 0;
 				$access_token = Request::getString($response['access_token']);
 				if ($user_id === 0 || $access_token === '') {
@@ -61,7 +58,7 @@ class VK extends Generic {
 					],
 					function ($conn, $success) use ($user_id) {
 						$response = json_decode($conn->body, true);
-						if (!$success || !is_array($response) || empty($id)) {
+						if (!$success || !is_array($response) || empty($user_id)) {
 							$this->req->status(302);
 							$this->req->header('Location: ' . $this->req->getBaseUrl());
 							$this->req->setResult(['error' => 'Unrecognized response']);
