@@ -6,7 +6,7 @@ use WakePHP\Core\Request;
 
 class Facebook extends Generic {
 	public function auth() {
-		$request_token_url = $this->cmp->config->facebook_auth_url->value . '?' .
+		$request_token_url = 'https://www.facebook.com/dialog/oauth/?' .
 				http_build_query(['client_id'     => $this->cmp->config->facebook_app_key->value,
 								  'response_type' => 'code',
 								  'scope'         => 'email',
@@ -32,7 +32,7 @@ class Facebook extends Generic {
 			return;
 		}
 		$this->appInstance->httpclient->get(
-			[$this->cmp->config->facebook_code_exchange_url->value,
+			['https://graph.facebook.com/oauth/access_token',
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
 				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook',
 				'client_secret' => $this->cmp->config->facebook_app_secret->value,
@@ -50,7 +50,7 @@ class Facebook extends Generic {
 					return;
 				}
 				$this->appInstance->httpclient->get(
-					[$this->cmp->config->facebook_graph_api->value . '/me',
+					['https://graph.facebook.com/me',
 						'fields'       => 'id,name,email',
 						'format'       => 'json',
 						'access_token' => $response['access_token']
