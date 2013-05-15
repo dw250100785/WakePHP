@@ -252,8 +252,10 @@ class CmpAccount extends Component {
 							}
 
 							$newAccount = $this->appInstance->accounts->getAccountBase($this->req);
-							foreach ($add as $k => $v) { // @TODO: ???
-								$newAccount[$k] = $v;
+							foreach ($add as $k => $v) {
+								if (!isset($crd[$k])) {
+									$crd[$k] = $v;
+								}
 							}
 							$newAccount['credentials'] = [$crd,];
 							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add, $cb) {
