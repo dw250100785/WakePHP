@@ -51,7 +51,8 @@ class Facebook extends Generic
 
 	public function redirect()
 	{
-		if (!$this->checkReferer('facebook.com'))
+		$base_url = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
+		if (!$this->checkReferer($base_url))
 		{
 			Daemon::log(Debug::dump($_SERVER['HTTP_REFERER']));
 			$this->req->setResult(['error' => 'Wrong referer']);
@@ -63,7 +64,6 @@ class Facebook extends Generic
 			$this->req->setResult(['error' => 'Authenticaion failed']);
 			return;
 		}
-		$base_url     = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
 		$redirect_url = $base_url.'/component/Account/ExternalAuthRedirect/json?agent=Facebook';
 		$this->appInstance->httpclient->get(
 			[$this->cmp->config->facebook_code_exchange_url->value,
