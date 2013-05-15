@@ -23,7 +23,7 @@ abstract class Generic {
 	 */
 	public static function getAgent($agent, Component $cmp) {
 		$class = '\\WakePHP\\ExternalAuthAgents\\' . $agent;
-		if (!ctype_alnum($agent) || !class_exists($class) || !(is_subclass_of($class, '\\WakePHP\\ExternalAuthAgents\\Generic'))) {
+		if (!class_exists($class) || !(is_subclass_of($class, '\\WakePHP\\ExternalAuthAgents\\Generic'))) {
 			return false;
 		}
 		return new $class($cmp);
