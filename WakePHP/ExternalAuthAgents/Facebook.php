@@ -2,8 +2,6 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
 class Facebook extends Generic
@@ -25,36 +23,11 @@ class Facebook extends Generic
 		$this->req->setResult([]);
 	}
 
-	protected function getAuthorizationHeader($url, $oauth_params = [])
-	{
-		$header = 'OAuth ';
-		$params =
-				['oauth_consumer_key'     => $this->cmp->config->facebook_app_key->value,
-				 'oauth_nonce'            => Daemon::uniqid(),
-				 'oauth_signature_method' => 'HMAC-SHA1',
-				 'oauth_timestamp'        => time(),
-				 'oauth_version'          => '1.0'
-				];
-		if (!empty($oauth_params))
-		{
-			$params = array_merge($params, $oauth_params);
-		}
-		$params['oauth_signature'] = OAuth::getSignature('POST', $url, $params, $this->cmp->config->twitter_app_secret->value);
-		$header_params             = [];
-		foreach ($params as $param => $value)
-		{
-			$header_params[] = rawurlencode($param).'="'.rawurlencode($value).'"';
-		}
-		$header .= implode(', ', $header_params);
-		return $header;
-	}
-
 	public function redirect()
 	{
-		$base_url = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
+
 		if (!$this->checkReferer($this->appInstance->config->domain->value))
 		{
-			Daemon::log(Debug::dump($_SERVER['HTTP_REFERER']));
 			$this->req->setResult(['error' => 'Wrong referer']);
 			return;
 		}
@@ -64,6 +37,7 @@ class Facebook extends Generic
 			$this->req->setResult(['error' => 'Authenticaion failed']);
 			return;
 		}
+		$base_url     = ($_SERVER['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
 		$redirect_url = $base_url.'/component/Account/ExternalAuthRedirect/json?agent=Facebook';
 		$this->appInstance->httpclient->get(
 			[$this->cmp->config->facebook_code_exchange_url->value,
@@ -84,7 +58,6 @@ class Facebook extends Generic
 					$this->req->setResult(['error' => 'no access_token']);
 					return;
 				}
-				Daemon::log('token: '.$response['access_token']);
 				$this->appInstance->httpclient->get(
 					[$this->cmp->config->facebook_graph_api->value.'/me',
 						'fields'       => 'id,name,email',
@@ -93,22 +66,18 @@ class Facebook extends Generic
 					],
 					['resultcb' => function ($conn, $success) use ($base_url)
 					{
-						Daemon::log(__LINE__);
 						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id']))
 						{
-							Daemon::log(__LINE__);
 							$this->req->header('Location: '.$base_url);
 							$this->req->setResult(['error' => 'Unrecognized response']);
 							return;
 						}
-						Daemon::log(__LINE__);
 						$data = [];
 						if (isset($response['name'])) $data['username'] = $response['name'];
 						if (isset($response['email'])) $data['email'] = $response['email'];
 						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
 							function () use ($base_url)
 							{
-								Daemon::log(__LINE__);
 								$this->req->header('Location: '.$base_url);
 								$this->req->setResult();
 								return;
