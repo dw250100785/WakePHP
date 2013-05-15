@@ -18,15 +18,15 @@ class Twitter extends Generic {
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($request_token_url, ['oauth_callback' => $redirect_url])],
 			 'resultcb' => function ($conn, $success) use ($request_token_url, $redirect_url) {
 				 if ($success) {
-					 parse_str($conn->body, $response);
 					 if ($conn->responseCode > 299) {
 						 Daemon::log('Wrong timestamp! Twitter authentication was declined.');
+						 return;
 					 }
-					 elseif (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
+					 parse_str($conn->body, $response);
+					 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
 						 $this->req->status(302);
 						 $this->req->header('Location: ' . $this->req->getBaseUrl());
 						 $this->req->setResult();
-						 return;
 					 }
 					 else {
 						 $request_token_url = 'https://api.twitter.com/oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
