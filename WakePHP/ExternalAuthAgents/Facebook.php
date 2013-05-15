@@ -2,6 +2,7 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
@@ -52,7 +53,8 @@ class Facebook extends Generic
 	{
 		if (!$this->checkReferer('facebook.com'))
 		{
-			$this->req->setResult();
+			Daemon::log(Debug::dump($_SERVER['HTTP_REFERER']));
+			$this->req->setResult(['error' => 'Wrong referer']);
 			return;
 		}
 		if (!isset($_GET['code']))
