@@ -7,9 +7,8 @@ use WakePHP\Core\Request;
 
 class Twitter extends Generic {
 	public function auth() {
-		$request_token_url = $this->cmp->config->twitter_auth_url->value . 'oauth/request_token';
-		$base_url          = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-		$redirect_url      = $base_url . '/component/Account/ExternalAuthRedirect/json?agent=Twitter';
+		$request_token_url = 'https://api.twitter.com/oauth/request_token';
+		$redirect_url      = $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Twitter';
 		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->req->header('Pragma: no-cache');
 		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
@@ -17,26 +16,29 @@ class Twitter extends Generic {
 			$request_token_url,
 			[],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($request_token_url, ['oauth_callback' => $redirect_url])],
-			 'resultcb' => function ($conn, $success) use ($request_token_url, $base_url, $redirect_url) {
+			 'resultcb' => function ($conn, $success) use ($request_token_url, $redirect_url) {
 				 if ($success) {
 					 parse_str($conn->body, $response);
 					 if ($conn->responseCode > 299) {
 						 Daemon::log('Wrong timestamp! Twitter authentication was declined.');
 					 }
 					 elseif (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
-						 $this->req->header('Location: ' . $base_url);
+						 $this->req->status(302);
+						 $this->req->header('Location: ' . $this->req->getBaseUrl());
 						 $this->req->setResult();
 						 return;
 					 }
 					 else {
-						 $request_token_url = $this->cmp->config->twitter_auth_url->value . 'oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+						 $request_token_url = 'https://api.twitter.com/oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']);
+						 $this->req->status(302);
 						 $this->req->header('Location: ' . $request_token_url);
 						 $this->req->setResult();
 					 }
 				 }
 				 else {
 					 err_response:
-					 $this->req->header('Location: ' . $base_url);
+					 $this->req->status(302);
+					 $this->req->header('Location: ' . $this->req->getBaseUrl());
 					 $this->req->setResult();
 					 return;
 				 }
@@ -69,26 +71,30 @@ class Twitter extends Generic {
 			$this->req->setResult();
 			return;
 		}
-		$url      = $this->cmp->config->twitter_auth_url->value . 'oauth/access_token';
-		$base_url = ($_SERVER['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+		$url = 'https://api.twitter.com/oauth/access_token';
 		$this->appInstance->httpclient->post(
 			$url,
 			['oauth_verifier' => $_GET['oauth_verifier']],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => $_GET['oauth_token']])],
-			 'resultcb' => function ($conn, $success) use ($base_url) {
+			 'resultcb' => function ($conn, $success) {
 				 if (!$success) {
 					 $this->req->setResult(['error' => 'request declined']);
 					 return;
 				 }
 				 parse_str($conn->body, $response);
-				 if (!isset($response['user_id'])) {
+				 $user_id = Request::getString($response['user_id']);
+				 if ($response['user_id'] === '') {
 					 $this->req->setResult(['error' => 'no user_id']);
 					 return;
 				 }
-				 $this->req->components->account->acceptUserAuthentication('twitter', $response['user_id'],
-																		   ['username' => $response['screen_name']],
-					 function () use ($base_url) {
-						 $this->req->header('Location: ' . $base_url);
+				 $data = [];
+				 if (isset($response['screen_name'])) {
+					 $data['username'] = $response['screen_name'];
+				 }
+
+				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data,
+					 function () {
+						 $this->req->header('Location: ' . $this->req->getBaseUrl());
 						 $this->req->setResult();
 					 });
 			 }
