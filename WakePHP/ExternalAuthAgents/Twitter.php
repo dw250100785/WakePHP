@@ -59,7 +59,7 @@ class Twitter extends Generic {
 		foreach ($params as $param => $value) {
 			$header_params[] = rawurlencode($param) . '="' . rawurlencode($value) . '"';
 		}
-		$header = 'OAuth ' . rawurlencode(implode(', ', $header_params));
+		$header = 'OAuth ' . implode(', ', $header_params);
 		return $header;
 	}
 
