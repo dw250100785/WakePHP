@@ -21,5 +21,5 @@
 	<br/>
 	<a href="/component/Account/ExternalAuth?agent=Facebook" class="button facebook-auth-button">Authenticate via Facebook</a>
 	<br/>
-	<a href="/component/Account/ExternalAuth?agent=Вконтактик" class="button vk-auth-button">Authenticate via Vkontakte</a>
+	<a href="/component/Account/ExternalAuth?agent=VK" class="button vk-auth-button">Authenticate via Vkontakte</a>
 </form>
