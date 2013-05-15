@@ -50,10 +50,11 @@ class Facebook extends Generic
 
 	public function redirect()
 	{
-//		if (!$this->checkReferer('facebook.com')) {
-//			$this->req->setResult();
-//			return;
-//		}
+		if (!$this->checkReferer('facebook.com'))
+		{
+			$this->req->setResult();
+			return;
+		}
 		if (!isset($_GET['code']))
 		{
 			Daemon::log('Authentication failed');
@@ -81,7 +82,6 @@ class Facebook extends Generic
 					$this->req->setResult(['error' => 'no access_token']);
 					return;
 				}
-				Daemon::log($_SERVER['HTTP_REFERER']);
 				$this->appInstance->httpclient->get(
 					[$this->cmp->config->facebook_graph_api->value.'/me',
 						'fields'       => 'id,name,email',
@@ -90,18 +90,22 @@ class Facebook extends Generic
 					],
 					['resultcb' => function ($conn, $success) use ($base_url)
 					{
-						Daemon::log($conn->body);
-						$this->req->header('Location: '.$base_url);
-						$this->req->setResult();
-						return;
+						if (!$success || !($response = json_decode($conn->body, true)) || !isset($response['id']))
+						{
+							$this->req->header('Location: '.$base_url);
+							$this->req->setResult(['error' => 'Unrecognized response']);
+							return;
+						}
+						$data = [];
+						if (isset($response['name'])) $data['username'] = $response['name'];
+						if (isset($response['email'])) $data['email'] = $response['email'];
+						$this->req->components->account->acceptUserAuthentication('facebook', $response['id'], $data,
+							function () use ($base_url)
+							{
+								$this->req->header('Location: '.$base_url);
+								$this->req->setResult();
+							});
 					}]);
-//				$this->req->components->account->acceptUserAuthentication('facebook', $response['user_id'],
-//					['username' => $response['screen_name']],
-//					function () use ($base_url)
-//					{
-//						$this->req->header('Location: '.$base_url);
-//						$this->req->setResult();
-//					});
 			}
 			]
 		);
