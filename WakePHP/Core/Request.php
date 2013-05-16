@@ -4,6 +4,7 @@ namespace WakePHP\Core;
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Request\IRequestUpstream;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Structures\StackCallbacks;
 use WakePHP\Utils\Array2XML;
@@ -41,8 +42,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	/**
 	 * Constructor
-	 * @param null|object $appInstance
-	 * @param object $upstream.
+	 * @param WakePHP|null $appInstance
+	 * @param IRequestUpstream $upstream.
 	 * @param $parent
 	 * @return \WakePHP\Core\Request
 	 */
