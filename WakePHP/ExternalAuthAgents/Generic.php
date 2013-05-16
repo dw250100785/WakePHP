@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\ExternalAuthAgents;
 
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
 use WakePHP\Core\Component;
 use WakePHP\Core\Request;
@@ -35,5 +36,13 @@ abstract class Generic {
 
 	public function checkReferer($domain) {
 		return (isset($_SERVER['HTTP_REFERER']) ? $this->req->checkDomainMatch(null, $domain) : true);
+	}
+
+	public function getRedirectURL() {
+		$redirect_data = ['agent' => ClassFinder::getClassBasename($this)];
+		if (isset($_GET['external_token'])) {
+			$redirect_data['external_token'] = Request::getString($_GET['external_token']);
+		}
+		return $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?' . http_build_query($redirect_data);
 	}
 }

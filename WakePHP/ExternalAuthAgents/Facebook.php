@@ -1,22 +1,19 @@
 <?php
 namespace WakePHP\ExternalAuthAgents;
 
+use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\Daemon;
 use WakePHP\Core\Request;
 
 class Facebook extends Generic {
 	public function auth() {
-		$request_token_url = 'https://www.facebook.com/dialog/oauth/?' .
-				http_build_query(['client_id'     => $this->cmp->config->facebook_app_key->value,
-								  'response_type' => 'code',
-								  'scope'         => 'email',
-								  'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook']);
-		$this->req->status(302);
-		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
-		$this->req->header('Pragma: no-cache');
-		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		$this->req->header('Location: ' . $request_token_url);
-		$this->req->setResult([]);
+		$this->req->redirectTo(
+			['https://www.facebook.com/dialog/oauth/',
+				'client_id'     => $this->cmp->config->facebook_app_key->value,
+				'response_type' => 'code',
+				'scope'         => 'email',
+				'redirect_uri'  => $this->getRedirectURL()
+			]);
 	}
 
 	public function redirect() {
@@ -70,6 +67,9 @@ class Facebook extends Generic {
 						}
 						if (isset($response['email'])) {
 							$data['email'] = Request::getString($response['email']);
+						}
+						if (isset($_REQUEST['external_token'])) {
+							$data['external_token'] = Request::getString($_REQUEST['external_token']);
 						}
 						$this->req->components->account->acceptUserAuthentication('facebook', $id, $data,
 							function () {

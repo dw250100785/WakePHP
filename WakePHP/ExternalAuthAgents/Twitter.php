@@ -8,38 +8,28 @@ use WakePHP\Core\Request;
 class Twitter extends Generic {
 	public function auth() {
 		$request_token_url = 'https://api.twitter.com/oauth/request_token';
-		$this->req->header('Cache-Control: no-cache, no-store, must-revalidate');
-		$this->req->header('Pragma: no-cache');
-		$this->req->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 		$this->appInstance->httpclient->post(
 			$request_token_url,
 			[],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader(
 				$request_token_url,
-				['oauth_callback' => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Twitter'])],
+				['oauth_callback' => $this->getRedirectURL()])],
 			 'resultcb' => function ($conn, $success) {
 				 if (!$success) {
-					 $this->req->status(400);
-					 $this->req->header('Location: ' . $this->req->getBaseUrl());
-					 $this->req->setResult([]);
+					 $this->req->redirectTo($this->req->getBaseUrl());
 					 return;
 				 }
 				 if ($conn->responseCode > 299) {
 					 Daemon::log($conn->responseCode . ': ' . $conn->body);
-					 $this->req->status(400);
-					 $this->req->setResult([]);
+					 $this->req->redirectTo($this->req->getBaseUrl());
 					 return;
 				 }
 				 parse_str($conn->body, $response);
 				 if (!isset($response['oauth_token']) || !isset($response['oauth_token_secret'])) {
-					 $this->req->status(302);
-					 $this->req->header('Location: ' . $this->req->getBaseUrl());
-					 $this->req->setResult([]);
+					 $this->req->redirectTo($this->req->getBaseUrl());
 					 return;
 				 }
-				 $this->req->status(302);
-				 $this->req->header('Location: https://api.twitter.com/oauth/authenticate/?oauth_token=' . rawurlencode($response['oauth_token']));
-				 $this->req->setResult([]);
+				 $this->req->redirectTo(['https://api.twitter.com/oauth/authenticate/', 'oauth_token' => $response['oauth_token']]);
 			 }]);
 	}
 

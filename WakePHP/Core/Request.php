@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
+use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
@@ -407,5 +408,14 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function __destruct() {
 		Daemon::log('destruct - ' . $this->path);
+	}
+
+	public function redirectTo($url) {
+		$this->status(302);
+		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
+		$this->header('Pragma: no-cache');
+		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+		$this->header('Location: ' . HTTPClient::prepareUrl($url));
+		$this->setResult([]);
 	}
 }
