@@ -1,0 +1,14 @@
+{
+	"name": "wakephp/wakephp",
+	"description": "Asynchronous PHP framework, based on PHPDaemon",
+	"minimum-stability": "stable",
+	"authors": [
+		{
+			"name": "Vasily Zorin",
+			"email": "kak.serpom.po.yaitsam@gmail.com"
+		}
+	],
+	"require": {
+		"phpunit/phpunit": "3.7.20"
+	}
+}
