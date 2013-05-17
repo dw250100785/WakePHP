@@ -7,7 +7,7 @@ use WakePHP\Core\ORM;
  * Sessions
  */
 class Sessions extends ORM {
-	public $sessions;
+	protected $sessions;
 
 	public function init() {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};

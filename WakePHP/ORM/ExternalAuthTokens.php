@@ -4,14 +4,14 @@ namespace WakePHP\ORM;
 use PHPDaemon\Clients\Mongo\Collection;
 use WakePHP\Core\ORM;
 
-class ExternalSignupRequests extends ORM {
+class ExternalAuthTokens extends ORM {
 
 	/** @var  Collection */
-	protected $externalSignupRequests;
+	protected $externalAuthTokens;
 
 	public function init() {
-		$this->externalSignupRequests = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
-		$this->externalSignupRequests->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
+		$this->externalAuthTokens = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
+		$this->externalAuthTokens->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
 	}
 	
 	/**
@@ -22,7 +22,7 @@ class ExternalSignupRequests extends ORM {
 		if (!isset($request['_id'])) {
 			$request['_id'] = new \MongoId();
 		}
-		$this->externalSignupRequests->upsert(['_id' => $request['_id']], $request, false, $cb);
+		$this->externalAuthTokens->upsert(['_id' => $request['_id']], $request, false, $cb);
 	}
 
 	public function getRequestById($id, $cb = null) {
@@ -36,7 +36,6 @@ class ExternalSignupRequests extends ORM {
 	public function deleteById($id, $cb = null) {
 		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
 	}
-
 
 	public function remove(array $cond, $cb = null) {
 		$this->externalSignupRequests->remove($cond, $cb);

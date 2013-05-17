@@ -3,6 +3,7 @@ namespace WakePHP\ORM;
 
 use PHPDaemon\Core\Daemon;
 use WakePHP\Core\ORM;
+use WakePHP\Core\Crypt;
 
 /**
  * Accounts
@@ -93,7 +94,7 @@ class Accounts extends ORM {
 		if ($account && !isset($account['password'])) {
 			return false;
 		}
-		return crypt($password, $account['password']) === $account['password'];
+		return $account['password'] === Crypt::hash($password, $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
 	}
 
 	public function unifyUsername($username) {
@@ -166,7 +167,8 @@ class Accounts extends ORM {
 
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
-			$account['password'] = crypt($account['password'], $this->appInstance->config->cryptsalt->value);
+			$account['salt'] = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $account['email']);
+			$account['password'] = Crypt::hash($account['password'], $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
 		}
 		if (isset($account['username'])) {
 			$account['unifiedusername'] = $this->unifyUsername($account['username']);

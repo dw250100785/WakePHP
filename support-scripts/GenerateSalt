@@ -5,6 +5,9 @@ include 'generic.php';
 
 chdir(__DIR__.'/..');
 
-$rnd = base64_encode(preg_replace('~\s+~s', '', file_get_contents('http://www.random.org/integers/?num=15&min=0&max=255&col=100&base=16&format=plain&rnd=new')));
-echo 'cryptSalt "$6$rounds=5000$' . $rnd . '$";'."\n";
+$rnd = base64_encode(preg_replace('~\s+~s', '', file_get_contents('http://www.random.org/integers/?num=16&min=0&max=255&col=100&base=16&format=plain&rnd=new')));
+echo 'cryptSalt "$1600$' . $rnd . '";'."\n";
+
+$rnd = base64_encode(preg_replace('~\s+~s', '', file_get_contents('http://www.random.org/integers/?num=8&min=0&max=255&col=100&base=16&format=plain&rnd=new')));
+echo 'cryptSaltExtra "' . $rnd . '";'."\n";
 
