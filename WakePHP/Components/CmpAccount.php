@@ -257,6 +257,9 @@ class CmpAccount extends Component {
 									$crd[$k] = $v;
 								}
 							}
+							if (isset($crd['email'])) {
+								$newAccount['email'] = $crd['email'];
+							}
 							$newAccount['credentials'] = [$crd,];
 							$this->appInstance->accounts->saveAccount($newAccount, function () use ($add, $cb) {
 								$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($cb) {
