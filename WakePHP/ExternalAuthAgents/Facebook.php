@@ -12,7 +12,7 @@ class Facebook extends Generic {
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
 				'response_type' => 'code',
 				'scope'         => 'email',
-				'redirect_uri'  => $this->getRedirectURL()
+				'redirect_uri'  => $this->getCallbackURL()
 			]);
 	}
 

@@ -13,7 +13,7 @@ class Twitter extends Generic {
 			[],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader(
 				$request_token_url,
-				['oauth_callback' => $this->getRedirectURL()])],
+				['oauth_callback' => $this->getCallbackURL()])],
 			 'resultcb' => function ($conn, $success) {
 				 if (!$success) {
 					 $this->req->redirectTo($this->req->getBaseUrl());

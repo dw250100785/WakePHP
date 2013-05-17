@@ -38,7 +38,7 @@ abstract class Generic {
 		return (isset($_SERVER['HTTP_REFERER']) ? $this->req->checkDomainMatch(null, $domain) : true);
 	}
 
-	public function getRedirectURL() {
+	public function getCallbackURL() {
 		$redirect_data = ['agent' => ClassFinder::getClassBasename($this)];
 		if (isset($_GET['external_token'])) {
 			$redirect_data['external_token'] = Request::getString($_GET['external_token']);

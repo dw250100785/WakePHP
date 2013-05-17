@@ -11,7 +11,7 @@ class VK extends Generic {
 				'client_id'     => $this->cmp->config->vk_app_key->value,
 				'response_type' => 'code',
 				'scope'         => 'email',
-				'redirect_uri'  => $this->getRedirectURL()]);
+				'redirect_uri'  => $this->getCallbackURL()]);
 	}
 
 	public function redirect() {
