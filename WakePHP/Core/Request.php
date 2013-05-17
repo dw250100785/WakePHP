@@ -416,7 +416,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->header('Pragma: no-cache');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		$this->header('Location: ' . HTTPClient::prepareUrl($url));
+		$this->header('Location: ' . HTTPClient::buildUrl($url));
 		$this->setResult([]);
 	}
 }
