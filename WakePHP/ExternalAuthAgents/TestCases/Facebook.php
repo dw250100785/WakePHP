@@ -6,6 +6,6 @@ class Facebook extends \WakePHP\Core\TestCase {
 		$Request  = $this->getRequestMock();
 		$Facebook = new \WakePHP\ExternalAuthAgents\Facebook($Request->components->account);
 		$Facebook->auth();
-		$this->assertArrayHasKey('Location', $Request->headers_list());
+		$this->assertArrayHasKey('Location: https://www.facebook.com/dialog/oauth', $Request->headers_list());
 	}
 }

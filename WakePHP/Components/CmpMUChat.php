@@ -154,7 +154,7 @@ class CmpMUChat extends AppInstance {
 
 	public function onHandshake($client) {
 
-		return $this->sessions[$client->connId] = new MUChat\Session($client, $this);
+		return $this->sessions[$client->connId] = new \WakePHP\Components\MUChat\Session($client, $this);
 
 	}
 
