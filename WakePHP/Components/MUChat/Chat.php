@@ -1,5 +1,5 @@
 <?php
-namespace WakePHP\Components;
+namespace WakePHP\Components\MUChat;
 
 /*
 DRAFT:
@@ -17,7 +17,8 @@ use WakePHP\Components\MUChat\Tag;
 use WakePHP\Core\Request;
 use WakePHP\ORM\MUChat;
 
-class CmpMUChat extends AppInstance {
+class Chat extends AppInstance
+{
 
 	public $sessions = array();
 
@@ -43,7 +44,8 @@ class CmpMUChat extends AppInstance {
 
 	public $ORM;
 
-	protected function getConfigDefaults() {
+	protected function getConfigDefaults()
+	{
 		return array(
 			'dbname'        => 'WakePHP',
 			'adminpassword' => 'lolz',
@@ -54,22 +56,24 @@ class CmpMUChat extends AppInstance {
 	/**
 	 * @param Request $req
 	 */
-	public function __construct($req) {
+	public function __construct($req)
+	{
 		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
 		$this->dbname      =& $this->appInstance->dbname;
-		Daemon::log(__CLASS__ . ' up.');
+		Daemon::log(__CLASS__.' up.');
 		$this->db             = $this->appInstance->db;
 		$this->ORM            = new MUChat($this);
 		$this->tags           = array();
 		$this->minMsgInterval = 1;
 
 		$this->cache  = \PHPDaemon\Clients\Memcache\Pool::getInstance();
-		$this->ipcId  = sprintf('%x', crc32(Daemon::$process->pid . '-' . microtime(true)));
+		$this->ipcId  = sprintf('%x', crc32(Daemon::$process->pid.'-'.microtime(true)));
 		$my_class     = ClassFinder::getClassBasename($this);
 		$this->config = isset($this->appInstance->config->{$my_class}) ? $this->appInstance->config->{$my_class} : null;
 		$defaults     = $this->getConfigDefaults();
-		if ($defaults) {
+		if ($defaults)
+		{
 			$this->processDefaultConfig($defaults);
 		}
 		$this->dbname = $this->config->dbname->value;
@@ -78,38 +82,46 @@ class CmpMUChat extends AppInstance {
 
 	}
 
-	public function getTag($name) {
+	public function getTag($name)
+	{
 
-		if (isset($this->tags[$name])) {
+		if (isset($this->tags[$name]))
+		{
 			return $this->tags[$name];
 		}
 		return $this->tags[$name] = new Tag($name, $this);
 
 	}
 
-	public function kickUsers($users, $tags = '', $reason = '') {
+	public function kickUsers($users, $tags = '', $reason = '')
+	{
 
-		if (is_string($users)) {
+		if (is_string($users))
+		{
 			$users = explode(',', trim($users));
 		}
-		if (!is_array($users) || sizeof($users) === 0) {
+		if (!is_array($users) || sizeof($users)===0)
+		{
 			return false;
 		}
 		$tags = trim($tags);
 		$this->broadcastEvent(array(
-								  'type'   => 'kickUsers',
-								  'users'  => $users,
-								  'tags'   => ($tags !== '' ? explode(',', $tags) : array('%all')),
-								  'reason' => $reason,
-							  ));
+			'type'   => 'kickUsers',
+			'users'  => $users,
+			'tags'   => ($tags!=='' ? explode(',', $tags) : array('%all')),
+			'reason' => $reason,
+		));
 		return true;
 
 	}
 
-	public function compareMask($username, $masks = array()) {
+	public function compareMask($username, $masks = array())
+	{
 
-		foreach ($masks as $mask) {
-			if (fnmatch($mask, $username, FNM_CASEFOLD)) {
+		foreach ($masks as $mask)
+		{
+			if (fnmatch($mask, $username, FNM_CASEFOLD))
+			{
 				return true;
 			}
 		}
@@ -117,52 +129,63 @@ class CmpMUChat extends AppInstance {
 
 	}
 
-	public function forceChangeNick($name, $newname) {
+	public function forceChangeNick($name, $newname)
+	{
 
 		$name = trim($name);
-		if ($name === '') {
+		if ($name==='')
+		{
 			return false;
 		}
 		$newname = trim($newname);
-		if ($newname === '') {
+		if ($newname==='')
+		{
 			return false;
 		}
 		$this->broadcastEvent(array(
-								  'type'     => 'forceChangeNick',
-								  'username' => $name,
-								  'changeto' => $newname,
-								  'tags'     => '%all',
-							  ));
+			'type'     => 'forceChangeNick',
+			'username' => $name,
+			'changeto' => $newname,
+			'tags'     => '%all',
+		));
 		return true;
 	}
 
-	public function validateUsername($s) {
+	public function validateUsername($s)
+	{
 		return preg_match('~^(?!@)[A-Za-z\-_!0-9\.\wА-Яа-я]+$~u', $s);
 	}
 
-	public function broadcastEvent($doc) {
+	public function broadcastEvent($doc)
+	{
 
-		if (!isset($doc['ts'])) {
+		if (!isset($doc['ts']))
+		{
 			$doc['ts'] = microtime(true);
 		}
-		if (!isset($doc['tags'])) {
+		if (!isset($doc['tags']))
+		{
 			$doc['tags'] = array();
 		}
-		$this->db->{$this->config->dbname->value . '.muchatevents'}->insert($doc);
+		$this->db->{$this->config->dbname->value.'.muchatevents'}->insert($doc);
 
 	}
 
-	public function onHandshake($client) {
+	public function onHandshake($client)
+	{
 
 		return $this->sessions[$client->connId] = new \WakePHP\Components\MUChat\Session($client, $this);
 
 	}
 
-	public function onReady() {
+	public function onReady()
+	{
 
-		if ($this->config->enable->value) {
+		if ($this->config->enable->value)
+		{
 			$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance();
-			if ($this->WS) {
+			if ($this->WS)
+			{
 				$this->WS->addRoute('MUChat', array($this, 'onHandshake'));
 			}
 			$appInstance = $this;
@@ -173,7 +196,8 @@ class CmpMUChat extends AppInstance {
 
 			$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 
-			$this->LockClient->job(__CLASS__, true, function ($jobname) use ($appInstance) {
+			$this->LockClient->job(__CLASS__, true, function ($jobname) use ($appInstance)
+			{
 				$appInstance->pushRequest(new Muchat\UpdateStat($appInstance, $appInstance));
 			});
 		}

@@ -1,0 +1,2 @@
+Draft of naming conventions
+===========================

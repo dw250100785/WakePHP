@@ -6,8 +6,10 @@ use WakePHP\Core\Component;
 /**
  * I18n component
  */
-class CmpI18b extends Component {
+class I18n extends Component
+{
 
-	public function saveTranslationController() {
+	public function saveTranslationController()
+	{
 	}
 }
