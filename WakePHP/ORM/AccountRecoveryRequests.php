@@ -46,9 +46,9 @@ class AccountRecoveryRequests extends ORM {
 												   'password' => $password,
 												   'code'     => $code = substr(md5(
 																					$email . "\x00"
-																							. $this->appInstance->config->cryptsalt->value . "\x00"
-																							. microtime(true) . "\x00"
-																							. mt_rand(0, mt_getrandmax()))
+																					. $this->appInstance->config->cryptsalt->value . "\x00"
+																					. microtime(true) . "\x00"
+																					. mt_rand(0, mt_getrandmax()))
 													   , 0, 10)
 											   ));
 		return $code;

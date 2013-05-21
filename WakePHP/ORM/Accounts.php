@@ -2,8 +2,8 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Core\Daemon;
-use WakePHP\Core\ORM;
 use WakePHP\Core\Crypt;
+use WakePHP\Core\ORM;
 
 /**
  * Accounts
@@ -167,7 +167,7 @@ class Accounts extends ORM {
 
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
-			$account['salt'] = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $account['email']);
+			$account['salt']     = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $account['email']);
 			$account['password'] = Crypt::hash($account['password'], $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
 		}
 		if (isset($account['username'])) {
@@ -208,10 +208,10 @@ class Accounts extends ORM {
 			'location'         => '',
 			'password'         => '',
 			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
-													 . Daemon::uniqid() . "\x00"
-													 . $this->appInstance->config->cryptsalt->value . "\x00"
-													 . microtime(true) . "\x00"
-													 . mt_rand(0, mt_getrandmax()))
+											 . Daemon::uniqid() . "\x00"
+											 . $this->appInstance->config->cryptsalt->value . "\x00"
+											 . microtime(true) . "\x00"
+											 . mt_rand(0, mt_getrandmax()))
 				, 0, 6),
 			'regdate'          => time(),
 			'etime'            => time(),

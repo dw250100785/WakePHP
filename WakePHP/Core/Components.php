@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Core;
-use \PHPDaemon\Core\Daemon;
+
+use PHPDaemon\Core\Daemon;
 
 /**
  * Account component

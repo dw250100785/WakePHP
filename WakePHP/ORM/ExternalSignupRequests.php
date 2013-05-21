@@ -13,7 +13,7 @@ class ExternalSignupRequests extends ORM {
 		$this->externalSignupRequests = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
 		$this->externalSignupRequests->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
 	}
-	
+
 	/**
 	 * @param array $request
 	 * @param callable|null $cb
@@ -36,7 +36,6 @@ class ExternalSignupRequests extends ORM {
 	public function deleteById($id, $cb = null) {
 		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
 	}
-
 
 	public function remove(array $cond, $cb = null) {
 		$this->externalSignupRequests->remove($cond, $cb);

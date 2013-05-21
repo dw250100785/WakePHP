@@ -13,8 +13,7 @@ use WakePHP\Utils\Array2XML;
 /**
  * Request class.
  */
-class Request extends \PHPDaemon\HTTPRequest\Generic
-{
+class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	public $locale;
 	public $path;
@@ -50,29 +49,22 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 	 * @param $parent
 	 * @return \WakePHP\Core\Request
 	 */
-	public function __construct($appInstance, $upstream, $parent = null)
-	{
-		if (self::$emulMode)
-		{
+	public function __construct($appInstance, $upstream, $parent = null) {
+		if (self::$emulMode) {
 			Daemon::log('emulMode');
 			return;
 		}
 		parent::__construct($appInstance, $upstream, $parent);
 	}
 
-	public function getBaseUrl()
-	{
-		return ($this->req->attrs->server['HTTPS']==='off' ? 'http' : 'https').'://'.$this->appInstance->config->domain->value;
+	public function getBaseUrl() {
+		return ($this->req->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 	}
 
-	public function init()
-	{
-		try
-		{
+	public function init() {
+		try {
 			$this->header('Content-Type: text/html');
-		}
-		catch (RequestHeadersAlreadySent $e)
-		{
+		} catch (RequestHeadersAlreadySent $e) {
 		}
 
 		$this->req = $this;
@@ -87,72 +79,56 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 		$this->tpl->assign('req', $this);
 	}
 
-	public function propertyUpdated($prop)
-	{
-		if ($this->backendServerConn)
-		{
+	public function propertyUpdated($prop) {
+		if ($this->backendServerConn) {
 			$this->backendServerConn->propertyUpdated($this, $prop, $this->{$prop});
 		}
 	}
 
-	public function exportObject()
-	{
+	public function exportObject() {
 		$req        = new \stdClass;
 		$req->attrs = $this->attrs;
 		return $req;
 	}
 
-	public function getBlock($block)
-	{
-		if (!$this->appInstance->backendClient)
-		{
+	public function getBlock($block) {
+		if (!$this->appInstance->backendClient) {
 			return false;
 		}
-		if ($this->upstream instanceof BackendServerConnection)
-		{
+		if ($this->upstream instanceof BackendServerConnection) {
 			return false;
 		}
 
-		if (ClassFinder::getClassBasename($block)==='Block')
-		{
+		if (ClassFinder::getClassBasename($block) === 'Block') {
 			return false;
 		}
 
-		$fc = function ($conn) use ($block)
-		{
-			if (!$conn->connected)
-			{
+		$fc = function ($conn) use ($block) {
+			if (!$conn->connected) {
 				// fail
 				return;
 			}
-			if (!$this->backendClientConn)
-			{
+			if (!$this->backendClientConn) {
 				$this->backendClientConn = $conn;
 				$conn->beginRequest($this);
 			}
 			$conn->getBlock($this->rid, $block);
-			if ($this->backendClientCbs!==null)
-			{
+			if ($this->backendClientCbs !== null) {
 				$this->backendClientCbs->executeAll($conn);
 				$this->backendClientCbs = null;
 			}
 		};
-		if ($this->backendClientConn)
-		{
+		if ($this->backendClientConn) {
 			$this->req->backendClientConn->onConnected($fc);
 		}
-		else
-		{
-			if ($this->backendClientInited)
-			{
-				if ($this->backendClientCbs===null)
-				{
+		else {
+			if ($this->backendClientInited) {
+				if ($this->backendClientCbs === null) {
 					$this->backendClientCbs = new StackCallbacks();
 				}
 				$this->backendClientCbs->push($fc);
 			}
-			else
-			{
+			else {
 				$this->req->appInstance->backendClient->getConnection($fc);
 				$this->backendClientInited = true;
 			}
@@ -160,25 +136,20 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 		return true;
 	}
 
-	public function date($format, $ts = null)
-	{ // @todo
-		if ($ts===null)
-		{
+	public function date($format, $ts = null) { // @todo
+		if ($ts === null) {
 			$ts = time();
 		}
 		$t      = array();
-		$format = preg_replace_callback('~%n2?~', function ($m) use (&$t)
-		{
+		$format = preg_replace_callback('~%n2?~', function ($m) use (&$t) {
 			$t[] = $m[0];
 			return "\x01";
 		}, $format);
 		$r      = date($format, $ts);
 		$req    = $this;
-		$r      = preg_replace_callback('~\x01~s', function ($m) use ($t, $ts, $req)
-		{
+		$r      = preg_replace_callback('~\x01~s', function ($m) use ($t, $ts, $req) {
 			static $i = 0;
-			switch ($t[$i++])
-			{
+			switch ($t[$i++]) {
 				case "%n":
 					return $req->monthes[date('n', $ts)];
 				case "%n2":
@@ -188,54 +159,44 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 		return $r;
 	}
 
-	public function date_period($st, $fin)
-	{
-		if ((is_int($st)) || (ctype_digit($st)))
-		{
+	public function date_period($st, $fin) {
+		if ((is_int($st)) || (ctype_digit($st))) {
 			$st = $this->date('d-m-Y-H-i-s', $st);
 		}
 		$st = explode('-', $st);
-		if ((is_int($fin)) || (ctype_digit($fin)))
-		{
+		if ((is_int($fin)) || (ctype_digit($fin))) {
 			$fin = $this->date('d-m-Y-H-i-s', $fin);
 		}
 		$fin = explode('-', $fin);
-		if (($seconds = $fin[5]-$st[5]) < 0)
-		{
+		if (($seconds = $fin[5] - $st[5]) < 0) {
 			$fin[4]--;
 			$seconds += 60;
 		}
-		if (($minutes = $fin[4]-$st[4]) < 0)
-		{
+		if (($minutes = $fin[4] - $st[4]) < 0) {
 			$fin[3]--;
 			$minutes += 60;
 		}
-		if (($hours = $fin[3]-$st[3]) < 0)
-		{
+		if (($hours = $fin[3] - $st[3]) < 0) {
 			$fin[0]--;
 			$hours += 24;
 		}
-		if (($days = $fin[0]-$st[0]) < 0)
-		{
+		if (($days = $fin[0] - $st[0]) < 0) {
 			$fin[1]--;
 			$days += $this->date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));
 		}
-		if (($months = $fin[1]-$st[1]) < 0)
-		{
+		if (($months = $fin[1] - $st[1]) < 0) {
 			$fin[2]--;
 			$months += 12;
 		}
-		$years = $fin[2]-$st[2];
+		$years = $fin[2] - $st[2];
 		return array($seconds, $minutes, $hours, $days, $months, $years);
 	}
 
-	public function strtotime($str)
-	{
+	public function strtotime($str) {
 		return \WakePHP\Utils\Strtotime::parse($str);
 	}
 
-	public function onReadyBlock($obj)
-	{
+	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag, $obj->html, $this->html);
 		unset($this->inner[$obj->_nid]);
 		$this->req->wakeup();
@@ -245,11 +206,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	public function run()
-	{
+	public function run() {
 
-		if ($this->dispatched)
-		{
+		if ($this->dispatched) {
 			goto waiting;
 		}
 
@@ -259,8 +218,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 
 		waiting:
 
-		if (($this->jobDone >= $this->jobTotal) && (sizeof($this->inner)==0))
-		{
+		if (($this->jobDone >= $this->jobTotal) && (sizeof($this->inner) == 0)) {
 			goto ready;
 		}
 		$this->sleep(5);
@@ -272,29 +230,21 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 		echo $this->html;
 	}
 
-	public function checkDomainMatch($domain = null, $pattern = null)
-	{
-		if ($domain===null)
-		{
+	public function checkDomainMatch($domain = null, $pattern = null) {
+		if ($domain === null) {
 			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
 		}
-		if ($pattern===null)
-		{
+		if ($pattern === null) {
 			$pattern = $this->appInstance->config->cookiedomain->value;
 		}
-		foreach (explode(', ', $pattern) as $part)
-		{
-			if (substr($part, 0, 1)==='.')
-			{
-				if ('.'.ltrim(substr($domain, -strlen($part)), '.')===$part)
-				{
+		foreach (explode(', ', $pattern) as $part) {
+			if (substr($part, 0, 1) === '.') {
+				if ('.' . ltrim(substr($domain, -strlen($part)), '.') === $part) {
 					return true;
 				}
 			}
-			else
-			{
-				if ($domain===$part)
-				{
+			else {
+				if ($domain === $part) {
 					return true;
 				}
 			}
@@ -306,16 +256,13 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 	 * URI parser.
 	 * @return void.
 	 */
-	public function dispatch()
-	{
+	public function dispatch() {
 		$this->dispatched = true;
 		$e                = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 2);
-		if (($e[0]==='component') && isset($e[1]))
-		{
+		if (($e[0] === 'component') && isset($e[1])) {
 
 			$this->locale = Request::getString($this->attrs->request['LC']);
-			if (!in_array($this->locale, $this->appInstance->locales, true))
-			{
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
 				$this->locale = $this->appInstance->config->defaultlocale->value;
 			}
 
@@ -324,116 +271,90 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 			$this->cmpName    = $e[1];
 			$this->controller = isset($e[2]) ? $e[2] : '';
 			$this->dataType   = isset($e[3]) ? $e[3] : 'json';
-			if ($this->components->{$this->cmpName})
-			{
-				$method = $this->controller.'Controller';
-				if (!$this->components->{$this->cmpName}->checkReferer())
-				{
+			if ($this->components->{$this->cmpName}) {
+				$method = $this->controller . 'Controller';
+				if (!$this->components->{$this->cmpName}->checkReferer()) {
 					$this->setResult(array('errmsg' => 'Unacceptable referer.'));
 					return;
 				}
-				if (method_exists($this->components->{$this->cmpName}, $method))
-				{
+				if (method_exists($this->components->{$this->cmpName}, $method)) {
 					$this->components->{$this->cmpName}->$method();
 				}
-				else
-				{
+				else {
 					$this->setResult(array('errmsg' => 'Unknown controller.'));
 				}
 			}
-			else
-			{
+			else {
 				$this->setResult(array('errmsg' => 'Unknown component.'));
 			}
 			return;
 		}
 
-		if (!isset($e[1]))
-		{
+		if (!isset($e[1])) {
 			$this->locale = $this->appInstance->config->defaultlocale->value;
-			$this->path   = '/'.$e[0];
+			$this->path   = '/' . $e[0];
 		}
-		else
-		{
+		else {
 			$this->locale = $e[0];
-			$this->path   = '/'.$e[1];
-			if (!in_array($this->locale, $this->appInstance->locales, true))
-			{
-				try
-				{
-					$this->header('Location: /'.$this->appInstance->config->defaultlocale->value.$this->path);
-				}
-				catch (RequestHeadersAlreadySent $e)
-				{
+			$this->path   = '/' . $e[1];
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+				try {
+					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
+				} catch (RequestHeadersAlreadySent $e) {
 				}
 				$this->finish();
 				return;
 			}
 			$req        = $this;
-			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req)
-			{
-				if (isset($m[1]) && $m[1]!=='')
-				{
+			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req) {
+				if (isset($m[1]) && $m[1] !== '') {
 					$type  = 'id';
 					$value = $m[1];
 				}
 				$req->pathArgType[] = $type;
 				$req->pathArg[]     = $value;
-				return '/%'.$type;
+				return '/%' . $type;
 			}, $this->path);
 
 		}
 
-		if ($this->backendServerConn)
-		{
+		if ($this->backendServerConn) {
 			return;
 		}
 
 		++$this->jobTotal;
 		$this->appInstance->blocks->getBlock(array(
-			'theme' => $this->theme,
-			'path'  => $this->path,
-		), array($this, 'loadPage'));
+												 'theme' => $this->theme,
+												 'path'  => $this->path,
+											 ), array($this, 'loadPage'));
 	}
 
-	public function setResult($result = NULL)
-	{
-		if ($this->dataType==='json')
-		{
-			try
-			{
+	public function setResult($result = NULL) {
+		if ($this->dataType === 'json') {
+			try {
 				$this->header('Content-Type: text/json');
-			}
-			catch (RequestHeadersAlreadySent $e)
-			{
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->html = json_encode($result);
 		}
-		elseif ($this->dataType==='xml')
-		{
+		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
 			$converter->setRootName($this->xmlRootName);
-			try
-			{
+			try {
 				$this->header('Content-Type: text/xml');
-			}
-			catch (RequestHeadersAlreadySent $e)
-			{
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->html = $converter->convert($result);
 		}
-		else
-		{
+		else {
 			$this->html = json_encode(['errmsg' => 'Unsupported data-type.']);
 		}
 		++$this->jobDone;
 		$this->wakeup();
 	}
 
-	public function addBlock($block)
-	{
-		if ((!isset($block['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block'.$block['type'])))
-		{
+	public function addBlock($block) {
+		if ((!isset($block['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block' . $block['type']))) {
 			$class = '\\WakePHP\\Blocks\\Block';
 		}
 		$block['tag']    = (string)new \MongoId;
@@ -442,37 +363,30 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 		new $class($block, $this);
 	}
 
-	public function loadPage($page)
-	{
+	public function loadPage($page) {
 
 		++$this->jobDone;
 
-		if (!$page)
-		{
+		if (!$page) {
 			++$this->jobTotal;
-			try
-			{
+			try {
 				$this->header('404 Not Found');
-			}
-			catch (RequestHeadersAlreadySent $e)
-			{
+			} catch (RequestHeadersAlreadySent $e) {
 			}
 			$this->appInstance->blocks->getBlock(array(
-				'theme' => $this->theme,
-				'path'  => '/404',
-			), array($this, 'loadErrorPage'));
+													 'theme' => $this->theme,
+													 'path'  => '/404',
+												 ), array($this, 'loadErrorPage'));
 			return;
 		}
 		$this->addBlock($page);
 	}
 
-	public function loadErrorPage($page)
-	{
+	public function loadErrorPage($page) {
 
 		++$this->jobDone;
 
-		if (!$page)
-		{
+		if (!$page) {
 			$this->html = 'Unable to load error-page.';
 			$this->wakeup();
 			return;
@@ -482,35 +396,29 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
 
 	}
 
-	public function onFinish()
-	{
-		if ($this->backendClientConn)
-		{
+	public function onFinish() {
+		if ($this->backendClientConn) {
 			$this->backendClientConn->endRequest($this);
 			unset($this->backendClientConn);
 		}
 	}
 
-	public function sessionCommit()
-	{
-		if ($this->updatedSession)
-		{
+	public function sessionCommit() {
+		if ($this->updatedSession) {
 			$this->appInstance->sessions->saveSession($this->attrs->session);
 		}
 	}
 
-	public function __destruct()
-	{
-		Daemon::log('destruct - '.$this->path);
+	public function __destruct() {
+		Daemon::log('destruct - ' . $this->path);
 	}
 
-	public function redirectTo($url)
-	{
+	public function redirectTo($url) {
 		$this->status(302);
 		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->header('Pragma: no-cache');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		$this->header('Location: '.HTTPClient::buildUrl($url));
+		$this->header('Location: ' . HTTPClient::buildUrl($url));
 		$this->setResult([]);
 	}
 }

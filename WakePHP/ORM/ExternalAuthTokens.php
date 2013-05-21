@@ -13,7 +13,7 @@ class ExternalAuthTokens extends ORM {
 		$this->externalAuthTokens = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
 		$this->externalAuthTokens->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
 	}
-	
+
 	/**
 	 * @param array $request
 	 * @param callable|null $cb

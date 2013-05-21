@@ -6,14 +6,12 @@ use WakePHP\Core\Component;
 /**
  * GMAPS component
  */
-class GMAPS extends Component
-{
+class GMAPS extends Component {
 	/**
 	 * Constructor.
 	 * @return void
 	 */
-	public function init()
-	{
+	public function init() {
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
 
@@ -22,13 +20,11 @@ class GMAPS extends Component
 	 * Override to set your own
 	 * @return array|bool
 	 */
-	protected function getConfigDefaults()
-	{
+	protected function getConfigDefaults() {
 		return false;
 	}
 
-	public function geo($q, $cb)
-	{
+	public function geo($q, $cb) {
 		$this->httpclient->get(
 			['http://maps.google.com/maps/geo',
 				'q'      => $q,
@@ -36,8 +32,7 @@ class GMAPS extends Component
 				'oe'     => 'utf8',
 				'sensor' => 'false',
 			],
-			function ($conn, $success) use ($cb)
-			{
+			function ($conn, $success) use ($cb) {
 				call_user_func($cb, json_decode($conn->body, true));
 			}
 		);
