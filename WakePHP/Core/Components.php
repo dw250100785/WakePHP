@@ -15,7 +15,7 @@ class Components {
 	}
 
 	public function __get($name) {
-		$class = '\\WakePHP\\Components\\Cmp' . $name;
+		$class = '\\WakePHP\\Components\\' . $name;
 		if (!class_exists($class)) {
 			Daemon::log(get_class($this) . ': undefined class: ' . $class);
 			return false;
