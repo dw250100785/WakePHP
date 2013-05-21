@@ -33,5 +33,12 @@ How to create new module
 Templates are placed outside of source files, in a `../themes/{name_of_theme}/blocks` folder, for instance, `../themes/simple/blocks/` .  
 Templates renderer is [Quicky](https://github.com/kakserpom/quicky)  
 1. Add file NameOfPage.obj into templates folder - here will be meta-information in JSON-format;  
-2. Add file NameOfPage.tpl - here will be content of template.   
-3. 
+2. Add file NameOfPage.tpl - here will be content of the template.   
+3. In .obj file, declare path (route) to this page, locale and title. For example:
+
+	{
+		"locale": "en",
+		"path": "\/account\/signup",
+		"title": "Sign up"
+	}
+
