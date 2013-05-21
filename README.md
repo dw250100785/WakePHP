@@ -20,7 +20,7 @@ Components - controllers
 
 How to create new module
 ========================
-Let's start from component:      
+##Let's start from component      
 1. Add class of component to namespace `\WakePHP\Components\`    
 2. Each method matching `*Controller` pattern will be controller.
 3. Name of the controller method and name of the component class is a route for URL to this controller. For example, `Account::ExternalAuthController` will match `/component/Account/ExternalAuth` URL.  
@@ -29,3 +29,9 @@ Let's start from component:
 6. You can use database collections via `$this->appInstance->nameOfCollection` call.
 7. You can access the configuration settings by calling `$this->appInstance->config->nameOfSetting->value` (last `value` word is mandatory).
 
+##Now lets add new page
+Templates are placed outside of source files, in a `../themes/{name_of_theme}/blocks` folder, for instance, `../themes/simple/blocks/` .  
+Templates renderer is [Quicky](https://github.com/kakserpom/quicky)  
+1. Add file NameOfPage.obj into templates folder - here will be meta-information in JSON-format;  
+2. Add file NameOfPage.tpl - here will be content of template.   
+3. 
