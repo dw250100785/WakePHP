@@ -68,14 +68,14 @@ class JobManager {
 		});
 	}
 
-	public function enqueue($cb, $jobtype, $args) {
+	public function enqueue($cb, $type, $args) {
 		$jobId = $this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobqueue'}->insert(array(
-																											   'jobtype'  => $jobtype,
-																											   'args'     => $args,
-																											   'status'   => 'vacant',
-																											   'ts'       => microtime(true),
-																											   'instance' => $this->appInstance->ipcId,
-																										   ));
+				'type'  => $type,
+				'args'     => $args,
+				'status'   => 'v',
+				'ts'       => microtime(true),
+				'instance' => $this->appInstance->ipcId,
+		));
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
 			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent);
