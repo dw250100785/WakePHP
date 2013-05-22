@@ -15,25 +15,35 @@ class JobWorker extends AppInstance {
 	public $sessions;
 	public $db;
 	public $dbname;
-	public $LockClient;
 	public $components;
+	protected $resultCursor;
+	protected $runningJobs = [];
+	protected $maxRunningJobs = 100;
 
 	public function onReady() {
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 		$this->dbname      = $this->config->dbname->value;
 		$this->jobqueue    = $this->db->{$this->dbname . '.jobqueue'};
-		$this->jobresults  = $this->db->{$this->dbname . '.jobqueue'};
+		$this->jobresults  = $this->db->{$this->dbname . '.jobresults'};
 		$this->resultEvent = Timer::add(function ($event) {
 
 			if (!$this->resultCursor) {
-				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) use ($JobManager, $appInstance) {
-					$JobManager->resultCursor = $cursor;
-					if (sizeof($cursor->items)) {
-						Daemon::log('items = ' . Debug::dump($cursor->items));
-					}
-					foreach ($cursor->items as $k => &$item) {
-						$jobId = (string)$item['_id'];
-						Daemon::log(Debug::dump($item));
+				Daemon::log('find start');
+				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) {
+					$this->resultCursor = $cursor;
+					foreach ($cursor->items as $k => $job) {
+						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
+							break;
+						}
+						$this->jobqueue->update(
+							['_id' => $job['_id'], 'status' => 'v'],
+							['$set' => ['status' => 'a']],
+							0, function($lastError) use ($job) {
+								Daemon::log(Debug::dump($lastError));
+								$job['status'] = 'a';
+								$this->startJob($job);
+							}
+						);
 						unset($cursor->items[$k]);
 					}
 					/*if ($cursor->finished) {
@@ -44,62 +54,40 @@ class JobWorker extends AppInstance {
 					   'sort'     => ['$natural' => 1],
 					   'where'    => [
 						   //'type' => ['$in' => $this->jobs],
-						   'status'  => 'vacant',
-						   'shardId' => ['$in' => [null, $this->config->shardId->value]]
+						   'status'  => 'v',
+						   'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]]
 					   ]
 				   ]);
 				$this->log('inited cursor');
+				$event->timeout(1e6);
+				return;
 			}
-			elseif (!$JobManager->resultCursor->session->busy) {
+			$event->timeout(0.02e6);
+			if (!$this->resultCursor->isBusyConn()) {
 				try {
-					$JobManager->resultCursor->getMore();
+					$this->resultCursor->getMore();
 				} catch (ConnectionFinished $e) {
-					$JobManager->resultCursor = false;
+					$this->resultCursor = false;
 				}
 			}
-			if (sizeof($JobManager->callbacks)) {
-				$event->timeout(pow(10, 6) * 0.02);
-			}
-			else {
-				$event->timeout(pow(10, 6) * 5);
-			}
-		});
+		}, 1);
 	}
 
-	public function sendResult($job, $result) {
-		$status = $result !== false ? 'succeed' : 'failed';
-		$this->jobqueue->update(
-			['_id' => $job['_id']],
-			['$set' => ['status' => $status]]
-		);
-		$this->jobresults->insert([
-									  '_id'      => $job['_id'],
-									  'ts'       => microtime(true),
-									  'instance' => $job['instance'],
-									  'status'   => $status,
-									  'result'   => $result
-								  ]);
-
-		$this->jobresults->insert([
-									  'jobId'    => $job['_id'],
-									  'ts'       => microtime(true),
-									  'instance' => $job['instance'],
-									  'status'   => '',
-									  'result'   => $result
-								  ]);
+	public function startJob($job) {
+		$jobId = (string)$job['_id'];
+		$class = '\\WakePHP\\Jobs\\' . $job['type'];
+		if (!class_exists($class) || !is_subclass_of($class, '\\WakePHP\\Jobs\\Generic')) {
+			$class = '\\WakePHP\\Jobs\\JobNotFound';
+		}
+		$obj = new $class($job);
+		$this->runningJobs[$jobId] = $obj;
+		$obj->run();
 	}
 
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
 	}
-
-//	protected function getConfigDefaults() {
-//		return array(
-//			'ormdir' =>	dirname(__DIR__).'/ORM/',
-//			'dbname' => 'WakePHP',
-//		);
-//	}
 	protected function getConfigDefaults() {
 		return array(
 			'themesdir'     => dirname(__DIR__) . '/themes/',
@@ -112,6 +100,7 @@ class JobWorker extends AppInstance {
 			'defaulttheme'  => 'simple',
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
+			'shardid'		=> null,
 		);
 	}
 

@@ -3,6 +3,7 @@
 include __DIR__.'/../generic.php';
 
 /* jobqueue */ 
-$jobqueue = $db->selectCollection('jobqueue');
+$jobqueue = $db->selectCollection($name = 'jobqueue');
 $jobqueue->drop();
-$jobqueue->ensureIndex(array('status' => 1, 'ts' => 1));
+$db->command(['create' => $name, 'capped' => true, 'size' => 1024*1024*10, 'max' => 1024 * 10]);
+$jobqueue->ensureIndex(array('status' => 1));
