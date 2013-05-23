@@ -4,14 +4,28 @@ namespace WakePHP\Core;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\Connection;
+use WakePHP\Blocks\Block;
 
+/**
+ * Class BackendServerConnection
+ * @package WakePHP\Core
+ */
 class BackendServerConnection extends Connection {
+	/**
+	 * @var Request[]
+	 */
 	public $requests = [];
 
+	/**
+	 *
+	 */
 	public function init() {
 		$this->config = $this->pool->config;
 	}
 
+	/**
+	 * @param array $p
+	 */
 	public function onPacket($p) {
 		if (!is_array($p)) {
 			return;
@@ -53,6 +67,11 @@ class BackendServerConnection extends Connection {
 		}
 	}
 
+	/**
+	 * @param Request $req
+	 * @param string $prop
+	 * @param $val
+	 */
 	public function propertyUpdated($req, $prop, $val) {
 		$this->sendPacket([
 							  'type' => 'propertyUpdated',
@@ -62,6 +81,9 @@ class BackendServerConnection extends Connection {
 						  ]);
 	}
 
+	/**
+	 * @param Block $block
+	 */
 	public function onReadyBlock($block) {
 		//Daemon::log('[srv] onReadyBlock bid '.json_encode([$block->name, $block->bid]));
 		$this->sendPacket([
@@ -73,14 +95,24 @@ class BackendServerConnection extends Connection {
 		unset($block->req->queries[$block->_nid]);
 	}
 
+	/**
+	 * @param Request $req
+	 * @param string $s
+	 */
 	public function requestOut($req, $s) {
 	}
 
+	/**
+	 * @param Request $req
+	 */
 	public function freeRequest($req) {
 	}
 
 	/**
 	 * Handles the output from downstream requests.
+	 * @param Request $req
+	 * @param $appStatus
+	 * @param $protoStatus
 	 * @return boolean Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -90,6 +122,9 @@ class BackendServerConnection extends Connection {
 		$this->requests = null;
 	}
 
+	/**
+	 * @param $p
+	 */
 	public function sendPacket($p) {
 		$data = igbinary_serialize($p);
 		$this->write(pack('N', strlen($data)) . $data);
@@ -97,7 +132,7 @@ class BackendServerConnection extends Connection {
 
 	/**
 	 * Called when new data received.
-	 * @param string New data.
+	 * @param string $buf New data.
 	 * @return void
 	 */
 	public function stdin($buf) {

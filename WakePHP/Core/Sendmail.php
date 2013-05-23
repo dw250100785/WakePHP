@@ -8,12 +8,23 @@ use PHPDaemon\Core\Daemon;
  */
 class Sendmail {
 
+	/**
+	 * @var WakePHP
+	 */
 	public $appInstance;
 
+	/**
+	 * @param WakePHP $appInstance
+	 */
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
 	}
 
+	/**
+	 * @param string $block
+	 * @param string $email
+	 * @param $args
+	 */
 	public function mailTemplate($block, $email, $args) {
 		$args['domain'] = $this->appInstance->config->domain->value;
 		$this->appInstance->renderBlock($block, $args, function ($result) use ($email) {

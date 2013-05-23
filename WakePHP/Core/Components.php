@@ -8,12 +8,22 @@ use PHPDaemon\Core\Daemon;
  */
 class Components {
 
+	/**
+	 * @var Request
+	 */
 	public $req;
 
+	/**
+	 * @param Request $req
+	 */
 	public function __construct($req) {
 		$this->req = $req;
 	}
 
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
 	public function __get($name) {
 		$class = '\\WakePHP\\Components\\' . $name;
 		if (!class_exists($class)) {

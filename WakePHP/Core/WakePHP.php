@@ -12,6 +12,9 @@ use WakePHP\ORM\Sessions;
  */
 class WakePHP extends AppInstance {
 
+	/**
+	 * @var
+	 */
 	public $statistics;
 	/** @var \WakePHP\ORM\Blocks */
 	public $blocks;
@@ -19,12 +22,33 @@ class WakePHP extends AppInstance {
 	public $accounts;
 	/** @var Sessions */
 	public $sessions;
+	/**
+	 * @var
+	 */
 	public $db;
+	/**
+	 * @var
+	 */
 	public $dbname;
+	/**
+	 * @var
+	 */
 	public $LockClient;
+	/**
+	 * @var
+	 */
 	public $locales;
+	/**
+	 * @var
+	 */
 	public $ipcId;
+	/**
+	 * @var
+	 */
 	public $jobManager;
+	/**
+	 * @var
+	 */
 	public $components;
 	/** @var BackendServer */
 	public $backendServer;
@@ -35,6 +59,9 @@ class WakePHP extends AppInstance {
 	/** @var ExternalSignupRequests */
 	public $externalSignupRequests;
 
+	/**
+	 *
+	 */
 	public function onReady() {
 		if (isset($this->backendServer)) {
 			$this->backendServer->onReady();
@@ -44,6 +71,9 @@ class WakePHP extends AppInstance {
 		}
 	}
 
+	/**
+	 *
+	 */
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
@@ -94,6 +124,10 @@ class WakePHP extends AppInstance {
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
 
+	/**
+	 * @param $lc
+	 * @return mixed
+	 */
 	public function getLocaleName($lc) {
 		if (!in_array($lc, $this->locales, true)) {
 			return $this->config->defaultlocale->value;
@@ -101,6 +135,11 @@ class WakePHP extends AppInstance {
 		return $lc;
 	}
 
+	/**
+	 * @param $blockname
+	 * @param $variables
+	 * @param $cb
+	 */
 	public function renderBlock($blockname, $variables, $cb) {
 		$appInstance = $this;
 		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance) {
@@ -125,6 +164,9 @@ class WakePHP extends AppInstance {
 		});
 	}
 
+	/**
+	 * @param $file
+	 */
 	public function onBlockFileChanged($file) {
 		Daemon::log('changed - ' . $file);
 		$blockName = pathinfo($file, PATHINFO_FILENAME);
@@ -170,6 +212,9 @@ class WakePHP extends AppInstance {
 		return $tpl;
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function getConfigDefaults() {
 		return array(
 			'themesdir'     => dirname(__DIR__) . '/themes/',
@@ -232,12 +277,20 @@ class WakePHP extends AppInstance {
 }
 
 if (!function_exists('igbinary_serialize')) {
+	/**
+	 * @param $m
+	 * @return string
+	 */
 	function igbinary_serialize($m) {
 		return serialize($m);
 	}
 }
 
 if (!function_exists('igbinary_unserialize')) {
+	/**
+	 * @param $m
+	 * @return mixed
+	 */
 	function igbinary_unserialize($m) {
 		return unserialize($m);
 	}

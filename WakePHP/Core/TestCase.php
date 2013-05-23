@@ -33,6 +33,9 @@ class TestCase extends \PHPUnit_Framework_TestCase implements IRequestUpstream {
 
 	/**
 	 * Handles the output from downstream requests.
+	 * @param Request $req
+	 * @param $appStatus
+	 * @param $protoStatus
 	 * @return boolean Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -41,6 +44,7 @@ class TestCase extends \PHPUnit_Framework_TestCase implements IRequestUpstream {
 
 	/**
 	 * Frees this request
+	 * @param Request $req
 	 * @return void
 	 */
 	public function freeRequest($req) {
@@ -49,6 +53,7 @@ class TestCase extends \PHPUnit_Framework_TestCase implements IRequestUpstream {
 
 	/**
 	 * Send Bad request
+	 * @param Request $req
 	 * @return void
 	 */
 	public function badRequest($req) {

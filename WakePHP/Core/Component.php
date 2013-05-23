@@ -9,12 +9,18 @@ use PHPDaemon\Core\DeferredEvent;
  */
 class Component {
 
-	/** @var  Request */
+	/** @var Request */
 	public $req;
 	/** @var WakePHP */
 	public $appInstance;
+	/**
+	 * @var null
+	 */
 	public $config;
 
+	/**
+	 * @param Request $req
+	 */
 	public function __construct($req) {
 		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
@@ -39,6 +45,9 @@ class Component {
 		return false;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function checkReferer() {
 		return $this->req->checkDomainMatch();
 	}
@@ -76,6 +85,10 @@ class Component {
 		}
 	}
 
+	/**
+	 * @param string $event
+	 * @return null|mixed
+	 */
 	public function __get($event) {
 		if (!method_exists($this, $event . 'Event')) {
 			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
@@ -95,6 +108,11 @@ class Component {
 		}
 	}
 
+	/**
+	 * @param string $event
+	 * @param $args
+	 * @return mixed
+	 */
 	public function __call($event, $args) {
 		return call_user_func_array($this->{$event}, $args);
 	}

@@ -1,6 +1,10 @@
 <?php
 namespace WakePHP\Core;
 
+/**
+ * Class BackendServer
+ * @package WakePHP\Core
+ */
 class BackendServer extends \PHPDaemon\Network\Server {
 	/**
 	 * Setting default config options

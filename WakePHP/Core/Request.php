@@ -30,9 +30,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $dispatched = false;
 	public $updatedSession = false;
 	public $xmlRootName = 'response';
+	/** @var  BackendClientConnection */
 	public $backendClientConn;
 	public $backendClientCbs;
 	public $backendClientInited = false;
+	/** @var  BackendServerConnection */
 	public $backendServerConn;
 	/** @var Block[] */
 	public $queries = [];
@@ -41,10 +43,16 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $rid;
 	public $account;
 	private static $emulMode = false;
+	/** @var  WakePHP */
+	public $appInstance;
+	public $cmpName;
+	public $controller;
+	public $dataType;
+	protected $theme;
 
 	/**
 	 * Constructor
-	 * @param WakePHP|null $appInstance
+	 * @param WakePHP $appInstance
 	 * @param IRequestUpstream $upstream.
 	 * @param $parent
 	 * @return \WakePHP\Core\Request
@@ -57,6 +65,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		parent::__construct($appInstance, $upstream, $parent);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getBaseUrl() {
 		return ($this->req->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 	}
@@ -79,18 +90,28 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->tpl->assign('req', $this);
 	}
 
+	/**
+	 * @param $prop
+	 */
 	public function propertyUpdated($prop) {
 		if ($this->backendServerConn) {
 			$this->backendServerConn->propertyUpdated($this, $prop, $this->{$prop});
 		}
 	}
 
+	/**
+	 * @return \stdClass
+	 */
 	public function exportObject() {
 		$req        = new \stdClass;
 		$req->attrs = $this->attrs;
 		return $req;
 	}
 
+	/**
+	 * @param Block $block
+	 * @return bool
+	 */
 	public function getBlock($block) {
 		if (!$this->appInstance->backendClient) {
 			return false;
@@ -103,6 +124,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			return false;
 		}
 
+		/**
+		 * @param BackendClientConnection $conn
+		 */
 		$fc = function ($conn) use ($block) {
 			if (!$conn->connected) {
 				// fail
@@ -136,6 +160,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		return true;
 	}
 
+	/**
+	 * @param string $format
+	 * @param integer $ts
+	 * @return mixed
+	 */
 	public function date($format, $ts = null) { // @todo
 		if ($ts === null) {
 			$ts = time();
@@ -159,6 +188,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		return $r;
 	}
 
+	/**
+	 * @param $st
+	 * @param $fin
+	 * @return array
+	 */
 	public function date_period($st, $fin) {
 		if ((is_int($st)) || (ctype_digit($st))) {
 			$st = $this->date('d-m-Y-H-i-s', $st);
@@ -192,13 +226,21 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		return array($seconds, $minutes, $hours, $days, $months, $years);
 	}
 
+	/**
+	 * @param $str
+	 * @return int
+	 */
 	public function strtotime($str) {
 		return \WakePHP\Utils\Strtotime::parse($str);
 	}
 
+	/**
+	 * @param $obj
+	 */
 	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag, $obj->html, $this->html);
 		unset($this->inner[$obj->_nid]);
+		/** @q */
 		$this->req->wakeup();
 	}
 
@@ -230,6 +272,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		echo $this->html;
 	}
 
+	/**
+	 * @param string $domain
+	 * @param string $pattern
+	 * @return bool
+	 */
 	public function checkDomainMatch($domain = null, $pattern = null) {
 		if ($domain === null) {
 			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
@@ -307,6 +354,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			$req        = $this;
 			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req) {
+				$type  = '';
+				$value = null;
 				if (isset($m[1]) && $m[1] !== '') {
 					$type  = 'id';
 					$value = $m[1];
@@ -353,6 +402,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->wakeup();
 	}
 
+	/**
+	 * @param array $block
+	 */
 	public function addBlock($block) {
 		if ((!isset($block['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block' . $block['type']))) {
 			$class = '\\WakePHP\\Blocks\\Block';
@@ -363,6 +415,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		new $class($block, $this);
 	}
 
+	/**
+	 * @param $page
+	 */
 	public function loadPage($page) {
 
 		++$this->jobDone;
@@ -382,6 +437,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->addBlock($page);
 	}
 
+	/**
+	 * @param $page
+	 */
 	public function loadErrorPage($page) {
 
 		++$this->jobDone;
@@ -413,6 +471,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		Daemon::log('destruct - ' . $this->path);
 	}
 
+	/**
+	 * @param $url
+	 */
 	public function redirectTo($url) {
 		$this->status(302);
 		$this->header('Cache-Control: no-cache, no-store, must-revalidate');

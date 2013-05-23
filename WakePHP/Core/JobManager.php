@@ -11,16 +11,34 @@ use PHPDaemon\Core\Timer;
  */
 class JobManager {
 
+	/**
+	 * @var WakePHP
+	 */
 	public $appInstance;
+	/**
+	 * @var
+	 */
 	public $resultCursor;
+	/**
+	 * @var
+	 */
 	public $resultEvent;
+	/**
+	 * @var array
+	 */
 	public $callbacks = array();
 
+	/**
+	 * @param WakePHP $appInstance
+	 */
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
 		$this->init();
 	}
 
+	/**
+	 *
+	 */
 	public function init() {
 
 		$JobManager        = $this;
@@ -68,19 +86,23 @@ class JobManager {
 		});
 	}
 
+	/**
+	 * @param $cb
+	 * @param $type
+	 * @param $args
+	 */
 	public function enqueue($cb, $type, $args) {
-		$jobId = $this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobqueue'}->insert(array(
-				'type'  => $type,
+		$jobId = $this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobqueue'}->insert(
+			[
+				'type'     => $type,
 				'args'     => $args,
 				'status'   => 'v',
 				'ts'       => microtime(true),
 				'instance' => $this->appInstance->ipcId,
-		));
+			]);
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
 			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
 		}
 	}
 }
-
-

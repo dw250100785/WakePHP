@@ -1,9 +1,13 @@
 <?php
 namespace WakePHP\Core;
 
+/**
+ * Class OAuth
+ * @package WakePHP\Core
+ */
 class OAuth {
 	/**
-	 * It's not my decision to write static method.
+	 * Generate SHA-1 signed signature
 	 * @param $method
 	 * @param $url
 	 * @param $oauth_params
