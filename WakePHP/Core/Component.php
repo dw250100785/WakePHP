@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Core;
 
+use PHPDaemon\Config\Entry\ConfigFile;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\DeferredEvent;
 
@@ -14,7 +15,7 @@ class Component {
 	/** @var WakePHP */
 	public $appInstance;
 	/**
-	 * @var null
+	 * @var ConfigFile
 	 */
 	public $config;
 
