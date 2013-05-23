@@ -60,10 +60,10 @@ class JobManager {
 				}
 			}
 			if (sizeof($JobManager->callbacks)) {
-				$event->timeout(pow(10, 6) * 0.02);
+				$event->timeout(0.02e6);
 			}
 			else {
-				$event->timeout(pow(10, 6) * 5);
+				$event->timeout(5e6);
 			}
 		});
 	}
@@ -78,7 +78,7 @@ class JobManager {
 		));
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
-			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent);
+			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
 		}
 	}
 }

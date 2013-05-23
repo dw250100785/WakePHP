@@ -32,6 +32,7 @@ class JobWorker extends AppInstance {
 				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) {
 					$this->resultCursor = $cursor;
 					foreach ($cursor->items as $k => $job) {
+						Daemon::log('find: '.json_encode($job));
 						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
 							break;
 						}
@@ -39,9 +40,10 @@ class JobWorker extends AppInstance {
 							['_id' => $job['_id'], 'status' => 'v'],
 							['$set' => ['status' => 'a']],
 							0, function($lastError) use ($job) {
-								Daemon::log(Debug::dump($lastError));
-								$job['status'] = 'a';
-								$this->startJob($job);
+								if ($lastError['updatedExisting']) {
+									$job['status'] = 'a';
+									$this->startJob($job);
+								}
 							}
 						);
 						unset($cursor->items[$k]);
@@ -62,7 +64,6 @@ class JobWorker extends AppInstance {
 				$event->timeout(1e6);
 				return;
 			}
-			$event->timeout(0.02e6);
 			if (!$this->resultCursor->isBusyConn()) {
 				try {
 					$this->resultCursor->getMore();
@@ -70,6 +71,7 @@ class JobWorker extends AppInstance {
 					$this->resultCursor = false;
 				}
 			}
+			$event->timeout(0.02e6);
 		}, 1);
 	}
 
@@ -79,7 +81,8 @@ class JobWorker extends AppInstance {
 		if (!class_exists($class) || !is_subclass_of($class, '\\WakePHP\\Jobs\\Generic')) {
 			$class = '\\WakePHP\\Jobs\\JobNotFound';
 		}
-		$obj = new $class($job);
+		Daemon::log('startJob('.$class.')');
+		$obj = new $class($job, $this);
 		$this->runningJobs[$jobId] = $obj;
 		$obj->run();
 	}
