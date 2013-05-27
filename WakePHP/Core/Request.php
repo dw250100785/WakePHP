@@ -25,6 +25,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $req;
 	public $jobTotal = 0;
 	public $jobDone = 0;
+	/** @var \Quicky */
 	public $tpl;
 	public $components;
 	public $dispatched = false;

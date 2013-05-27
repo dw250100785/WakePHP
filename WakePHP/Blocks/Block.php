@@ -1,54 +1,118 @@
 <?php
 namespace WakePHP\Blocks;
 
+use PHPDaemon\Clients\Mongo\Cursor;
 use WakePHP\Core\Request;
 
 /**
  * Block instance class.
+ * @property string cachekey
  */
 class Block implements \ArrayAccess {
 
+	/**
+	 * @var string
+	 */
 	public $html = '';
 
+	/**
+	 * @var array
+	 */
 	public $tplvars = array();
 
+	/**
+	 * @var int
+	 */
 	public $readyBlocks = 0;
+	/**
+	 * @var int
+	 */
 	public $numBlocks = 0;
 
+	/**
+	 * @var mixed
+	 */
 	public $_nid;
 
+	/**
+	 * @var
+	 */
 	public $bid;
 
+	/**
+	 * @var bool
+	 */
 	public $nowrap = false;
 
+	/**
+	 * @var
+	 */
 	public $parentNode;
 
+	/**
+	 * @var array
+	 */
 	public $inner = array();
 	/** @var  Request */
 	public $req;
 
+	/**
+	 * @var bool
+	 */
 	public $ready = false;
 
+	/**
+	 * @var
+	 */
 	public $name;
 
+	/**
+	 * @var array
+	 */
 	public $addedBlocks = [];
+	/**
+	 * @var array
+	 */
 	public $addedBlocksNames = [];
+	/**
+	 * @var array
+	 */
 	public $attrs = [];
 
+	/**
+	 * @param mixed $offset
+	 * @param mixed $value
+	 */
 	public function offsetSet($offset, $value) {
 	}
 
+	/**
+	 * @param mixed $offset
+	 * @return bool
+	 */
 	public function offsetExists($offset) {
 		return isset($this->{$offset});
 	}
 
+	/**
+	 * @param mixed $offset
+	 */
 	public function offsetUnset($offset) {
 	}
 
+	/**
+	 * @param mixed $offset
+	 * @return mixed
+	 */
 	public function offsetGet($offset) {
 		return $this->{$offset};
 	}
 
+	/**
+	 * @param array $attrs
+	 * @param Block $parentNode
+	 * @param bool $cold
+	 */
 	public function __construct($attrs, $parentNode, $cold = false) {
 		$this->parentNode = $parentNode;
 		$this->req        = $this->parentNode->req;
@@ -73,20 +137,33 @@ class Block implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	public function exportObject() {
 		return $this->attrs;
 	}
 
+	/**
+	 *
+	 */
 	public function init() {
 		$this->runTemplate();
 	}
 
+	/**
+	 * @param $k
+	 * @param $v
+	 */
 	public function assign($k, $v) {
 		//call_user_func_array(array($this->req->tpl, 'assign'), func_get_args());
 		$this->tplvars[$k] = $v;
 		// @TODO: more flexible arguments order
 	}
 
+	/**
+	 *
+	 */
 	public function runTemplate() {
 		if ($this->req->backendServerConn) {
 			++$this->parentNode->readyBlocks;
@@ -117,6 +194,7 @@ class Block implements \ArrayAccess {
 			++$this->req->jobTotal;
 			$node = $this;
 			$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function ($cursor) use ($node) {
+				/** @var Cursor $cursor */
 				if (!$cursor->finished) {
 					$cursor->getMore();
 				}
@@ -152,6 +230,10 @@ class Block implements \ArrayAccess {
 		$this->req->onSleep();
 	}
 
+	/**
+	 * @param $block
+	 * @return string
+	 */
 	public function getBlock($block) {
 		$block['tag']        = (string)new \MongoId;
 		$this->addedBlocks[] = $block;
@@ -162,10 +244,16 @@ class Block implements \ArrayAccess {
 		return $block['tag'];
 	}
 
+	/**
+	 *
+	 */
 	public function execute() {
 		$this->ready();
 	}
 
+	/**
+	 * @param $obj
+	 */
 	public function onReadyBlock($obj) {
 		if ($this->readyBlocks < $this->numBlocks) {
 			return;
@@ -177,6 +265,9 @@ class Block implements \ArrayAccess {
 		$this->execute();
 	}
 
+	/**
+	 *
+	 */
 	public function ready() {
 		if ($this->ready) {
 			return;
