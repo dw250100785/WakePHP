@@ -3,6 +3,7 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\ClassFinder;
+use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\IRequestUpstream;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
@@ -49,6 +50,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $cmpName;
 	public $controller;
 	public $dataType;
+	/** @var ComplexJob */
+	public $job;
 	protected $theme;
 
 	/**

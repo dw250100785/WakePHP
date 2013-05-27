@@ -17,6 +17,7 @@ class Account extends Component {
 	public function onAuthEvent() {
 		return function ($authEvent) {
 			/** @var DeferredEventCmp $authEvent */
+			/** @q can we add this method? */
 			$authEvent->component->onSessionRead(function ($sessionEvent) use ($authEvent) {
 				if (isset($authEvent->component->req->account)) {
 					$authEvent->setResult();
@@ -46,6 +47,9 @@ class Account extends Component {
 		};
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function getRecentSignupsCount($cb) {
 		$this->appInstance->accounts->getRecentSignupsFromIP($this->req->attrs->server['REMOTE_ADDR'], $cb);
 	}
@@ -67,6 +71,10 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 * @param string $email
+	 * @return string
+	 */
 	protected function getConfirmationCode($email) {
 		return substr(md5($email . "\x00"
 						  . $this->req->appInstance->config->cryptsalt->value . "\x00"
@@ -78,6 +86,7 @@ class Account extends Component {
 	public function SignupController() {
 		$req = $this->req;
 		$this->onSessionStart(function ($sessionEvent) use ($req) {
+			/** @var ComplexJob $job */
 			$job      = $req->job = new ComplexJob(function ($job) {
 				$errors = array();
 				foreach ($job->results as $result) {
@@ -203,6 +212,9 @@ class Account extends Component {
 		$AuthAgent->auth();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function checkReferer() {
 		if ($this->req->controller === 'ExternalAuthRedirect') {
 			return true;
@@ -218,6 +230,10 @@ class Account extends Component {
 		$AuthAgent->redirect();
 	}
 
+	/**
+	 * @param $account
+	 * @param null $cb
+	 */
 	public function loginAs($account, $cb = null) {
 		$_SESSION['accountId']     = $account['_id'];
 		$this->req->updatedSession = true;
@@ -226,6 +242,12 @@ class Account extends Component {
 		}
 	}
 
+	/**
+	 * @param $ns
+	 * @param $id
+	 * @param $add
+	 * @param $cb
+	 */
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
 		$this->onSessionStart(function () use ($ns, $id, $add, $cb) {
 			$crd = ['ns' => $ns, 'id' => $id];
@@ -272,6 +294,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function finishSignupController() {
 		$this->onSessionRead(function () {
 			if (!isset($_SESSION['extAuth'])) {
@@ -423,6 +448,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function ManageAccountsController() {
 		$req = $this->req;
 		$this->onAuth(function ($result) use ($req) {
@@ -561,6 +589,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function ManageAccountsDeleteController() {
 		$req = $this->req;
 		$this->onAuth(function ($result) use ($req) {
@@ -586,6 +617,10 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 * @param $password
+	 * @return bool|string
+	 */
 	public function checkPasswordFormat($password) {
 		if (strlen($password) < 4) {
 			return 'The chosen password is too short.';
@@ -593,6 +628,10 @@ class Account extends Component {
 		return true;
 	}
 
+	/**
+	 * @param $username
+	 * @return bool|string
+	 */
 	public function checkUsernameFormat($username) {
 		if (preg_match('~^(?![\-_\x20])[A-Za-z\d_\-А-Яа-яёЁ\x20]{2,25}(?<![\-_\x20])$~u', $username) == 0) {
 			return 'Incorrect username format.';
@@ -603,6 +642,9 @@ class Account extends Component {
 		return true;
 	}
 
+	/**
+	 *
+	 */
 	public function LogoutController() {
 		$req = $this->req;
 		$this->onSessionRead(function ($sessionEvent) use ($req) {
@@ -612,6 +654,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function    AuthenticationController() {
 
 		$req = $this->req;
@@ -651,6 +696,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function    RecoveryController() {
 
 		$req = $this->req;
@@ -727,6 +775,9 @@ class Account extends Component {
 		});
 	}
 
+	/**
+	 *
+	 */
 	public function startSession() {
 		$session                   = $this->appInstance->sessions->startSession();
 		$this->req->attrs->session = $session;
@@ -734,6 +785,9 @@ class Account extends Component {
 		$this->req->setcookie('SESSID', $sid, time() + 60 * 60 * 24 * 365, '/', $this->appInstance->config->cookiedomain->value);
 	}
 
+	/**
+	 * @return callable
+	 */
 	public function onSessionStartEvent() {
 
 		return function ($sessionStartEvent) {
@@ -758,6 +812,9 @@ class Account extends Component {
 		};
 	}
 
+	/**
+	 * @return callable
+	 */
 	public function onSessionReadEvent() {
 
 		return function ($sessionEvent) {
