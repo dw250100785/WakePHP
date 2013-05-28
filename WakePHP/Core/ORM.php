@@ -1,9 +1,9 @@
 <?php
 namespace WakePHP\Core;
 
-/**
- * ORM class.
- */
+	/**
+	 * ORM class.
+	 */
 /**
  * Class ORM
  * @package WakePHP\Core

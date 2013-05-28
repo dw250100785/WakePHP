@@ -1,9 +1,9 @@
 <?php
 namespace WakePHP\Core;
 
-/**
- * UndefinedEventCalledException class
- */
+	/**
+	 * UndefinedEventCalledException class
+	 */
 /**
  * Class UndefinedEventCalled
  * @package WakePHP\Core
