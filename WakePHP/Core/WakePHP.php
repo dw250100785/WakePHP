@@ -3,6 +3,7 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
 use WakePHP\ORM\ExternalSignupRequests;
 use WakePHP\ORM\Sessions;
@@ -10,7 +11,8 @@ use WakePHP\ORM\Sessions;
 /**
  * Main class of application (Quicky, MongoClient, ...)
  */
-class WakePHP extends AppInstance {
+class WakePHP extends AppInstance
+{
 
 	/**
 	 * @var
@@ -58,15 +60,22 @@ class WakePHP extends AppInstance {
 	public $httpclient;
 	/** @var ExternalSignupRequests */
 	public $externalSignupRequests;
+	/** @var Sendmail */
+	public $Sendmail;
+	/** @var AccountRecoveryRequests */
+	public $accountRecoveryRequests;
 
 	/**
 	 *
 	 */
-	public function onReady() {
-		if (isset($this->backendServer)) {
+	public function onReady()
+	{
+		if (isset($this->backendServer))
+		{
 			$this->backendServer->onReady();
 		}
-		if (isset($this->backendClient)) {
+		if (isset($this->backendClient))
+		{
 			$this->backendClient->onReady();
 		}
 	}
@@ -74,48 +83,59 @@ class WakePHP extends AppInstance {
 	/**
 	 *
 	 */
-	public function init() {
-		Daemon::log(get_class($this) . ' up.');
+	public function init()
+	{
+		Daemon::log(get_class($this).' up.');
 		ini_set('display_errors', 'On');
 		$appInstance             = $this;
 		$appInstance->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 		$appInstance->dbname     = $this->config->dbname->value;
-		$appInstance->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
+		$appInstance->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid().'-'.microtime(true).'-'.mt_rand(0, mt_getrandmax())));
 		$appInstance->JobManager = new JobManager($this);
 		$appInstance->Sendmail   = new Sendmail($this);
-		if (isset($this->config->BackendServer)) {
+		if (isset($this->config->BackendServer))
+		{
 			$this->backendServer = BackendServer::getInstance($this->config->BackendServer, true, $this);
 		}
-		if (isset($this->config->BackendClient)) {
+		if (isset($this->config->BackendClient))
+		{
 			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, true, $this);
 		}
 
-		foreach (glob($appInstance->config->ormdir->value . '*.php') as $file) {
+		foreach (glob($appInstance->config->ormdir->value.'*.php') as $file)
+		{
 			$class         = strstr(basename($file), '.', true);
 			$prop          = lcfirst($class);
-			$class         = '\\WakePHP\\ORM\\' . $class;
+			$class         = '\\WakePHP\\ORM\\'.$class;
 			$this->{$prop} = new $class($this);
 		}
 
 		$appInstance->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
-		$appInstance->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) use ($appInstance) {
-			foreach (glob($appInstance->config->themesdir->value . '*/blocks/*') as $file) {
+		$appInstance->LockClient->job(get_class($this).'-'.$this->name, true, function ($jobname, $command, $client) use ($appInstance)
+		{
+			foreach (glob($appInstance->config->themesdir->value.'*/blocks/*') as $file)
+			{
 				Daemon::$process->fileWatcher->addWatch($file, array($appInstance, 'onBlockFileChanged'));
 			}
 		});
-		$this->locales = array_map('basename', glob($appInstance->config->localedir->value . '*', GLOB_ONLYDIR));
-		if (!in_array($this->config->defaultlocale->value, $this->locales, true)) {
+		$this->locales = array_map('basename', glob($appInstance->config->localedir->value.'*', GLOB_ONLYDIR));
+		if (!in_array($this->config->defaultlocale->value, $this->locales, true))
+		{
 			$this->locales[] = $this->config->defaultlocale->value;
 		}
-		if (!in_array('en', $this->locales, true)) {
+		if (!in_array('en', $this->locales, true))
+		{
 			$this->locales[] = 'en';
 		}
 		$req                     = new \stdClass; // @TODO: refactor this shit
 		$req->appInstance        = $appInstance;
 		$appInstance->components = new Components($req);
-		foreach ($appInstance->config as $k => $c) {
-			if (isset($c->run->value) && $c->run->value) {
-				if (substr($k, 0, 3) == 'Cmp') {
+		foreach ($appInstance->config as $k => $c)
+		{
+			if (isset($c->run->value) && $c->run->value)
+			{
+				if (substr($k, 0, 3)=='Cmp')
+				{
 					$appInstance->components->{substr($k, 3)};
 				}
 			}
@@ -128,8 +148,10 @@ class WakePHP extends AppInstance {
 	 * @param $lc
 	 * @return mixed
 	 */
-	public function getLocaleName($lc) {
-		if (!in_array($lc, $this->locales, true)) {
+	public function getLocaleName($lc)
+	{
+		if (!in_array($lc, $this->locales, true))
+		{
 			return $this->config->defaultlocale->value;
 		}
 		return $lc;
@@ -140,19 +162,23 @@ class WakePHP extends AppInstance {
 	 * @param $variables
 	 * @param $cb
 	 */
-	public function renderBlock($blockname, $variables, $cb) {
+	public function renderBlock($blockname, $variables, $cb)
+	{
 		$appInstance = $this;
-		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance) {
+		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance)
+		{
 			$tpl = $appInstance->getQuickyInstance();
 			$tpl->assign($variables);
 			$tpl->assign('block', $block);
 			$tpl->register_function('getblock', array($this, 'getBlock'));
 			static $cache = [];
 			$k = $block['cachekey'];
-			if (isset($cache[$k])) {
+			if (isset($cache[$k]))
+			{
 				$tplf = $cache[$k];
 			}
-			else {
+			else
+			{
 				$tplf      = eval($block['templatePHP']);
 				$cache[$k] = $tplf;
 			}
@@ -167,11 +193,13 @@ class WakePHP extends AppInstance {
 	/**
 	 * @param $file
 	 */
-	public function onBlockFileChanged($file) {
-		Daemon::log('changed - ' . $file);
+	public function onBlockFileChanged($file)
+	{
+		Daemon::log('changed - '.$file);
 		$blockName = pathinfo($file, PATHINFO_FILENAME);
 		$ext       = pathinfo($file, PATHINFO_EXTENSION);
-		$decoder   = function ($json) {
+		$decoder   = function ($json)
+		{
 			static $pairs = array(
 				"\n" => '',
 				"\r" => '',
@@ -179,30 +207,34 @@ class WakePHP extends AppInstance {
 			);
 			return json_decode(strtr($json, $pairs), true);
 		};
-		if ($ext === 'obj') {
+		if ($ext==='obj')
+		{
 			$block          = $decoder(file_get_contents($file));
 			$block['name']  = pathinfo($file, PATHINFO_FILENAME);
-			$tplFilename    = dirname($file) . '/' . $block['name'] . '.tpl';
+			$tplFilename    = dirname($file).'/'.$block['name'].'.tpl';
 			$block['theme'] = basename(dirname($file));
-			if (file_exists($tplFilename)) {
+			if (file_exists($tplFilename))
+			{
 				$block['template'] = file_get_contents($tplFilename);
 			}
 			$this->blocks->saveBlock($block);
 		}
-		elseif ($ext === 'tpl') {
+		elseif ($ext==='tpl')
+		{
 			Daemon::log('update');
 			$this->blocks->saveBlock(array(
-										 'name'     => $blockName,
-										 'template' => file_get_contents($file)
-									 ), true);
+				'name'     => $blockName,
+				'template' => file_get_contents($file)
+			), true);
 		}
 	}
 
 	/**
 	 * @return \Quicky
 	 */
-	public function getQuickyInstance() {
-		require_once $this->config->utilsdir->value . 'lang_om_number.php';
+	public function getQuickyInstance()
+	{
+		require_once $this->config->utilsdir->value.'lang_om_number.php';
 		$tpl = new \Quicky;
 		$tpl->load_filter('pre', 'optimize');
 		$tpl->template_dir                      = $this->config->themesdir->value;
@@ -215,13 +247,14 @@ class WakePHP extends AppInstance {
 	/**
 	 * @return array
 	 */
-	protected function getConfigDefaults() {
+	protected function getConfigDefaults()
+	{
 		return array(
-			'themesdir'     => dirname(__DIR__) . '/themes/',
-			'utilsdir'      => dirname(__DIR__) . '/Utils/',
-			'localedir'     => dirname(__DIR__) . '/locale/',
+			'themesdir'     => dirname(__DIR__).'/themes/',
+			'utilsdir'      => dirname(__DIR__).'/Utils/',
+			'localedir'     => dirname(__DIR__).'/locale/',
 			'storagedir'    => '/storage/',
-			'ormdir'        => dirname(__DIR__) . '/ORM/',
+			'ormdir'        => dirname(__DIR__).'/ORM/',
 			'dbname'        => 'WakePHP',
 			'defaultlocale' => 'en',
 			'defaulttheme'  => 'simple',
@@ -236,14 +269,18 @@ class WakePHP extends AppInstance {
 	 * @param array $args    Arguments.
 	 * @return mixed Result
 	 */
-	public function RPCall($method, $args) {
-		if ($method === 'saveBlock') {
+	public function RPCall($method, $args)
+	{
+		if ($method==='saveBlock')
+		{
 			call_user_func_array(array($this->blocks, 'saveBlock'), $args);
 		}
-		elseif ($method === 'saveAccount') {
+		elseif ($method==='saveAccount')
+		{
 			call_user_func_array(array($this->accounts, 'saveAccount'), $args);
 		}
-		elseif ($method === 'saveACLgroup') {
+		elseif ($method==='saveACLgroup')
+		{
 			call_user_func_array(array($this->accounts, 'saveACLgroup'), $args);
 		}
 	}
@@ -254,7 +291,8 @@ class WakePHP extends AppInstance {
 	 * @param object $upstream Upstream application instance.
 	 * @return object Request.
 	 */
-	public function beginRequest($req, $upstream) {
+	public function beginRequest($req, $upstream)
+	{
 		return new Request($this, $upstream, $req);
 	}
 
@@ -264,34 +302,40 @@ class WakePHP extends AppInstance {
 	 * @param string $s The output.
 	 * @return void
 	 */
-	public function requestOut($r, $s) {
+	public function requestOut($r, $s)
+	{
 	}
 
 	/**
 	 * Handles the output from downstream requests.
 	 * @return void
 	 */
-	public function endRequest($req, $appStatus, $protoStatus) {
+	public function endRequest($req, $appStatus, $protoStatus)
+	{
 	}
 
 }
 
-if (!function_exists('igbinary_serialize')) {
+if (!function_exists('igbinary_serialize'))
+{
 	/**
 	 * @param $m
 	 * @return string
 	 */
-	function igbinary_serialize($m) {
+	function igbinary_serialize($m)
+	{
 		return serialize($m);
 	}
 }
 
-if (!function_exists('igbinary_unserialize')) {
+if (!function_exists('igbinary_unserialize'))
+{
 	/**
 	 * @param $m
 	 * @return mixed
 	 */
-	function igbinary_unserialize($m) {
+	function igbinary_unserialize($m)
+	{
 		return unserialize($m);
 	}
 }

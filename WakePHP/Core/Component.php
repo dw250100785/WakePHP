@@ -7,8 +7,11 @@ use PHPDaemon\Core\DeferredEvent;
 
 /**
  * Component
+ * @method onSessionRead(callable $cb)
+ * @method startSession
  */
-class Component {
+class Component
+{
 
 	/** @var Request */
 	public $req;
@@ -22,19 +25,22 @@ class Component {
 	/**
 	 * @param Request $req
 	 */
-	public function __construct($req) {
+	public function __construct($req)
+	{
 		$this->req         = $req;
 		$this->appInstance = $req->appInstance;
 		$my_class          = ClassFinder::getClassBasename(get_class($this));
 		$this->config      = isset($this->appInstance->config->{$my_class}) ? $this->appInstance->config->{$my_class} : null;
 		$defaults          = $this->getConfigDefaults();
-		if ($defaults) {
+		if ($defaults)
+		{
 			$this->processDefaultConfig($defaults);
 		}
 		$this->init();
 	}
 
-	public function init() {
+	public function init()
+	{
 	}
 
 	/**
@@ -42,14 +48,16 @@ class Component {
 	 * Override to set your own
 	 * @return array|bool
 	 */
-	protected function getConfigDefaults() {
+	protected function getConfigDefaults()
+	{
 		return false;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function checkReferer() {
+	public function checkReferer()
+	{
 		return $this->req->checkDomainMatch();
 	}
 
@@ -58,24 +66,32 @@ class Component {
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
-	private function processDefaultConfig($settings = array()) {
-		foreach ($settings as $k => $v) {
+	private function processDefaultConfig($settings = array())
+	{
+		foreach ($settings as $k => $v)
+		{
 			$k = strtolower(str_replace('-', '', $k));
 
-			if (!isset($this->config->{$k})) {
-				if (is_scalar($v)) {
+			if (!isset($this->config->{$k}))
+			{
+				if (is_scalar($v))
+				{
 					$this->config->{$k} = new \PHPDaemon\Config\Entry\Generic($v);
 				}
-				else {
+				else
+				{
 					$this->config->{$k} = $v;
 				}
 			}
-			else {
+			else
+			{
 				$current = $this->config->{$k};
-				if (is_scalar($v)) {
+				if (is_scalar($v))
+				{
 					$this->config->{$k} = new \PHPDaemon\Config\Entry\Generic($v);
 				}
-				else {
+				else
+				{
 					$this->config->{$k} = $v;
 				}
 
@@ -90,19 +106,24 @@ class Component {
 	 * @param string $event
 	 * @return null|mixed
 	 */
-	public function __get($event) {
-		if (!method_exists($this, $event . 'Event')) {
+	public function __get($event)
+	{
+		if (!method_exists($this, $event.'Event'))
+		{
 			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 			return null;
 		}
-		$this->{$event}            = new DeferredEvent($this->{$event . 'Event'}());
+		$this->{$event}            = new DeferredEvent($this->{$event.'Event'}());
 		$this->{$event}->component = $this;
 		return $this->{$event};
 	}
 
-	public function cleanup() {
-		foreach ($this as $key => $property) {
-			if ($property instanceof DeferredEvent) {
+	public function cleanup()
+	{
+		foreach ($this as $key => $property)
+		{
+			if ($property instanceof DeferredEvent)
+			{
 				$property->cleanup();
 			}
 			unset($this->{$key});
@@ -114,7 +135,8 @@ class Component {
 	 * @param $args
 	 * @return mixed
 	 */
-	public function __call($event, $args) {
+	public function __call($event, $args)
+	{
 		return call_user_func_array($this->{$event}, $args);
 	}
 }
