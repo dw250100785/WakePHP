@@ -20,20 +20,36 @@ class Accounts extends ORM {
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
 	}
 
+	/**
+	 * @param string $username
+	 * @param callable $cb
+	 */
 	public function getAccountByName($username, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => array('username' => (string)$username),
 		));
 	}
 
+	/**
+	 * @param callable $cb
+	 * @param array $cond
+	 */
 	public function findAccounts($cb, $cond = array()) {
 		$this->accounts->find($cb, $cond);
 	}
 
+	/**
+	 * @param callable $cb
+	 * @param array $cond
+	 */
 	public function countAccounts($cb, $cond = array()) {
 		$this->accounts->count($cb, $cond);
 	}
 
+	/**
+	 * @param array $cond
+	 * @param callable $cb
+	 */
 	public function deleteAccount($cond = array(), $cb = null) {
 		if (sizeof($cond)) {
 			if (isset($cond['_id']) && is_string($cond['_id'])) {
@@ -43,42 +59,70 @@ class Accounts extends ORM {
 		}
 	}
 
+	/**
+	 * @param $ip
+	 * @param callable $cb
+	 */
 	public function getRecentSignupsFromIP($ip, $cb) {
 
 		$this->accounts->count($cb, array('where' => array('ip' => (string)$ip, 'regdate' => array('$gt' => time() - 3600))));
 
 	}
 
+	/**
+	 * @param string $username
+	 * @param callable $cb
+	 */
 	public function getAccountByUnifiedName($username, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => array('unifiedusername' => $this->unifyUsername($username)),
 		));
 	}
 
+	/**
+	 * @param string $email
+	 * @param callable $cb
+	 */
 	public function getAccountByUnifiedEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => array('unifiedemail' => $this->unifyEmail($email)),
 		));
 	}
 
+	/**
+	 * @param string $email
+	 * @param callable $cb
+	 */
 	public function getAccountByEmail($email, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => array('email' => $email),
 		));
 	}
 
+	/**
+	 * @param $id
+	 * @param callable $cb
+	 */
 	public function getAccountById($id, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => array('_id' => $id),
 		));
 	}
 
+	/**
+	 * @param array $find
+	 * @param callable $cb
+	 */
 	public function getAccount($find, $cb) {
 		$this->accounts->findOne($cb, array(
 			'where' => $find,
 		));
 	}
 
+	/**
+	 * @param $name
+	 * @param callable $cb
+	 */
 	public function getACLgroup($name, $cb) {
 		$this->aclgroups->findOne($cb, array(
 			'where' => array('name' => $name),
@@ -97,6 +141,10 @@ class Accounts extends ORM {
 		return $account['password'] === Crypt::hash($password, $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
 	}
 
+	/**
+	 * @param string $username
+	 * @return string
+	 */
 	public function unifyUsername($username) {
 		static $equals = array(
 			'з3z', 'пn', 'оo0', 'еeё',
@@ -111,6 +159,10 @@ class Accounts extends ORM {
 		return $result;
 	}
 
+	/**
+	 * @param string $email
+	 * @return string
+	 */
 	public function unifyEmail($email) {
 		static $hosts = array(
 			'googlemail.com' => 'gmail.com'
@@ -131,10 +183,19 @@ class Accounts extends ORM {
 		return $name . '@' . $host;
 	}
 
+	/**
+	 * @param $account
+	 * @param callable $cb
+	 */
 	public function confirmAccount($account, $cb = null) {
 		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
 	}
 
+	/**
+	 * @param array $account
+	 * @param string $group
+	 * @param callable $cb
+	 */
 	public function addACLgroupToAccount($account, $group, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new \MongoId($account['_id']);
@@ -145,6 +206,11 @@ class Accounts extends ORM {
 		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
 	}
 
+	/**
+	 * @param array $account
+	 * @param array $credentials
+	 * @param callable $cb
+	 */
 	public function addCredentialsToAccount($account, $credentials, $cb = null) {
 		if (isset($account['_id'])) {
 			$find = ['_id' => is_string($account['_id']) ? new \MongoId($account['_id']) : $account['_id']];
@@ -158,6 +224,11 @@ class Accounts extends ORM {
 		$this->accounts->update($find, ['$push' => ['credentials' => $credentials]], 0, $cb);
 	}
 
+	/**
+	 * @param $account
+	 * @param $update
+	 * @param callable $cb
+	 */
 	public function updateAccount($account, $update, $cb = null) {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new \MongoId($account['_id']);
@@ -165,6 +236,11 @@ class Accounts extends ORM {
 		$this->accounts->update($account, $update, 0, $cb);
 	}
 
+	/**
+	 * @param $account
+	 * @param callable $cb
+	 * @param bool $update
+	 */
 	public function saveAccount($account, $cb = null, $update = false) {
 		if (isset($account['password'])) {
 			$account['salt']     = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $account['email']);
@@ -201,6 +277,10 @@ class Accounts extends ORM {
 		}
 	}
 
+	/**
+	 * @param $req
+	 * @return array
+	 */
 	public function getAccountBase($req) {
 		return [
 			'email'            => '',
@@ -222,6 +302,9 @@ class Accounts extends ORM {
 		];
 	}
 
+	/**
+	 * @param $group
+	 */
 	public function saveACLgroup($group) {
 		$this->aclgroups->upsert(array('name' => $group['name']), array('$set' => $group));
 	}

@@ -12,10 +12,17 @@ class Blocks extends ORM {
 	/** @var Collection */
 	public $blocks;
 
+	/**
+	 *
+	 */
 	public function init() {
 		$this->blocks = $this->appInstance->db->{$this->appInstance->dbname . '.blocks'};
 	}
 
+	/**
+	 * @param array $find
+	 * @param callable $cb
+	 */
 	public function getBlock($find, $cb) {
 		if (isset($find['_id']) && is_string($find['_id'])) {
 			$find['_id'] = new \MongoId($find['_id']);
@@ -23,14 +30,26 @@ class Blocks extends ORM {
 		$this->blocks->findOne($cb, array('where' => $find));
 	}
 
+	/**
+	 * @param $names
+	 * @param callable $cb
+	 */
 	public function getBlocksByNames($names, $cb) {
 		$this->blocks->find($cb, array('limit' => -100, 'where' => array('name' => array('$in' => $names))));
 	}
 
+	/**
+	 * @param $id
+	 * @param callable $cb
+	 */
 	public function getBlockById($id, $cb) {
 		$this->getBlock(array('_id' => $id), $cb);
 	}
 
+	/**
+	 * @param $block
+	 * @param bool $update
+	 */
 	public function saveBlock($block, $update = false) {
 		$block['mtime'] = microtime(true);
 		if (!isset($block['locale'])) {

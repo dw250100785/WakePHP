@@ -8,11 +8,18 @@ use WakePHP\Core\ORM;
  */
 class MUChat extends ORM {
 
+	/**
+	 *
+	 */
 	public function init() {
 		$this->sessions = new Sessions($this->appInstance);
 		$this->accounts = new Accounts($this->appInstance);
 	}
 
+	/**
+	 * @param $authkey
+	 * @param callable $cb
+	 */
 	public function getAuthKey($authkey, $cb) {
 
 		$component = $this;

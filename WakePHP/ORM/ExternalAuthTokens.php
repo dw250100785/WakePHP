@@ -4,11 +4,18 @@ namespace WakePHP\ORM;
 use PHPDaemon\Clients\Mongo\Collection;
 use WakePHP\Core\ORM;
 
+/**
+ * Class ExternalAuthTokens
+ * @package WakePHP\ORM
+ */
 class ExternalAuthTokens extends ORM {
 
 	/** @var  Collection */
 	protected $externalAuthTokens;
 
+	/**
+	 *
+	 */
 	public function init() {
 		$this->externalAuthTokens = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
 		$this->externalAuthTokens->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
@@ -25,22 +32,42 @@ class ExternalAuthTokens extends ORM {
 		$this->externalAuthTokens->upsert(['_id' => $request['_id']], $request, false, $cb);
 	}
 
+	/**
+	 * @param $id
+	 * @param callable $cb
+	 */
 	public function getRequestById($id, $cb = null) {
 		$this->externalSignupRequests->findOne($cb, ['where' => ['_id' => new \MongoId($id)]]);
 	}
 
+	/**
+	 * @param string $email
+	 * @param callable $cb
+	 */
 	public function getRequestByEmail($email, $cb = null) {
 		$this->externalSignupRequests->findOne($cb, ['where' => ['email' => $email]]);
 	}
 
+	/**
+	 * @param $id
+	 * @param callable $cb
+	 */
 	public function deleteById($id, $cb = null) {
 		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
 	}
 
+	/**
+	 * @param array $cond
+	 * @param callable $cb
+	 */
 	public function remove(array $cond, $cb = null) {
 		$this->externalSignupRequests->remove($cond, $cb);
 	}
 
+	/**
+	 * @param array $credentials
+	 * @param callable $cb
+	 */
 	public function getRequestByCredentials(array $credentials, $cb = null) {
 		$this->externalSignupRequests->findOne($cb, ['credentials' => ['$elemMatch' => $credentials]]);
 	}

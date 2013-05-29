@@ -12,6 +12,10 @@ class AccountRecoveryRequests extends ORM {
 		$this->accountRecoveryRequests = $this->appInstance->db->{$this->appInstance->dbname . '.accountRecoveryRequests'};
 	}
 
+	/**
+	 * @param string $email
+	 * @param callable $cb
+	 */
 	public function getLastCodeByEmail($email, $cb) {
 		$this->accountRecoveryRequests->findOne($cb, array(
 			'where' => array('email' => (string)$email, 'used' => 0),
@@ -20,6 +24,11 @@ class AccountRecoveryRequests extends ORM {
 		));
 	}
 
+	/**
+	 * @param callable $cb
+	 * @param string $email
+	 * @param $code
+	 */
 	public function getCode($cb, $email, $code) {
 		$this->accountRecoveryRequests->findOne($cb, array(
 			'where' => array(
@@ -28,6 +37,11 @@ class AccountRecoveryRequests extends ORM {
 			)));
 	}
 
+	/**
+	 * @param callable $cb
+	 * @param string $email
+	 * @param $code
+	 */
 	public function invalidateCode($cb, $email, $code) {
 		$this->accountRecoveryRequests->update(array(
 												   'email' => (string)$email,
@@ -36,6 +50,12 @@ class AccountRecoveryRequests extends ORM {
 											   ), array('$set' => array('used' => 1)), 0, $cb);
 	}
 
+	/**
+	 * @param string $email
+	 * @param $ip
+	 * @param $password
+	 * @return string
+	 */
 	public function addRecoveryCode($email, $ip, $password) {
 
 		$this->accountRecoveryRequests->insert(array(
