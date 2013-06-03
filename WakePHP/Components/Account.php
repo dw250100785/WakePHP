@@ -5,6 +5,7 @@ use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic as Request;
+use PHPDaemon\Utils\Encoding;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
 use WakePHP\Core\Request as WakePHPRequest;
@@ -332,7 +333,9 @@ class Account extends Component {
 			$this->appInstance->externalSignupRequests->getRequestByCredentials($credentials, function ($request) use ($email, $credentials) {
 				if (!$request || !isset($request['code'])) {
 					$code = $this->getConfirmationCode($email);
-					$this->appInstance->externalSignupRequests->save(['email' => $email, 'code' => $code, 'credentials' => $credentials],
+					$this->appInstance->externalSignupRequests->save(['email'       => Encoding::toUTF8($email),
+																	  'code'        => Encoding::toUTF8($code),
+																	  'credentials' => Encoding::toUTF8($credentials)],
 						function ($lastError) use ($email, $code) {
 							if (!isset($lastError['ok'])) {
 								$this->req->setResult(['success' => false,
