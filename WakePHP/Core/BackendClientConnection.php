@@ -8,6 +8,7 @@ use WakePHP\Blocks\Block;
 /**
  * Class BackendClientConnection
  * @package WakePHP\Core
+ * @refactor
  */
 class BackendClientConnection extends Connection {
 
@@ -120,7 +121,6 @@ class BackendClientConnection extends Connection {
 	 * @refactor
 	 */
 	public function stdin($buf) {
-		/** @q consider declare it as regular field */
 		$this->buf .= $buf;
 
 		start:

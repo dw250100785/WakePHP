@@ -74,7 +74,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return string
 	 */
 	public function getBaseUrl() {
-		return ($this->req->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+		return ($this->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
 	}
 
 	public function init() {
@@ -82,8 +82,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Content-Type: text/html');
 		} catch (RequestHeadersAlreadySent $e) {
 		}
-
-		$this->req = $this;
 
 		$this->theme = $this->appInstance->config->defaulttheme->value;
 
@@ -148,7 +146,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 		};
 		if ($this->backendClientConn) {
-			$this->req->backendClientConn->onConnected($fc);
+			$this->backendClientConn->onConnected($fc);
 		}
 		else {
 			if ($this->backendClientInited) {
@@ -158,7 +156,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				$this->backendClientCbs->push($fc);
 			}
 			else {
-				$this->req->appInstance->backendClient->getConnection($fc);
+				$this->appInstance->backendClient->getConnection($fc);
 				$this->backendClientInited = true;
 			}
 		}
@@ -245,8 +243,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public function onReadyBlock($obj) {
 		$this->html = str_replace($obj->tag, $obj->html, $this->html);
 		unset($this->inner[$obj->_nid]);
-		/** @q */
-		$this->req->wakeup();
+		$this->wakeup();
 	}
 
 	/**

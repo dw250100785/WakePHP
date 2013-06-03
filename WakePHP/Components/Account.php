@@ -12,8 +12,8 @@ use WakePHP\Core\Request as WakePHPRequest;
 
 /**
  * Account component
- * @method onSessionStart(callable $cb) @q
- * @method onAuth(callable $cb) @q
+ * @method onSessionStart(callable $cb)
+ * @method onAuth(callable $cb)
  */
 class Account extends Component {
 	/**
@@ -22,7 +22,6 @@ class Account extends Component {
 	public function onAuthEvent() {
 		return function ($authEvent) {
 			/** @var DeferredEventCmp $authEvent */
-			/** @q can we add this method? */
 			$authEvent->component->onSessionRead(function ($sessionEvent) use ($authEvent) {
 				if (isset($authEvent->component->req->account)) {
 					$authEvent->setResult();

@@ -147,24 +147,3 @@ class JobWorker extends AppInstance {
 	}
 
 }
-
-/** @refactoring @q */
-if (!function_exists('igbinary_serialize')) {
-	/**
-	 * @param $m
-	 * @return string
-	 */
-	function igbinary_serialize($m) {
-		return serialize($m);
-	}
-}
-
-if (!function_exists('igbinary_unserialize')) {
-	/**
-	 * @param $m
-	 * @return mixed
-	 */
-	function igbinary_unserialize($m) {
-		return unserialize($m);
-	}
-}
