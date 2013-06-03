@@ -311,11 +311,15 @@ class Account extends Component {
 	public function finishSignupController() {
 		$this->onSessionRead(function () {
 			if (!isset($_SESSION['extAuth'])) {
-				$this->req->setResult(['success' => false, 'errors' => ['Session expired']]);
+				$this->req->setResult(['success' => false,
+									   'errors'  => ['email' => 'Session expired']
+									  ]);
 				return;
 			}
 			if (($email = Request::getString($_REQUEST['email'])) === '') {
-				$this->req->setResult(['success' => false, 'errors' => ['Empty E-Mail']]);
+				$this->req->setResult(['success' => false,
+									   'errors'  => ['email' => 'Empty E-Mail']
+									  ]);
 				return;
 			}
 			if (!isset($_SESSION['credentials']['email'])) {
@@ -331,7 +335,8 @@ class Account extends Component {
 					$this->appInstance->externalSignupRequests->save(['email' => $email, 'code' => $code, 'credentials' => $credentials],
 						function ($lastError) use ($email, $code) {
 							if (!isset($lastError['ok'])) {
-								$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
+								$this->req->setResult(['success' => false,
+													   'errors'  => ['email' => 'Sorry, internal error.']]);
 								return;
 							}
 							$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
@@ -359,12 +364,14 @@ class Account extends Component {
 						$account['credentials'] = [$credentials];
 						$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($email, $request) {
 							if (!isset($lastError['ok'])) {
-								$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
+								$this->req->setResult(['success' => false,
+													   'errors'  => ['email' => 'Sorry, internal error.']]);
 								return;
 							}
 							$this->appInstance->accounts->getAccountByEmail($email, function ($account) use ($request) {
 								if (!$account) {
-									$this->req->setResult(['success' => false, 'errors' => ['Sorry, internal error.']]);
+									$this->req->setResult(['success' => false,
+														   'errors'  => ['email' => 'Sorry, internal error.']]);
 									return;
 								}
 								$this->appInstance->externalSignupRequests->remove(['_id' => new \MongoId($request['_id'])]);
@@ -375,7 +382,7 @@ class Account extends Component {
 						});
 					}
 					else {
-						$this->req->setResult(['success' => false, 'errors' => ['Wrong code']]);
+						$this->req->setResult(['success' => false, 'errors' => ['code' => 'Wrong code']]);
 						return;
 					}
 				}
