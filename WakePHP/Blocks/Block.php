@@ -115,7 +115,7 @@ class Block implements \ArrayAccess {
 	 */
 	public function __construct($attrs, $parentNode, $cold = false) {
 		$this->parentNode = $parentNode;
-		$this->req        = $this->parentNode->req;
+		$this->req        = $this->parentNode instanceof Request ? $this->parentNode : $this->parentNode->req;
 
 		$this->parentNode->inner[] = $this;
 
