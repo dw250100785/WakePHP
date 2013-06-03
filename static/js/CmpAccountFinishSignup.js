@@ -41,5 +41,8 @@ $(function () {
 		}
 		                         });
 		$('button[disabled]', $form).removeAttr('disabled');
+		if ($('input[name="email"]', $form).val().length > 0 && $('input[name="code"]', $form).val().length > 0) {
+			$form.submit();
+		}
 	});
 });
