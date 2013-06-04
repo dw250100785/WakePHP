@@ -26,10 +26,13 @@ class ExternalAuthTokens extends ORM {
 	 * @param callable|null $cb
 	 */
 	public function save(array $doc, $cb = null) {
-		if (!isset($doc['_id'])) {
-			$doc['_id'] = new \MongoId();
+		if (!isset($doc['extTokenHash'])) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
 		}
-		$this->externalAuthTokens->upsert(['_id' => $doc['_id']], $doc, false, $cb);
+		$this->externalAuthTokens->upsert(['extTokenHash' => $doc['extTokenHash']], ['$set' => $doc], false, $cb);
 	}
 
 	/**

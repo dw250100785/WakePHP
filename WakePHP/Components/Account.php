@@ -228,6 +228,12 @@ class Account extends Component {
 		if ($this->req->controller === 'ExternalAuthRedirect') {
 			return true;
 		}
+		if ($this->req->controller === 'ExtAuth') {
+			return true;
+		}
+		if ($this->req->controller === 'ExtAuthPing') {
+			return true;
+		}
 		return $this->req->checkDomainMatch();
 	}
 
@@ -686,26 +692,61 @@ class Account extends Component {
 	 *
 	 */
 	public function ExtAuthController() {
-		$hash = Request::getString($this->req->attrs->request['ExtTokenHash']);
-		if (base64_decode($hash, true) === false) {
+		$hash = Request::getString($this->req->attrs->request['x']);
+		if (!strlen($hash) || base64_decode($hash, true) === false) {
 			$this->req->setResult(['success' => false, 'error' => 'Wrong format of extTokenHash']);
 			return;
 		}
-		$this->appInstance->externalAuthTokens->findByExtTokenHash($hash, function ($result) {
+		$this->appInstance->externalAuthTokens->findByExtTokenHash($hash, function ($result) use ($hash) {
 			if ($result) {
 				$this->req->setResult(['success' => false, 'error' => 'This token was already used.']);
-				return;		
+				return;
 			}
+			$ip = $this->req->getIp();
+			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip);
 			$this->appInstance->externalAuthTokens->save([
 				'extTokenHash' => $hash,
-				'ip'			=> $this->req->getIp(),
+				'intToken'		=> $intToken,
+				'ip'			=> $ip,
 				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
-			], function ($lastError) {
+				'ctime'			=> microtime(true),
+			], function ($lastError) use ($intToken) {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
-					$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Sorry, internal error.')));
+					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
 					return;
 				}
-				$this->req->setResult(array('success' => true, 'errors' => array('code' => 'Sorry, internal error.')));
+				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
+			});
+		});
+	}
+
+	/**
+	 *
+	 */
+	public function ExtAuthPingController() {
+		$extToken = Request::getString($this->req->attrs->request['p']);
+		if (!strlen($extToken)) {
+			$this->req->setResult(['success' => false, 'error' => 'Wrong format of extTokenHash']);
+			return;
+		}
+		$this->appInstance->externalAuthTokens->findByExtToken($extToken, function ($result) {
+			if ($result) {
+				$this->req->setResult(['success' => false, 'error' => 'This token was already used.']);
+				return;
+			}
+			$ip = $this->req->getIp();
+			$intToken = Crypt::hash(Daemon::uniqid() . "\x00" . $ip);
+			$this->appInstance->externalAuthTokens->save([
+				'extTokenHash' => $hash,
+				'intToken'		=> $intToken,
+				'ip'			=> $ip,
+				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
+			], function ($lastError) use ($intToken) {
+				if (!isset($lastError['n']) || $lastError['n'] === 0) {
+					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
+					return;
+				}
+				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
 			});
 		});
 	}
