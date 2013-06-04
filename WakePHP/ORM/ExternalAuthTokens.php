@@ -17,58 +17,43 @@ class ExternalAuthTokens extends ORM {
 	 *
 	 */
 	public function init() {
-		$this->externalAuthTokens = $this->appInstance->db->{$this->appInstance->dbname . '.externalSignupRequests'};
-		$this->externalAuthTokens->ensureIndex(['code' => 1, 'email' => 1], ['unique' => true]);
+		$this->externalAuthTokens = $this->appInstance->db->{$this->appInstance->dbname . '.externalAuthTokens'};
+		$this->externalAuthTokens->ensureIndex(['extTokenHash' => 1], ['unique' => true]);
 	}
 
 	/**
-	 * @param array $request
+	 * @param array $doc
 	 * @param callable|null $cb
 	 */
-	public function save(array $request, $cb = null) {
-		if (!isset($request['_id'])) {
-			$request['_id'] = new \MongoId();
+	public function save(array $doc, $cb = null) {
+		if (!isset($doc['_id'])) {
+			$doc['_id'] = new \MongoId();
 		}
-		$this->externalAuthTokens->upsert(['_id' => $request['_id']], $request, false, $cb);
+		$this->externalAuthTokens->upsert(['_id' => $doc['_id']], $doc, false, $cb);
 	}
 
 	/**
-	 * @param $id
+	 * @param string $hash
 	 * @param callable $cb
 	 */
-	public function getRequestById($id, $cb = null) {
-		$this->externalSignupRequests->findOne($cb, ['where' => ['_id' => new \MongoId($id)]]);
+	public function findByExtTokenHash($hash, $cb = null) {
+		$this->externalAuthTokens->findOne($cb, ['where' => ['extTokenHash' => $hash]]);
 	}
 
 	/**
-	 * @param string $email
+	 * @param string $hash
 	 * @param callable $cb
 	 */
-	public function getRequestByEmail($email, $cb = null) {
-		$this->externalSignupRequests->findOne($cb, ['where' => ['email' => $email]]);
+	public function findByExtToken($str, $cb = null) {
+		$this->externalAuthTokens->findOne($cb, ['where' => ['extTokenHash' => Crypt::hash($str)]]);
 	}
 
-	/**
-	 * @param $id
-	 * @param callable $cb
-	 */
-	public function deleteById($id, $cb = null) {
-		$this->externalSignupRequests->remove(['where' => ['_id' => new \MongoId($id)]], $cb);
-	}
 
 	/**
 	 * @param array $cond
 	 * @param callable $cb
 	 */
 	public function remove(array $cond, $cb = null) {
-		$this->externalSignupRequests->remove($cond, $cb);
-	}
-
-	/**
-	 * @param array $credentials
-	 * @param callable $cb
-	 */
-	public function getRequestByCredentials(array $credentials, $cb = null) {
-		$this->externalSignupRequests->findOne($cb, ['credentials' => ['$elemMatch' => $credentials]]);
+		$this->externalAuthTokens->remove($cond, $cb);
 	}
 }

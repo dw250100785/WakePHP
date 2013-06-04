@@ -93,6 +93,20 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->tpl->assign('req', $this);
 	}
 
+	public function getIp() {
+		$s = &$this->attrs->server;
+		$ip = $s['REMOTE_ADDR'];
+		$for = '';
+		if (isset($s['HTTP_CLIENT_IP'])) {
+			$for = $s['HTTP_CLIENT_IP'];
+		} elseif (isset($s['HTTP_X_FORWARDED_FOR'])) {
+			$for = $s['HTTP_X_FORWARDED_FOR'];
+		} elseif (isset($s['HTTP_VIA'])) {
+			$for = $s['HTTP_VIA'];
+		}
+		return $ip . ($for !== '' ? ' for ' . $for : '');
+	}
+
 	/**
 	 * @param $prop
 	 */

@@ -59,18 +59,17 @@ class Account extends Component {
 	}
 
 	public function UsernameAvailablityCheckController() {
-		$req      = $this->req;
-		$username = Request::getString($req->attrs->request['username']);
+		$username = Request::getString($this->req->attrs->request['username']);
 		if (($r = $this->checkUsernameFormat($username)) !== true) {
-			$req->setResult(array('success' => true, 'error' => $r));
+			$this->req->setResult(array('success' => true, 'error' => $r));
 			return;
 		}
-		$this->appInstance->accounts->getAccountByUnifiedName($username, function ($account) use ($req) {
+		$this->appInstance->accounts->getAccountByUnifiedName($username, function ($account) {
 			if ($account) {
-				$req->setResult(array('success' => true, 'error' => 'Username already taken.'));
+				$this->req->setResult(array('success' => true, 'error' => 'Username already taken.'));
 			}
 			else {
-				$req->setResult(array('success' => true));
+				$this->req->setResult(array('success' => true));
 			}
 		});
 	}
@@ -88,10 +87,9 @@ class Account extends Component {
 	}
 
 	public function SignupController() {
-		$req = $this->req;
-		$this->onSessionStart(function ($sessionEvent) use ($req) {
+		$this->onSessionStart(function ($sessionEvent) {
 			/** @var ComplexJob $job */
-			$job      = $req->job = new ComplexJob(function ($job) {
+			$job      = $this->req->job = new ComplexJob(function ($job) {
 				$errors = array();
 				foreach ($job->results as $result) {
 					if (sizeof($result) > 0) {
@@ -152,7 +150,7 @@ class Account extends Component {
 				}
 
 			});
-			$job->req = $req;
+			$job->req = $this->req;
 
 			$job('captchaPreCheck', function ($jobname, $job) {
 				/** @var ComplexJob $job */
@@ -677,11 +675,38 @@ class Account extends Component {
 	 *
 	 */
 	public function LogoutController() {
-		$req = $this->req;
-		$this->onSessionRead(function ($sessionEvent) use ($req) {
-			unset($req->attrs->session['accountId']);
-			$req->updatedSession = true;
-			$req->setResult(array('success' => true));
+		$this->onSessionRead(function ($sessionEvent) {
+			unset($this->req->attrs->session['accountId']);
+			$this->req->updatedSession = true;
+			$this->req->setResult(['success' => true]);
+		});
+	}
+
+	/**
+	 *
+	 */
+	public function ExtAuthController() {
+		$hash = Request::getString($this->req->attrs->request['ExtTokenHash']);
+		if (base64_decode($hash, true) === false) {
+			$this->req->setResult(['success' => false, 'error' => 'Wrong format of extTokenHash']);
+			return;
+		}
+		$this->appInstance->externalAuthTokens->findByExtTokenHash($hash, function ($result) {
+			if ($result) {
+				$this->req->setResult(['success' => false, 'error' => 'This token was already used.']);
+				return;		
+			}
+			$this->appInstance->externalAuthTokens->save([
+				'extTokenHash' => $hash,
+				'ip'			=> $this->req->getIp(),
+				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
+			], function ($lastError) {
+				if (!isset($lastError['n']) || $lastError['n'] === 0) {
+					$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Sorry, internal error.')));
+					return;
+				}
+				$this->req->setResult(array('success' => true, 'errors' => array('code' => 'Sorry, internal error.')));
+			});
 		});
 	}
 
@@ -690,36 +715,35 @@ class Account extends Component {
 	 */
 	public function    AuthenticationController() {
 
-		$req = $this->req;
-		$this->onSessionStart(function ($sessionEvent) use ($req) {
-			$username = Request::getString($req->attrs->request['username']);
+		$this->onSessionStart(function ($sessionEvent) {
+			$username = Request::getString($this->req->attrs->request['username']);
 			if ($username === '') {
-				$req->setResult(array('success' => false, 'errors' => array(
+				$this->req->setResult(array('success' => false, 'errors' => array(
 					'username' => 'Unrecognized username.'
 				)));
 				return;
 			}
-			$req->appInstance->accounts->getAccount(array('$or' => array(
+			$this->appInstance->accounts->getAccount(array('$or' => array(
 					array('username' => $username),
-					array('unifiedemail' => $req->appInstance->accounts->unifyEmail($username))
+					array('unifiedemail' => $this->appInstance->accounts->unifyEmail($username))
 				))
-				, function ($account) use ($req) {
+				, function ($account) {
 					if (!$account) {
-						$req->setResult(array('success' => false, 'errors' => array(
+						$this->req->setResult(array('success' => false, 'errors' => array(
 							'username' => 'Unrecognized username.'
 						)));
 					}
-					elseif ($req->appInstance->accounts->checkPassword($account, Request::getString($req->attrs->request['password']))) {
-						$req->attrs->session['accountId'] = $account['_id'];
-						$req->updatedSession              = true;
+					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($this->req->attrs->request['password']))) {
+						$this->req->attrs->session['accountId'] = $account['_id'];
+						$this->req->updatedSession              = true;
 						$r                                = array('success' => true);
 						if (isset($account['confirmationcode'])) {
 							$r['needConfirm'] = true;
 						}
-						$req->setResult($r);
+						$this->req->setResult($r);
 					}
 					else {
-						$req->setResult(array('success' => false, 'errors' => array(
+						$this->req->setResult(array('success' => false, 'errors' => array(
 							'password' => 'Invalid password.'
 						)));
 					}
@@ -732,37 +756,36 @@ class Account extends Component {
 	 */
 	public function    RecoveryController() {
 
-		$req = $this->req;
-		$this->onSessionStart(function ($authEvent) use ($req) {
+		$this->onSessionStart(function ($authEvent) {
 
-			if (isset($req->attrs->request['email'])) {
-				$email = Request::getString($req->attrs->request['email']);
-				$code  = trim(Request::getString($req->attrs->request['code']));
+			if (isset($this->req->attrs->request['email'])) {
+				$email = Request::getString($this->req->attrs->request['email']);
+				$code  = trim(Request::getString($this->req->attrs->request['code']));
 				if ($code !== '') {
 
-					$req->appInstance->accountRecoveryRequests->invalidateCode(function ($lastError) use ($req, $email, $code) {
+					$this->appInstance->accountRecoveryRequests->invalidateCode(function ($lastError) use ($email, $code) {
 						if ($lastError['n'] > 0) {
 
-							$req->appInstance->accountRecoveryRequests->getCode(function ($result) use ($req) {
+							$this->appInstance->accountRecoveryRequests->getCode(function ($result) {
 								if (!$result) {
-									$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+									$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
 									return;
 								}
 
-								$req->appInstance->accounts->saveAccount(array(
+								$this->appInstance->accounts->saveAccount(array(
 																			 'email'    => $result['email'],
 																			 'password' => $result['password'],
-																		 ), function ($lastError) use ($req, $result) {
+																		 ), function ($lastError) use ($result) {
 									if ($lastError['updatedExisting']) {
-										$req->setResult(array('success' => true, 'status' => 'recovered'));
+										$this->req->setResult(array('success' => true, 'status' => 'recovered'));
 
-										$req->appInstance->accounts->confirmAccount(array(
+										$this->appInstance->accounts->confirmAccount(array(
 																						'email' => $result['email'],
 																					));
 
 									}
 									else {
-										$req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+										$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
 									}
 								}, true);
 
@@ -770,33 +793,33 @@ class Account extends Component {
 
 						}
 						else {
-							$req->setResult(array('success' => false, 'errors' => array('code' => 'Incorrect code.')));
+							$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Incorrect code.')));
 						}
 					}, $email, $code);
 				}
 				else {
-					$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $email) {
+					$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
 						if (!$account) {
-							$req->setResult(array('success' => false, 'errors' => array('email' => 'Account not found.')));
+							$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Account not found.')));
 							return;
 						}
-						$req->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($req, $email) {
+						$this->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($email) {
 
 							if (0) { //$result['ts'] + 900 > time()) {
-								$req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
+								$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 							}
 							else {
-								$password = substr(md5($email . "\x00" . $result['code'] . "\x00" . $req->appInstance->config->cryptsalt->value . "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
+								$password = substr(md5($email . "\x00" . $result['code'] . "\x00" . $this->appInstance->config->cryptsalt->value . "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
 
-								$code = $req->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($req->attrs->server['REMOTE_ADDR']), $password);
+								$code = $this->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($this->req->attrs->server['REMOTE_ADDR']), $password);
 
-								$req->appInstance->Sendmail->mailTemplate('mailAccountAccessRecovery', $email, array(
+								$this->appInstance->Sendmail->mailTemplate('mailAccountAccessRecovery', $email, array(
 									'email'    => $email,
 									'password' => $password,
 									'code'     => $code,
 									'locale'   => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
 								));
-								$req->setResult(array('success' => true, 'status' => 'sent'));
+								$this->req->setResult(array('success' => true, 'status' => 'sent'));
 							}
 
 						});
