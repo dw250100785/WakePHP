@@ -9,6 +9,7 @@ use PHPDaemon\Utils\Encoding;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
 use WakePHP\Core\Request as WakePHPRequest;
+use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 
 /**
  * Account component
@@ -715,6 +716,12 @@ class Account extends Component {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
 					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
 					return;
+				}
+				if ($_REQUEST['type'] === 'email') {
+					// send email....
+				} elseif ($_REQUEST['type'] === 'redirect') {
+					$this->req->status(302);
+					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/extAuth', 'i' => $intToken]));
 				}
 				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
 			});
