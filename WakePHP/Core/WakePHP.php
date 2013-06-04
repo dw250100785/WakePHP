@@ -5,6 +5,7 @@ use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
+use WakePHP\ORM\ExternalAuthTokens;
 use WakePHP\ORM\ExternalSignupRequests;
 use WakePHP\ORM\Sessions;
 
@@ -63,6 +64,8 @@ class WakePHP extends AppInstance {
 	public $Sendmail;
 	/** @var AccountRecoveryRequests */
 	public $accountRecoveryRequests;
+	/** @var ExternalAuthTokens */
+	public $externalAuthTokens;
 
 	/**
 	 *

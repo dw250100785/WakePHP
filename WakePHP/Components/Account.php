@@ -703,16 +703,16 @@ class Account extends Component {
 				$this->req->setResult(['success' => false, 'error' => 'This token was already used.']);
 				return;
 			}
-			$ip = $this->req->getIp();
+			$ip       = $this->req->getIp();
 			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip);
 			$this->appInstance->externalAuthTokens->save([
-				'extTokenHash' => $hash,
-				'intToken'		=> $intToken,
-				'ip'			=> $ip,
-				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
-				'ctime'			=> microtime(true),
-				'status'		=> 'new'
-			], function ($lastError) use ($intToken) {
+															 'extTokenHash' => $hash,
+															 'intToken'     => $intToken,
+															 'ip'           => $ip,
+															 'useragent'    => Request::getString($_SERVER['HTTP_USER_AGENT']),
+															 'ctime'        => microtime(true),
+															 'status'       => 'new'
+														 ], function ($lastError) use ($intToken) {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
 					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
 					return;
@@ -755,15 +755,15 @@ class Account extends Component {
 				return;
 			}
 			$this->appInstance->externalAuthTokens->save([
-				'extTokenHash' => $result['extTokenHash'],
-				'status' => 'used',
-			], function ($lastError) use ($result) {
+															 'extTokenHash' => $result['extTokenHash'],
+															 'status'       => 'used',
+														 ], function ($lastError) use ($result) {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
 					$this->req->setResult(['success' => true, 'result' => 'failed']);
 					return;
 				}
 				$this->onSessionStart(function ($sessionEvent) use ($result) {
-					$this->appInstance->accounts->getAccountById($result['uid'], function($account) {
+					$this->appInstance->accounts->getAccountById($result['uid'], function ($account) {
 						$this->loginAs($account);
 						$this->req->setResult(['success' => true]);
 					});
@@ -798,7 +798,7 @@ class Account extends Component {
 					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($this->req->attrs->request['password']))) {
 						$this->req->attrs->session['accountId'] = $account['_id'];
 						$this->req->updatedSession              = true;
-						$r                                = array('success' => true);
+						$r                                      = array('success' => true);
 						if (isset($account['confirmationcode'])) {
 							$r['needConfirm'] = true;
 						}
@@ -818,7 +818,7 @@ class Account extends Component {
 	 */
 	public function    RecoveryController() {
 
-		$this->onSessionStart(function ($authEvent) {
+		$this->onSessionStart(function () {
 
 			if (isset($this->req->attrs->request['email'])) {
 				$email = Request::getString($this->req->attrs->request['email']);
@@ -835,15 +835,15 @@ class Account extends Component {
 								}
 
 								$this->appInstance->accounts->saveAccount(array(
-																			 'email'    => $result['email'],
-																			 'password' => $result['password'],
-																		 ), function ($lastError) use ($result) {
+																			  'email'    => $result['email'],
+																			  'password' => $result['password'],
+																		  ), function ($lastError) use ($result) {
 									if ($lastError['updatedExisting']) {
 										$this->req->setResult(array('success' => true, 'status' => 'recovered'));
 
 										$this->appInstance->accounts->confirmAccount(array(
-																						'email' => $result['email'],
-																					));
+																						 'email' => $result['email'],
+																					 ));
 
 									}
 									else {
@@ -879,7 +879,7 @@ class Account extends Component {
 									'email'    => $email,
 									'password' => $password,
 									'code'     => $code,
-									'locale'   => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+									'locale'   => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
 								));
 								$this->req->setResult(array('success' => true, 'status' => 'sent'));
 							}
