@@ -710,6 +710,7 @@ class Account extends Component {
 				'ip'			=> $ip,
 				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
 				'ctime'			=> microtime(true),
+				'status'		=> 'new'
 			], function ($lastError) use ($intToken) {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
 					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
@@ -730,23 +731,36 @@ class Account extends Component {
 			return;
 		}
 		$this->appInstance->externalAuthTokens->findByExtToken($extToken, function ($result) {
-			if ($result) {
-				$this->req->setResult(['success' => false, 'error' => 'This token was already used.']);
+			if (!$result) {
+				$this->req->setResult(['success' => false, 'error' => 'Token not found.']);
 				return;
 			}
-			$ip = $this->req->getIp();
-			$intToken = Crypt::hash(Daemon::uniqid() . "\x00" . $ip);
+			if ($result['status'] === 'new') {
+				$this->req->setResult(['success' => true, 'result' => 'wait']);
+				return;
+			}
+			if ($result['status'] === 'failed') {
+				$this->req->setResult(['success' => true, 'result' => 'failed']);
+				return;
+			}
+			if (microtime(true) - $result['ctime'] > 60 * 15) {
+				$this->req->setResult(['success' => true, 'result' => 'expired']);
+				return;
+			}
 			$this->appInstance->externalAuthTokens->save([
-				'extTokenHash' => $hash,
-				'intToken'		=> $intToken,
-				'ip'			=> $ip,
-				'useragent'		=> Request::getString($_SERVER['HTTP_USER_AGENT']),
-			], function ($lastError) use ($intToken) {
+				'extTokenHash' => $result['extTokenHash'],
+				'status' => 'used',
+			], function ($lastError) use ($result) {
 				if (!isset($lastError['n']) || $lastError['n'] === 0) {
-					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
+					$this->req->setResult(['success' => true, 'result' => 'failed']);
 					return;
 				}
-				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
+				$this->onSessionStart(function ($sessionEvent) use ($result) {
+					$this->appInstance->accounts->getAccountById($result['uid'], function($account) {
+						$this->loginAs($account);
+						$this->req->setResult(['success' => true]);
+					});
+				});
 			});
 		});
 	}
