@@ -51,6 +51,14 @@ class ExternalAuthTokens extends ORM {
 		$this->externalAuthTokens->findOne($cb, ['where' => ['extTokenHash' => \WakePHP\Core\Crypt::hash($str)]]);
 	}
 
+	/**
+	 * @param string $hash
+	 * @param callable $cb
+	 */
+	public function findByIntToken($str, $cb = null) {
+		$this->externalAuthTokens->findOne($cb, ['where' => ['intToken' => $str]]);
+	}
+
 
 	/**
 	 * @param array $cond

@@ -22,5 +22,14 @@ class Crypt {
 		}
 		return base64_encode(keccak_hash($str . $salt, $n));
 	}
+
+	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.:') {
+		$r = '';
+		$m = strlen($chars) - 1;
+		for ($i = 0; $i < $len; ++$i) {
+			$r .= $chars[mt_rand(0, $m)];
+		}
+		return $r;
+	}
 }
 

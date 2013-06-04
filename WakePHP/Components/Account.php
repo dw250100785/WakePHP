@@ -704,7 +704,7 @@ class Account extends Component {
 				return;
 			}
 			$ip       = $this->req->getIp();
-			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip);
+			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip. "\x00" . Crypt::randomString());
 			$this->appInstance->externalAuthTokens->save([
 															 'extTokenHash' => $hash,
 															 'intToken'     => $intToken,
@@ -897,7 +897,7 @@ class Account extends Component {
 	public function startSession() {
 		$session                   = $this->appInstance->sessions->startSession();
 		$this->req->attrs->session = $session;
-		$sid                       = (string)$session['_id'];
+		$sid                       = (string)$session['id'];
 		$this->req->setcookie('SESSID', $sid, time() + 60 * 60 * 24 * 365, '/', $this->appInstance->config->cookiedomain->value);
 	}
 

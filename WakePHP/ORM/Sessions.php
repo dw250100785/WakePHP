@@ -22,7 +22,7 @@ class Sessions extends ORM {
 	 */
 	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb, array(
-			'where' => array('_id' => new \MongoId($id))
+			'where' => array('id' => $id)
 		));
 	}
 
@@ -30,7 +30,7 @@ class Sessions extends ORM {
 	 * @param array $session
 	 */
 	public function saveSession($session) {
-		$this->sessions->upsert(array('_id' => new \MongoId($session['_id'])), $session);
+		$this->sessions->upsert(['id' => $session['id']], $session);
 	}
 
 	/**
@@ -38,7 +38,7 @@ class Sessions extends ORM {
 	 */
 	public function startSession() {
 		$doc = array(
-			'_id'   => new \MongoId(),
+			'id'   => \WakePHP\Core\Crypt::randomString(),
 			'ctime' => time(),
 		);
 		$this->saveSession($doc);
