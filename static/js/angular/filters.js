@@ -2,3 +2,4 @@
 
 /* Filters */
 
+angular.module('bitfile.filters', []);
