@@ -3,11 +3,8 @@
 <div ng-controller="ExtAuth" ng-init="init()">
 	<div ng-repeat="request in requests | orderBy:'time'">
 		<div>[[request.ip]]</div>
-		<br/>
 		<button ng-click="yes(request)">Yes</button>
-		<br/>
 		<button ng-click="no(request)">No</button>
-		<br/>
 		<button ng-click="notSure(request)">Not sure</button>
 	</div>
 </div>
