@@ -66,7 +66,7 @@ class VK extends Generic {
 						}
 						$this->req->components->account->acceptUserAuthentication('VK', $user_id, $data,
 							function () {
-								$this->req->redirectTo($this->req->getBaseUrl());
+								$this->finalRedirect();
 							});
 					});
 			}

@@ -10,6 +10,7 @@ abstract class Generic {
 	protected $appInstance;
 	protected $req;
 	protected $cmp;
+	protected $backUrl;
 
 	public function __construct(Component $cmp) {
 		$this->cmp         = $cmp;
@@ -43,6 +44,33 @@ abstract class Generic {
 		if (isset($_GET['external_token'])) {
 			$redirect_data['external_token'] = Request::getString($_GET['external_token']);
 		}
+		if (isset($this->backUrl)) {
+			$redirect_data['backurl'] = $this->backUrl;
+		}
 		return $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?' . http_build_query($redirect_data);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getBackUrl() {
+		return $this->backUrl;
+	}
+
+	/**
+	 * @param string $backUrl
+	 */
+	public function setBackUrl($backUrl) {
+		$this->backUrl = $backUrl;
+	}
+
+	protected function finalRedirect() {
+		$this->req->status(302);
+		$location = $this->req->getBaseUrl();
+		if (isset($_GET['backurl'])) {
+			$location = Request::getString($_GET['backurl']);
+		}
+		$this->req->header('Location: ' . $location);
+		$this->req->setResult([]);
 	}
 }

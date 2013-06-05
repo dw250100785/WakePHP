@@ -73,10 +73,7 @@ class Facebook extends Generic {
 						}
 						$this->req->components->account->acceptUserAuthentication('facebook', $id, $data,
 							function () {
-								$this->req->status(302);
-								$this->req->header('Location: ' . $this->req->getBaseUrl());
-								$this->req->setResult([]);
-								return;
+								$this->finalRedirect();
 							});
 					});
 			}

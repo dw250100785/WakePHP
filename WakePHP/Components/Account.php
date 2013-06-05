@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Components;
 
+use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
@@ -9,7 +10,6 @@ use PHPDaemon\Utils\Encoding;
 use WakePHP\Core\Component;
 use WakePHP\Core\DeferredEventCmp;
 use WakePHP\Core\Request as WakePHPRequest;
-use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 
 /**
  * Account component
@@ -218,6 +218,9 @@ class Account extends Component {
 		if (!($AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this))) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
 			return;
+		}
+		if (isset($_GET['backurl'])) {
+			$AuthAgent->setBackUrl(Request::getString($_GET['backurl']));
 		}
 		$AuthAgent->auth();
 	}
@@ -704,7 +707,7 @@ class Account extends Component {
 				return;
 			}
 			$ip       = $this->req->getIp();
-			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip. "\x00" . Crypt::randomString());
+			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip . "\x00" . Crypt::randomString());
 			$this->appInstance->externalAuthTokens->save([
 															 'extTokenHash' => $hash,
 															 'intToken'     => $intToken,
@@ -719,7 +722,8 @@ class Account extends Component {
 				}
 				if ($_REQUEST['type'] === 'email') {
 					// send email....
-				} elseif ($_REQUEST['type'] === 'redirect') {
+				}
+				elseif ($_REQUEST['type'] === 'redirect') {
 					$this->req->status(302);
 					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/extAuth', 'i' => $intToken]));
 				}

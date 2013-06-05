@@ -84,9 +84,7 @@ class Twitter extends Generic {
 
 				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data,
 					 function () {
-						 $this->req->status(302);
-						 $this->req->header('Location: ' . $this->req->getBaseUrl());
-						 $this->req->setResult([]);
+						 $this->finalRedirect();
 					 });
 			 }
 			]
