@@ -14,6 +14,7 @@ class Sessions extends ORM {
 
 	public function init() {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};
+		$this->sessions->ensureIndex(['id' => 1], ['unique' => true]);
 	}
 
 	/**
@@ -36,11 +37,11 @@ class Sessions extends ORM {
 	/**
 	 * @return array
 	 */
-	public function startSession() {
+	public function startSession($add = []) {
 		$doc = array(
 			'id'   => \WakePHP\Core\Crypt::randomString(),
 			'ctime' => time(),
-		);
+		) + $add;
 		$this->saveSession($doc);
 		return $doc;
 	}

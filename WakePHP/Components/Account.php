@@ -704,7 +704,7 @@ class Account extends Component {
 				return;
 			}
 			$ip       = $this->req->getIp();
-			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip. "\x00" . Crypt::randomString());
+			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip. "\x00" . \WakePHP\Core\Crypt::randomString());
 			$this->appInstance->externalAuthTokens->save([
 															 'extTokenHash' => $hash,
 															 'intToken'     => $intToken,
@@ -717,11 +717,12 @@ class Account extends Component {
 					$this->req->setResult(['success' => false, 'errors' => ['code' => 'Sorry, internal error.']]);
 					return;
 				}
-				if ($_REQUEST['type'] === 'email') {
+				$type = Request::getString($_REQUEST['type']);
+				if ($type === 'email') {
 					// send email....
-				} elseif ($_REQUEST['type'] === 'redirect') {
+				} elseif ($type === 'redirect') {
 					$this->req->status(302);
-					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/extAuth', 'i' => $intToken]));
+					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/account/extauth', 'i' => $intToken]));
 				}
 				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
 			});
@@ -895,7 +896,10 @@ class Account extends Component {
 	 *
 	 */
 	public function startSession() {
-		$session                   = $this->appInstance->sessions->startSession();
+		$session = $this->appInstance->sessions->startSession([
+			'ip'	=> $this->req->getIp(),
+			'useragent' => Request::getString($_SERVER['HTTP_USER_AGENT']),
+		]);
 		$this->req->attrs->session = $session;
 		$sid                       = (string)$session['id'];
 		$this->req->setcookie('SESSID', $sid, time() + 60 * 60 * 24 * 365, '/', $this->appInstance->config->cookiedomain->value);

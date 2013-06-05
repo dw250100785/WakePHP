@@ -98,7 +98,7 @@ class WakePHP extends AppInstance {
 			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, true, $this);
 		}
 
-		foreach (glob($appInstance->config->ormdir->value . '*.php') as $file) {
+		foreach (Daemon::glob($appInstance->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
 			$prop          = lcfirst($class);
 			$class         = '\\WakePHP\\ORM\\' . $class;
@@ -225,11 +225,11 @@ class WakePHP extends AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			'themesdir'     => dirname(__DIR__) . '/themes/',
-			'utilsdir'      => dirname(__DIR__) . '/Utils/',
-			'localedir'     => dirname(__DIR__) . '/locale/',
+			'themesdir'     => 'themes/',
+			'utilsdir'      => 'WakePHP/Utils/',
+			'localedir'     => 'locale/',
 			'storagedir'    => '/storage/',
-			'ormdir'        => dirname(__DIR__) . '/ORM/',
+			'ormdir'        => 'WakePHP/ORM/',
 			'dbname'        => 'WakePHP',
 			'defaultlocale' => 'en',
 			'defaulttheme'  => 'simple',
