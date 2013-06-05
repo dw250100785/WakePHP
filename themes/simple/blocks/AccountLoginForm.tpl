@@ -17,9 +17,9 @@
 	<br/>
 	<button type="submit" class="i18n" disabled="disabled">Log in</button>
 	<br/>
-	<a href="/component/Account/ExternalAuth?agent=Twitter" class="button twitter-auth-button">Authenticate via Twitter</a>
+	<a href="/component/Account/ExternalAuth?agent=Twitter&backurl={$req->attrs->backurl|escape}" class="button twitter-auth-button">Authenticate via Twitter</a>
 	<br/>
-	<a href="/component/Account/ExternalAuth?agent=Facebook" class="button facebook-auth-button">Authenticate via Facebook</a>
+	<a href="/component/Account/ExternalAuth?agent=Facebook&backurl={$req->attrs->backurl|escape}" class="button facebook-auth-button">Authenticate via Facebook</a>
 	<br/>
-	<a href="/component/Account/ExternalAuth?agent=VK" class="button vk-auth-button">Authenticate via Vkontakte</a>
+	<a href="/component/Account/ExternalAuth?agent=VK&backurl={$req->attrs->backurl|escape}" class="button vk-auth-button">Authenticate via Vkontakte</a>
 </form>
