@@ -22,8 +22,11 @@
 	{?$libs = "//ajax.googleapis.com/ajax/libs/"}{?$jqmin = false}
 	<script src="{$libs}jquery/1.8.2/jquery{$jqmin?".min":""}.js"></script>
 	<script src="{$libs}angularjs/1.1.5/angular.min.js"></script>
-	<script src="/js/angular/app.js"></script>
 	<script src="/js/angular/controllers.js"></script>
+	<script src="/js/angular/filters.js"></script>
+	<script src="/js/angular/directives.js"></script>
+	<script src="/js/angular/services.js"></script>
+	<script src="/js/angular/app.js"></script>
 	<script src="/js/jquery/jquery.autocomplete.js" type="text/javascript"></script>
 	<script src="{$libs}jqueryui/1.9.0/jquery-ui{$jqmin?".min":""}.js"></script>
 	<script src="/js/jquery/jquery.keyboard.js" type="text/javascript"></script>
