@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$req->locale}" {if isset($block->ng_app)} ng-app="{$block->ng_app|escape}"{/}>
+<html lang="{$req->locale}" ng-app="wakephp">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>{$block->parentNode->title} - WakePHP</title>
