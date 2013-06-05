@@ -21,6 +21,7 @@ angular.module('wakephp.controllers', []).
 				$scope.requests = angular.fromJson(requests);
 			}
 			else {
+//				$http.get('/route/get_requests');
 				$scope.requests = [
 					{'id': 1, 'ip': '127.0.0.2', 'time': '11124'},
 					{'id': 2, 'ip': '127.0.0.3', 'time': '11125'},
