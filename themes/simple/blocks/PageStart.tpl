@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$req->locale}" ng-app="bitfile">
+<html lang="{$req->locale}" {if isset($ng_app)} ng-app="{$ng_app|escape}"{/}>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 	<title>{$block->parentNode->title} - WakePHP</title>

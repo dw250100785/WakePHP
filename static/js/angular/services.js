@@ -2,4 +2,4 @@
 
 /* Services */
 
-angular.module('bitfile.services', []);
+angular.module('wakephp.services', []);

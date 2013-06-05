@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('bitfile', ['bitfile.filters', 'bitfile.services', 'bitfile.directives', 'bitfile.controllers']).
+angular.module('wakephp', ['bitfile.filters', 'bitfile.services', 'bitfile.directives', 'bitfile.controllers']).
 	config(function ($interpolateProvider) {
 		       $interpolateProvider.startSymbol('[[').endSymbol(']]');
 	       }

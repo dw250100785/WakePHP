@@ -1,4 +1,4 @@
 'use strict';
 
 /* Directives */
-angular.module('bitfile.directives', []);
+angular.module('wakephp.directives', []);

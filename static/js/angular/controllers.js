@@ -1,7 +1,7 @@
 'use strict';
 
 /* Controllers */
-angular.module('bitfile.controllers', []).
+angular.module('wakephp.controllers', []).
 	controller('ExtAuth', ['$scope', '$http', function ($scope, $http) {
 		$scope.requests = [];
 		$scope.yes = function (request) {

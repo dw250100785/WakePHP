@@ -1,3 +1,4 @@
+{?$ng_app='wakephp'}
 {getBlock name="PageStart"}
 <h1 class="i18n" xmlns="http://www.w3.org/1999/html">External authentication</h1>
 <div ng-controller="ExtAuth" ng-init="init()">

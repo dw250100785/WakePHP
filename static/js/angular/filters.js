@@ -2,4 +2,4 @@
 
 /* Filters */
 
-angular.module('bitfile.filters', []);
+angular.module('wakephp.filters', []);
