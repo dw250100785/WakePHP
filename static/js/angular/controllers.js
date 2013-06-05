@@ -2,7 +2,7 @@
 
 /* Controllers */
 angular.module('bitfile.controllers', []).
-	controller('ExtAuth', [function ($scope, $http) {
+	controller('ExtAuth', ['$scope', '$http', function ($scope, $http) {
 		$scope.requests = [];
 		$scope.yes = function (request_id) {
 			$http.put('/route/yes', {'request_id': request_id});
