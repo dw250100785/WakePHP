@@ -4,14 +4,17 @@
 angular.module('bitfile.controllers', []).
 	controller('ExtAuth', ['$scope', '$http', function ($scope, $http) {
 		$scope.requests = [];
-		$scope.yes = function (request_id) {
-			$http.put('/route/yes', {'request_id': request_id});
+		$scope.yes = function (request) {
+			$http.put('/route/yes', {'request_id': request.id});
+			$scope.delRequestItem(request);
 		};
-		$scope.no = function (request_id) {
-			$http.put('/route/no', {'request_id': request_id});
+		$scope.no = function (request) {
+			$http.put('/route/no', {'request_id': request.id});
+			$scope.delRequestItem(request);
 		};
-		$scope.notSure = function (request_id) {
-			$http.put('/route/notSure', {'request_id': request_id});
+		$scope.notSure = function (request) {
+			$http.put('/route/notSure', {'request_id': request.id});
+			$scope.delRequestItem(request);
 		};
 		$scope.init = function (requests) {
 			if (requests) {
@@ -27,6 +30,9 @@ angular.module('bitfile.controllers', []).
 					{'id': 6, 'ip': '8.8.8.8', 'time': '11129'}
 				];
 			}
+		};
+		$scope.delRequestItem = function (request) {
+			$scope.requests.splice($scope.requests.indexOf(request), 1);
 		};
 	}])
 	.controller('Dashboard', [function () {

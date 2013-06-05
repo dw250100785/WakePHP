@@ -4,11 +4,11 @@
 	<div ng-repeat="request in requests | orderBy:'time'">
 		<div>[[request.ip]]</div>
 		<br/>
-		<button ng-click="yes(request.id)">Yes</button>
+		<button ng-click="yes(request)">Yes</button>
 		<br/>
-		<button ng-click="no(request.id)">No</button>
+		<button ng-click="no(request)">No</button>
 		<br/>
-		<button ng-click="notSure(request.id)">Not sure</button>
+		<button ng-click="notSure(request)">Not sure</button>
 	</div>
 </div>
 
