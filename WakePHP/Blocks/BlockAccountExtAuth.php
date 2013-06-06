@@ -15,7 +15,7 @@ class BlockAccountExtAuth extends Block {
 
 			$job = $this->req->job = new ComplexJob(function ($job) {
 				$this->tplvars = $job->results;
-				$job->block->runTemplate();
+				$this->runTemplate();
 			});
 
 			$job('currentTokenId', function($jobname, $job) {
@@ -24,13 +24,14 @@ class BlockAccountExtAuth extends Block {
 						$job->setResult($jobname, null);
 						return;
 					}
-					if (isset($token['uid']) && ($token['uid'] != $req->account['_id'])) {
+					if (isset($token['uid']) && ($token['uid'] != $this->req->account['_id'])) {
 						$job->setResult($jobname, null);
 						return;
 					}
 					if (!isset($token['uid'])) {
-						$token['uid'] = $req->account['_id'];
-						$this->req->appInstance->externalAuthTokens->save($token['extTokenHash'], [
+						$token['uid'] = $this->req->account['_id'];
+						$this->req->appInstance->externalAuthTokens->save([
+							'extTokenHash' => $token['extTokenHash'],
 							'uid' => $token['uid'],
 						]);
 					}
