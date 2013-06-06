@@ -313,6 +313,34 @@ class Account extends Component {
 		});
 	}
 
+	public function ExtAuthRequestsListController() {
+		$this->onAuth(function () {
+			$action = Request::getString($_REQUEST['action']);
+			if (!$this->req->account['logged']) {
+				$this->req->setResult([]);
+				return;
+			}
+			$user_id = $this->req->account['_id'];
+			$limit   = Request::getInteger($_REQUEST['limit']);
+			$offset  = Request::getInteger($_REQUEST['offset']);
+			if ($limit < 1) {
+				$limit = 100;
+			}
+			if ($offset < 0) {
+				$offset = 0;
+			}
+			if ($action == 'list' && !empty($user_id)) {
+				$fields = ['ctime', '_id', 'ip', 'useragent'];
+				$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, $fields, function ($cursor) {
+					$this->req->setResult($cursor->items);
+				});
+			}
+			else {
+				$this->req->setResult([]);
+			}
+		});
+	}
+
 	/**
 	 *
 	 */
@@ -707,7 +735,7 @@ class Account extends Component {
 				return;
 			}
 			$ip       = $this->req->getIp();
-			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip. "\x00" . \WakePHP\Core\Crypt::randomString());
+			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip . "\x00" . \WakePHP\Core\Crypt::randomString());
 			$this->appInstance->externalAuthTokens->save([
 															 'extTokenHash' => $hash,
 															 'intToken'     => $intToken,
@@ -723,7 +751,8 @@ class Account extends Component {
 				$type = Request::getString($_REQUEST['type']);
 				if ($type === 'email') {
 					// send email....
-				} elseif ($type === 'redirect') {
+				}
+				elseif ($type === 'redirect') {
 					$this->req->status(302);
 					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/account/extauth', 'i' => $intToken]));
 				}
@@ -899,10 +928,10 @@ class Account extends Component {
 	 *
 	 */
 	public function startSession() {
-		$session = $this->appInstance->sessions->startSession([
-			'ip'	=> $this->req->getIp(),
-			'useragent' => Request::getString($_SERVER['HTTP_USER_AGENT']),
-		]);
+		$session                   = $this->appInstance->sessions->startSession([
+																					'ip'        => $this->req->getIp(),
+																					'useragent' => Request::getString($_SERVER['HTTP_USER_AGENT']),
+																				]);
 		$this->req->attrs->session = $session;
 		$sid                       = (string)$session['id'];
 		$this->req->setcookie('SESSID', $sid, time() + 60 * 60 * 24 * 365, '/', $this->appInstance->config->cookiedomain->value);

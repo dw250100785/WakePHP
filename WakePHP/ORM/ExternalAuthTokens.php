@@ -59,6 +59,19 @@ class ExternalAuthTokens extends ORM {
 		$this->externalAuthTokens->findOne($cb, ['where' => ['intToken' => $str]]);
 	}
 
+	/**
+	 * @param string $user_id
+	 * @param int $limit
+	 * @param int $offset
+	 * @param array $fields
+	 * @param callable $cb
+	 */
+	public function findByUserId($user_id, $limit, $offset, $fields, $cb = null) {
+		$this->externalAuthTokens->find($cb, ['limit'  => -$limit,
+											  'offset' => $offset,
+											  'fields' => $fields,
+											  'where'  => ['uid' => $user_id]]);
+	}
 
 	/**
 	 * @param array $cond

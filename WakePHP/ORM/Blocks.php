@@ -35,7 +35,7 @@ class Blocks extends ORM {
 	 * @param callable $cb
 	 */
 	public function getBlocksByNames($names, $cb) {
-		$this->blocks->find($cb, array('limit' => -100, 'where' => array('name' => array('$in' => $names))));
+		$this->blocks->find($cb, ['limit' => -100, 'where' => array('name' => array('$in' => $names))]);
 	}
 
 	/**
