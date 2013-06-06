@@ -56,11 +56,11 @@ class Account extends Component {
 	 * @param callable $cb
 	 */
 	public function getRecentSignupsCount($cb) {
-		$this->appInstance->accounts->getRecentSignupsFromIP($this->req->attrs->server['REMOTE_ADDR'], $cb);
+		$this->appInstance->accounts->getRecentSignupsFromIP($_SERVER['REMOTE_ADDR'], $cb);
 	}
 
 	public function UsernameAvailablityCheckController() {
-		$username = Request::getString($this->req->attrs->request['username']);
+		$username = Request::getString($_REQUEST['username']);
 		if (($r = $this->checkUsernameFormat($username)) !== true) {
 			$this->req->setResult(array('success' => true, 'error' => $r));
 			return;
@@ -75,6 +75,14 @@ class Account extends Component {
 		});
 	}
 
+	public function GenKeccakController() {
+		$str = Request::getString($_REQUEST['str']);
+		$n = Request::getInteger($_REQUEST['rounds']);
+		$hash = keccak_hash($str, $n);
+		$b64 = base64_encode($hash);
+		$hex = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes($hash, true)));
+		$this->req->setResult(['base64' => $b64, 'hex' => $hex]);
+	}
 	/**
 	 * @param string $email
 	 * @return string
@@ -236,6 +244,9 @@ class Account extends Component {
 			return true;
 		}
 		if ($this->req->controller === 'ExtAuthPing') {
+			return true;
+		}
+		if ($this->req->controller === 'GenKeccak') {
 			return true;
 		}
 		return $this->req->checkDomainMatch();
