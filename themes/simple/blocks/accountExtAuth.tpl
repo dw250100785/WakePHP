@@ -5,9 +5,9 @@
 	<div ng-repeat="request in requests | orderBy:'-ctime'"
 		 ng-class="{'current_request':request.id==currentTokenId,'token_request':request.id!=currentTokenId}">{/literal}
 		<div>[[request.ip]]</div>
-		<button ng-click="yes(request)">Yes</button>
-		<button ng-click="no(request)">No</button>
-		<button ng-click="notSure(request)">Not sure</button>
+		<button ng-click="sendAnswer(request,'yes')">Yes</button>
+		<button ng-click="sendAnswer(request,'no')">No</button>
+		<button ng-click="sendAnswer(request,'not_sure')">Not sure</button>
 	</div>
 </div>
 
