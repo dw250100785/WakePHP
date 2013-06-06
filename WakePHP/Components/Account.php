@@ -331,7 +331,12 @@ class Account extends Component {
 			}
 			$fields = ['ctime', '_id', 'ip', 'useragent'];
 			$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, $fields, function ($cursor) {
-				$this->req->setResult($cursor->items);
+				$result = [];
+				foreach ($cursor->items as $item) {
+					$item['id'] = (string)$item['_id'];
+					$result[]   = $item;
+				}
+				$this->req->setResult($result);
 				$cursor->destroy();
 			});
 		});
