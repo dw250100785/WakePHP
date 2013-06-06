@@ -329,15 +329,11 @@ class Account extends Component {
 			if ($offset < 0) {
 				$offset = 0;
 			}
-			if ($action == 'list' && !empty($user_id)) {
-				$fields = ['ctime', '_id', 'ip', 'useragent'];
-				$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, $fields, function ($cursor) {
-					$this->req->setResult($cursor->items);
-				});
-			}
-			else {
-				$this->req->setResult([]);
-			}
+			$fields = ['ctime', '_id', 'ip', 'useragent'];
+			$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, $fields, function ($cursor) {
+				$this->req->setResult($cursor->items);
+				$cursor->destroy();
+			});
 		});
 	}
 
