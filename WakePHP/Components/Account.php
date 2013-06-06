@@ -326,7 +326,6 @@ class Account extends Component {
 
 	public function ExtAuthRequestsListController() {
 		$this->onAuth(function () {
-			$action = Request::getString($_REQUEST['action']);
 			if (!$this->req->account['logged']) {
 				$this->req->setResult([]);
 				return;
@@ -348,6 +347,43 @@ class Account extends Component {
 				}
 				$this->req->setResult($result);
 				$cursor->destroy();
+			});
+		});
+	}
+
+	public function ExtAuthManageRequestsController() {
+		$this->onAuth(function () {
+			if (!$this->req->account['logged']) {
+				$this->req->setResult([]);
+				return;
+			}
+			$intToken = Request::getString($_REQUEST['request_id']);
+			if ($intToken === '') {
+				$this->req->setResult([]);
+				return;
+			}
+			$answer = Request::getString($_REQUEST['answer']);
+			if (!in_array($answer, ['yes', 'no', 'not_sure'])) {
+				$this->req->setResult([]);
+				return;
+			}
+			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($token) use ($answer) {
+				if (!$token) {
+					$this->req->setResult([]);
+					return;
+				}
+				if ($answer === 'yes') {
+					$token[''] = '';
+				}
+				elseif ($answer === 'no') {
+					$token[''] = '';
+				}
+				elseif ($answer === 'not_sure') {
+					$token[''] = '';
+				}
+				$this->appInstance->externalAuthTokens->save($token);
+				$this->req->setResult(['success' => true]);
+				return;
 			});
 		});
 	}
