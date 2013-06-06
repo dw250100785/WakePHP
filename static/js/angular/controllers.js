@@ -19,6 +19,7 @@ angular.module('wakephp.controllers', []).
 		};
 		$scope.init = function(currentTokenId) {
 			$scope.currentTokenId = angular.fromJson(currentTokenId);
+			console.log($scope.currentTokenId);
 //				$http.get('/route/get_requests');
 			$scope.requests = [
 				{'id': 1, 'ip': '127.0.0.2', 'ctime': '11124'},
