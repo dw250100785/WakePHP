@@ -18,7 +18,7 @@ angular.module('wakephp.controllers', []).
 			$scope.delRequestItem(request);
 		};
 		$scope.init = function(currentTokenId) {
-			$scope.currentTokenId = angular.fromJson(currentTokenId);
+			//$scope.currentTokenId = angular.fromJson(currentTokenId);
 			console.log($scope.currentTokenId+' from '+currentTokenId);
 //				$http.get('/route/get_requests');
 			$scope.requests = [
