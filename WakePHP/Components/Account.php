@@ -329,8 +329,7 @@ class Account extends Component {
 			if ($offset < 0) {
 				$offset = 0;
 			}
-			$fields = 'ctime,_id,ip,useragent';
-			$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, $fields, function ($cursor) {
+			$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, 'ctime,_id,ip,useragent', function ($cursor) {
 				$result = [];
 				foreach ($cursor->items as $item) {
 					$item['id'] = (string)$item['_id'];
