@@ -77,8 +77,8 @@ class Account extends Component {
 
 	public function GenKeccakController() {
 		$str = Request::getString($_REQUEST['str']);
-		$n = Request::getInteger($_REQUEST['rounds']);
-		$hash = keccak_hash($str, $n);
+		$size = Request::getInteger($_REQUEST['size']);
+		$hash = keccak_hash($str, $size);
 		$b64 = base64_encode($hash);
 		$hex = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes($hash, true)));
 		$this->req->setResult(['base64' => $b64, 'hex' => $hex]);
