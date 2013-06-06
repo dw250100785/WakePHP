@@ -1,223 +1,305 @@
 /* main */
 
-* {
-	margin: 0; padding: 0;
+*
+{
+	margin:  0;
+	padding: 0;
 }
-body {
-	font-family: Verdana,Helvetica,sans-serif;
-	font-size: 0.8em;
+
+body
+{
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size:   0.8em;
 	line-height: 1.4em;
 }
-a {
+
+a
+{
 	color: black;
 }
-img {
+
+img
+{
 	border: none;
 }
-.clearfloat {
-	clear: both;
-	height: 0;
-	font-size: 1px;
+
+.clearfloat
+{
+	clear:       both;
+	height:      0;
+	font-size:   1px;
 	line-height: 0px;
 }
 
-.buttonLeftMargin {
+.buttonLeftMargin
+{
 	margin-left: 30px;
 }
 
-.multiselect {
-	width: 460px;
+.multiselect
+{
+	width:  460px;
 	height: 200px;
 }
+
 .capslock
 {
- color: red;
- font-weight: bold;
+	color:       red;
+	font-weight: bold;
 }
-.ui-resizable-se {
+
+.ui-resizable-se
+{
 	bottom: 17px;
 }
-.ui-tabs .ui-widget-content { padding:20px 9px;}
-.ui-tabs {
+
+.ui-tabs .ui-widget-content
+{
+	padding: 20px 9px;
+}
+
+.ui-tabs
+{
 	width: 90%;
 }
-.ui-tabs .ui-tabs-hide {
-    position: absolute;
-    left: -10000px;
-}
-.ui-tabs .ui-ul-hide {
-    position: absolute;
-    left: -10000px;
+
+.ui-tabs .ui-tabs-hide
+{
+	position: absolute;
+	left:     -10000px;
 }
 
+.ui-tabs .ui-ul-hide
+{
+	position: absolute;
+	left:     -10000px;
+}
 
-.photoGallery {
+.photoGallery
+{
 	list-style-type: none;
-	margin: 0;
-	padding: 0;
+	margin:          0;
+	padding:         0;
 }
-.photoGallery li {
-	border: 1px;
-	margin: 3px 10px 3px 0;
-	padding: 1px;
-	float: left;
-	width: 100px;
-	height: 100px;
-	font-size: 4em;
-	text-align: center; 
+
+.photoGallery li
+{
+	border:     1px;
+	margin:     3px 10px 3px 0;
+	padding:    1px;
+	float:      left;
+	width:      100px;
+	height:     100px;
+	font-size:  4em;
+	text-align: center;
 }
 
 /* page */
 
-.pageContent {
+.pageContent
+{
 	padding-top: 60px;
 	margin-left: 60px;
 }
 
-h1.heading, form h1 {
- color: #999999;
- margin-bottom: 30px;
+h1.heading, form h1
+{
+	color:         #999999;
+	margin-bottom: 30px;
 }
 
 /* core forms */
 
-.fieldname {
+.fieldname
+{
 	font-weight: bold;
 }
-form .fieldcontrols {
- float: left;
-}
-form .fieldvalue {
- float: left;
+
+form .fieldcontrols
+{
+	float: left;
 }
 
-form .errorMessage {
+form .fieldvalue
+{
+	float: left;
+}
+
+form .errorMessage
+{
 	color: red;
 }
-input {
+
+input
+{
 	padding: 3px;
 }
-button {
+
+button
+{
 	font-size: 20px;
-	padding: 5px;
+	padding:   5px;
 }
-.allowMsg {
+
+.allowMsg
+{
 	color: green;
 }
-.denyMsg {
+
+.denyMsg
+{
 	color: red;
 }
 
 /* account */
 
-.AccountLoginForm form input, .AccountRecoveryForm input, .biginput {
+.AccountLoginForm form input, .AccountRecoveryForm input, .biginput
+{
 	font-size: 3em;
-	
+
 }
 
-.popupMsg {
-	font-size: 25px;
+.popupMsg
+{
+	font-size:   25px;
 	font-weight: bold;
-	margin-top: 18px;
+	margin-top:  18px;
 }
 
 /* UserMiniPanel */
 
-.UserMiniPanel {
+.UserMiniPanel
+{
 	background-color: #2A2B2F;
-	border-bottom: 1px solid grey;
-	width: 100%;
-	float: left;
-	display: table;
-	z-index:666;
-	opacity: 0.8;
-	color: white;
-	line-height: 25px;
-	border-bottom: 1px solid grey;
-	margin-bottom: 10px;
+	border-bottom:    1px solid grey;
+	width:            100%;
+	float:            left;
+	display:          table;
+	z-index:          666;
+	opacity:          0.8;
+	color:            white;
+	line-height:      25px;
+	border-bottom:    1px solid grey;
+	margin-bottom:    10px;
 }
-.UserMiniPanel .rightMargin {
+
+.UserMiniPanel .rightMargin
+{
 	margin-right: 15px;
 }
-.UserMiniPanel a {
+
+.UserMiniPanel a
+{
 	color: white;
 }
-.UserMiniPanel .UserMiniPanelRight {
-	padding-right: 2.5em;
-	float: right;
-} 
-.UserMiniPanel .UserMiniPanelLeft {
-	padding-left: 2.5em;
-	float: left;
-} 
 
+.UserMiniPanel .UserMiniPanelRight
+{
+	padding-right: 2.5em;
+	float:         right;
+}
+
+.UserMiniPanel .UserMiniPanelLeft
+{
+	padding-left: 2.5em;
+	float:        left;
+}
 
 /* blocks */
 
-.blockEditableBordered {
+.blockEditableBordered
+{
 	border: 1px dashed #c0c0c0;
 }
 
-
 /* footer */
 
-.Footer {
-	font-family: Verdana,Helvetica,sans-serif;
-	font-size: 0.7em;
-	line-height: 1.5em;
-	margin-top: 42px;
-	padding-top: 12px;
+.Footer
+{
+	font-family:  Verdana, Helvetica, sans-serif;
+	font-size:    0.7em;
+	line-height:  1.5em;
+	margin-top:   42px;
+	padding-top:  12px;
 	padding-left: 2.5em;
-	border-top: 1px solid gray;
+	border-top:   1px solid gray;
 }
-.footerStat {
+
+.footerStat
+{
 	margin-left: 25px;
-	margin-top: 15px;
-	font-size: 11px;
+	margin-top:  15px;
+	font-size:   11px;
 }
-.Footer address {
-	color: gray;
+
+.Footer address
+{
+	color:      gray;
 	font-style: italic;
 }
 
 /* MUChat */
 
-.MUChat {
- font-family: Verdana,Helvetica,sans-serif;
- font-size: 1.2em;
- line-height: 1.5em;
+.MUChat
+{
+	font-family: Verdana, Helvetica, sans-serif;
+	font-size:   1.2em;
+	line-height: 1.5em;
 }
-.MUChat .messages {
-	height: 350px;
-	width: 70%;
-	border: 1px solid;
-	padding: 10px;
-	overflow: auto;
-	float: left;
+
+.MUChat .messages
+{
+	height:    350px;
+	width:     70%;
+	border:    1px solid;
+	padding:   10px;
+	overflow:  auto;
+	float:     left;
 	word-wrap: break-word;
 }
-.MUChat .messages a {
+
+.MUChat .messages a
+{
 	text-decoration: none;
 }
-.MUChat .userlist {
-	height: 350px;
-	width: 20%;
-	border: 1px solid;
-	padding: 10px;
-	overflow: auto;
-	float: left;
+
+.MUChat .userlist
+{
+	height:      350px;
+	width:       20%;
+	border:      1px solid;
+	padding:     10px;
+	overflow:    auto;
+	float:       left;
 	margin-left: 10px;
 }
 
 /* Tooltip */
-#tooltip {
-	background-color:#EEEEEE;
-	border:1px solid #111111;
-	opacity:0.85;
-	padding:5px;
-	position:absolute;
-	z-index:3000;
+#tooltip
+{
+	background-color: #EEEEEE;
+	border:           1px solid #111111;
+	opacity:          0.85;
+	padding:          5px;
+	position:         absolute;
+	z-index:          3000;
 }
-#tooltip .body {
+
+#tooltip .body
+{
 	font: 12px Verdana;
+}
+
+.token_request
+{
+	margin-top:       20px;
+	background-color: #ccc;
+	padding:          10px;
+}
+
+.current_request
+{
+	background-color: #E6FF99;
+	margin-top:       20px;
+	padding:          10px;
 }
