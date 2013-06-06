@@ -339,7 +339,7 @@ class Account extends Component {
 			if ($offset < 0) {
 				$offset = 0;
 			}
-			$this->appInstance->externalAuthTokens->findByUserId($user_id, $limit, $offset, 'ctime,_id,ip,useragent', function ($cursor) {
+			$this->appInstance->externalAuthTokens->findWaiting($user_id, $limit, $offset, 'ctime,_id,ip,useragent', function ($cursor) {
 				$result = [];
 				foreach ($cursor->items as $item) {
 					$item['id'] = (string)$item['_id'];
@@ -373,13 +373,13 @@ class Account extends Component {
 					return;
 				}
 				if ($answer === 'yes') {
-					$token[''] = '';
+					$token['status'] = 'accepted';
 				}
 				elseif ($answer === 'no') {
-					$token[''] = '';
+					$token['status'] = 'rejected';
 				}
 				elseif ($answer === 'not_sure') {
-					$token[''] = '';
+					$token['status'] = 'delayed';
 				}
 				$this->appInstance->externalAuthTokens->save($token);
 				$this->req->setResult(['success' => true]);
