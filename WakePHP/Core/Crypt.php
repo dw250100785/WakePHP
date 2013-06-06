@@ -14,13 +14,28 @@ class Crypt {
 	 */
 	public static function hash($str, $salt = '') {
 		$size = 512;
+		$rounds = 1;
 		if (strncmp($salt, '$', 1) === 0) {
 			$e = explode('$', $salt, 3);
-			if (ctype_digit($e[1])) {
-				$n = (int)$e[1];
+			$ee = explode('=', $e[1]);
+			if (ctype_digit($ee[0])) {
+				$size = (int) $e[1];
+			}
+			if (isset($ee[1]) && ctype_digit($e[1])) {
+				$size = (int)$e[1];
 			}
 		}
-		return base64_encode(keccak_hash($str . $salt, $size);
+		$hash = $str . $salt;
+		if ($rounds < 1) {
+			$rounds = 1;
+		}
+		elseif ($rounds > 128) {
+			$rounds = 128;
+		}
+		for ($i = 0; $i < $rounds; ++$i) {
+			$hash = keccak_hash($hash, $size);
+		}
+		return base64_encode($hash);
 	}
 
 	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.:') {

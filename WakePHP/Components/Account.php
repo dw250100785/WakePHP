@@ -78,10 +78,14 @@ class Account extends Component {
 	public function GenKeccakController() {
 		$str = Request::getString($_REQUEST['str']);
 		$size = Request::getInteger($_REQUEST['size']);
-		$hash = keccak_hash($str, $size);
-		$b64 = base64_encode($hash);
-		$hex = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes($hash, true)));
-		$this->req->setResult(['base64' => $b64, 'hex' => $hex]);
+		$rounds = Request::getInteger($_REQUEST['rounds']);
+		if (!$rounds) {
+			$rounds = 24;
+		}
+		$salt = '$512=24';
+		$hash = \WakePHP\Core\Crypt::hash($str, $salt);
+		$hex = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes(base64_decode($hash), true)));
+		$this->req->setResult(['stringWithSalt' => $str . $salt, 'base64' => $hash, 'salt' => $salt, 'hex' => $hex, 'rounds' => 24]);
 	}
 	/**
 	 * @param string $email
