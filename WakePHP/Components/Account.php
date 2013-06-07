@@ -374,6 +374,7 @@ class Account extends Component {
 				return;
 			}
 			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($token) use ($answer) {
+				Daemon::log(Debug::dump($token));
 				if (!$token) {
 					$this->req->setResult([]);
 					return;
