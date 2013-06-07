@@ -5,6 +5,7 @@ use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 use PHPDaemon\Utils\Encoding;
 use WakePHP\Core\Component;
@@ -76,17 +77,18 @@ class Account extends Component {
 	}
 
 	public function GenKeccakController() {
-		$str = Request::getString($_REQUEST['str']);
-		$size = Request::getInteger($_REQUEST['size']);
+		$str    = Request::getString($_REQUEST['str']);
+		$size   = Request::getInteger($_REQUEST['size']);
 		$rounds = Request::getInteger($_REQUEST['rounds']);
 		if (!$rounds) {
 			$rounds = 24;
 		}
 		$salt = '$512=24';
 		$hash = \WakePHP\Core\Crypt::hash($str, $salt);
-		$hex = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes(base64_decode($hash), true)));
+		$hex  = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes(base64_decode($hash), true)));
 		$this->req->setResult(['stringWithSalt' => $str . $salt, 'base64' => $hash, 'salt' => $salt, 'hex' => $hex, 'rounds' => 24]);
 	}
+
 	/**
 	 * @param string $email
 	 * @return string
@@ -357,6 +359,7 @@ class Account extends Component {
 
 	public function ExtAuthManageRequestsController() {
 		$this->onAuth(function () {
+			Daemon::log(Debug::dump($_REQUEST));
 			if (!$this->req->account['logged']) {
 				$this->req->setResult([]);
 				return;
