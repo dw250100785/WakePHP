@@ -387,6 +387,7 @@ class Account extends Component {
 				elseif ($answer === 'not_sure') {
 					$authToken['status'] = 'delayed';
 				}
+				Daemon::log(Debug::dump($authToken));
 				$this->appInstance->externalAuthTokens->save($authToken, function ($result) {
 					Daemon::log(Debug::dump($result));
 					if (!empty($result['err'])) {
