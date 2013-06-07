@@ -374,7 +374,6 @@ class Account extends Component {
 				return;
 			}
 			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($token) use ($answer) {
-				Daemon::log(Debug::dump($token));
 				if (!$token) {
 					$this->req->setResult([]);
 					return;
@@ -388,7 +387,8 @@ class Account extends Component {
 				elseif ($answer === 'not_sure') {
 					$token['status'] = 'delayed';
 				}
-				$this->appInstance->externalAuthTokens->save($token, function () {
+				$this->appInstance->externalAuthTokens->save($token, function ($result) {
+					Daemon::log(Debug::dump($result));
 					$this->req->setResult(['success' => true]);
 					return;
 				});
