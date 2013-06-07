@@ -363,7 +363,7 @@ class Account extends Component {
 				$this->req->setResult([]);
 				return;
 			}
-			$intToken = Request::getString($_REQUEST['request_id']);
+			$intToken = Request::getString($_REQUEST['request_token']);
 			if ($intToken === '') {
 				$this->req->setResult([]);
 				return;
