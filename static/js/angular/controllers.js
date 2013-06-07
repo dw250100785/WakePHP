@@ -10,7 +10,7 @@ angular.module('wakephp.controllers', []).
 
 		$scope.sendAnswer = function (request, answer) {
 			$http.put('/component/Account/ExtAuthManageRequests/json',
-			          {'request_id': request.id, 'answer': answer}, {'params': {'LC': $scope.LC}});
+			          {'request_token': request.intToken, 'answer': answer}, {'params': {'LC': $scope.LC}});
 			$scope.requests.splice($scope.requests.indexOf(request), 1);
 		};
 

@@ -345,7 +345,7 @@ class Account extends Component {
 			if ($offset < 0) {
 				$offset = 0;
 			}
-			$this->appInstance->externalAuthTokens->findWaiting($user_id, $limit, $offset, 'ctime,_id,ip,useragent', function ($cursor) {
+			$this->appInstance->externalAuthTokens->findWaiting($user_id, $limit, $offset, 'ctime,_id,ip,useragent,intToken', function ($cursor) {
 				$result = [];
 				foreach ($cursor->items as $item) {
 					$item['id'] = (string)$item['_id'];
@@ -374,7 +374,6 @@ class Account extends Component {
 				return;
 			}
 			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($token) use ($answer) {
-				Daemon::log(Debug::dump($token));
 				if (!$token) {
 					$this->req->setResult([]);
 					return;
