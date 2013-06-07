@@ -373,23 +373,29 @@ class Account extends Component {
 				$this->req->setResult([]);
 				return;
 			}
-			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($token) use ($answer) {
-				if (!$token) {
+			$this->appInstance->externalAuthTokens->findByIntToken($intToken, function ($authToken) use ($answer) {
+				if (!$authToken) {
 					$this->req->setResult([]);
 					return;
 				}
 				if ($answer === 'yes') {
-					$token['status'] = 'accepted';
+					$authToken['status'] = 'accepted';
 				}
 				elseif ($answer === 'no') {
-					$token['status'] = 'rejected';
+					$authToken['status'] = 'rejected';
 				}
 				elseif ($answer === 'not_sure') {
-					$token['status'] = 'delayed';
+					$authToken['status'] = 'delayed';
 				}
-				$this->appInstance->externalAuthTokens->save($token, function ($result) {
+				$this->appInstance->externalAuthTokens->save($authToken, function ($result) {
 					Daemon::log(Debug::dump($result));
-					$this->req->setResult(['success' => true]);
+					if (!empty($result['err'])) {
+						$this->req->status(500);
+						$this->req->setResult(['success' => false]);
+					}
+					else {
+						$this->req->setResult(['success' => true]);
+					}
 					return;
 				});
 			});
