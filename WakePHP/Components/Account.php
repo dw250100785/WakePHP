@@ -359,7 +359,6 @@ class Account extends Component {
 
 	public function ExtAuthManageRequestsController() {
 		$this->onAuth(function () {
-			Daemon::log(Debug::dump($_REQUEST));
 			if (!$this->req->account['logged']) {
 				$this->req->setResult([]);
 				return;
@@ -388,9 +387,10 @@ class Account extends Component {
 				elseif ($answer === 'not_sure') {
 					$token['status'] = 'delayed';
 				}
-				$this->appInstance->externalAuthTokens->save($token);
-				$this->req->setResult(['success' => true]);
-				return;
+				$this->appInstance->externalAuthTokens->save($token, function () {
+					$this->req->setResult(['success' => true]);
+					return;
+				});
 			});
 		});
 	}
