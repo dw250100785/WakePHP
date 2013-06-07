@@ -432,7 +432,7 @@ class Account extends Component {
 																	  'code'        => Encoding::toUTF8($code),
 																	  'credentials' => Encoding::toUTF8($credentials)],
 						function ($lastError) use ($email, $code) {
-							if (!isset($lastError['ok'])) {
+							if (isset($lastError['err']) || isset($lastError['$err'])) {
 								$this->req->setResult(['success' => false,
 													   'errors'  => ['email' => 'Sorry, internal error.']]);
 								return;
@@ -461,7 +461,7 @@ class Account extends Component {
 						$account['email']       = $email;
 						$account['credentials'] = [$credentials];
 						$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($email, $request) {
-							if (!isset($lastError['ok'])) {
+							if (isset($lastError['err']) || isset($lastError['$err'])) {
 								$this->req->setResult(['success' => false,
 													   'errors'  => ['email' => 'Sorry, internal error.']]);
 								return;
