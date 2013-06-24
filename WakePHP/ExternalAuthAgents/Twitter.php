@@ -54,7 +54,6 @@ class Twitter extends Generic {
 	}
 
 	public function redirect() {
-		Daemon::log($_SERVER);
 		if (!$this->checkReferer('api.twitter.com')) {
 			$this->req->status(400);
 			$this->req->setResult([]);
