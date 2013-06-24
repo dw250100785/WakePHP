@@ -3,7 +3,6 @@ namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use WakePHP\Core\Request;
 
 class Facebook extends Generic {
@@ -43,9 +42,13 @@ class Facebook extends Generic {
 				}
 				parse_str($conn->body, $response);
 				if (!isset($response['access_token'])) {
-					Daemon::log(Debug::dump($response));
+					$json_response = json_decode($conn->body, true);
+					$err_message   = 'no access_token';
+					if (isset($json_response['error']['message'])) {
+						$err_message = $json_response['error']['message'];
+					}
 					$this->req->status(403);
-					$this->req->setResult(['error' => 'no access_token']);
+					$this->req->setResult(['error' => $err_message]);
 					return;
 				}
 				$this->appInstance->httpclient->get(
