@@ -8,8 +8,6 @@ use WakePHP\Core\Request;
 
 class Facebook extends Generic {
 	public function auth() {
-		Daemon::log(Debug::dump($this->cmp->config->facebook_app_key->value));
-		Daemon::log(Debug::dump($this->cmp->config->facebook_app_secret->value));
 		$this->req->redirectTo(
 			['https://www.facebook.com/dialog/oauth/',
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
@@ -20,6 +18,8 @@ class Facebook extends Generic {
 	}
 
 	public function redirect() {
+		Daemon::log(Debug::dump($this->cmp->config->facebook_app_key->value));
+		Daemon::log(Debug::dump($this->cmp->config->facebook_app_secret->value));
 		if (!$this->checkReferer($this->appInstance->config->domain->value)) {
 			$this->req->setResult(['error' => 'Wrong referer']);
 			return;
