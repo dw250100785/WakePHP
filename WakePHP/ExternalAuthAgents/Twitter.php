@@ -2,6 +2,7 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\Core\OAuth;
 use WakePHP\Core\Request;
 
@@ -54,7 +55,6 @@ class Twitter extends Generic {
 	}
 
 	public function redirect() {
-		Daemon::log($_SERVER['HTTP_REFERER']);
 		if (!$this->checkReferer('api.twitter.com')) {
 			$this->req->status(400);
 			$this->req->setResult([]);

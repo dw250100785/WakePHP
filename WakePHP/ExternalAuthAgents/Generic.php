@@ -66,11 +66,8 @@ abstract class Generic {
 
 	protected function finalRedirect() {
 		$this->req->status(302);
-		$location = $this->req->getBaseUrl();
-		if (isset($_GET['backurl'])) {
-			$location = Request::getString($_GET['backurl']);
-		}
-		$this->req->header('Location: ' . $location);
-		$this->req->setResult([]);
+		$url = $this->req->getBackUrl(Request::getString($_REQUEST['backurl']));
+		$this->req->header('Location: ' . $url);
+		$this->req->setResult(['redirectTo' => $url]);
 	}
 }

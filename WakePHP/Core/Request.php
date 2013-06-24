@@ -72,7 +72,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	
 	public function handleException($e) {
 		if ($this->cmpName !== null) {
-			$this->setResult(['exception' => ['code' => $e->getCode(), 'msg' => $e->getMessage()]]);
+			$this->setResult(['exception' => ['type' => ClassFinder::getClassBasename($e), 'code' => $e->getCode(), 'msg' => $e->getMessage()]]);
 			return true;
 		}
 	}
@@ -81,6 +81,21 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 */
 	public function getBaseUrl() {
 		return ($this->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getBackUrl($backUrl) {
+		if ($backUrl !== null) {
+			$domain = parse_url($backUrl, PHP_URL_HOST);
+			if (!$this->checkDomainMatch($domain)) {
+				return $this->getBaseUrl();
+			}
+			return $backUrl;
+		} else {
+			return $this->getBaseUrl();
+		}
 	}
 
 	public function init() {
