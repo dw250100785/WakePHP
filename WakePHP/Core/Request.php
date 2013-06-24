@@ -69,7 +69,13 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		}
 		parent::__construct($appInstance, $upstream, $parent);
 	}
-
+	
+	public function handleException($e) {
+		if ($this->cmpName !== null) {
+			$this->setResult(['exception' => ['code' => $e->getCode(), 'msg' => $e->getMessage()]]);
+			return true;
+		}
+	}
 	/**
 	 * @return string
 	 */
@@ -477,9 +483,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		}
 	}
 
-	public function sessionCommit() {
+	public function sessionCommit($cb = null) {
 		if ($this->updatedSession) {
-			$this->appInstance->sessions->saveSession($this->attrs->session);
+			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
 		}
 	}
 

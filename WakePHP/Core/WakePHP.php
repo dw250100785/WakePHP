@@ -123,7 +123,7 @@ class WakePHP extends AppInstance {
 		$appInstance->components = new Components($req);
 		foreach ($appInstance->config as $k => $c) {
 			if (isset($c->run->value) && $c->run->value) {
-				if (substr($k, 0, 3) == 'Cmp') {
+				if (substr($k, 0, 3) === 'Cmp') {
 					$appInstance->components->{substr($k, 3)};
 				}
 			}
@@ -150,7 +150,7 @@ class WakePHP extends AppInstance {
 	 */
 	public function renderBlock($blockname, $variables, $cb) {
 		$appInstance = $this;
-		$this->blocks->getBlock(array('name' => $blockname), function ($block) use ($variables, $cb, $appInstance) {
+		$this->blocks->getBlock(['name' => $blockname], function ($block) use ($variables, $cb, $appInstance) {
 			$tpl = $appInstance->getQuickyInstance();
 			$tpl->assign($variables);
 			$tpl->assign('block', $block);

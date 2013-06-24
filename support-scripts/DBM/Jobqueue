@@ -7,3 +7,4 @@ $jobqueue = $db->selectCollection($name = 'jobqueue');
 $jobqueue->drop();
 $db->command(['create' => $name, 'capped' => true, 'size' => 1024*1024*10, 'max' => 1024 * 10]);
 $jobqueue->ensureIndex(array('status' => 1));
+//$jobqueue->ensureIndex(array('status' => 1, 'shardId' => 1, 'serverId' => 1));

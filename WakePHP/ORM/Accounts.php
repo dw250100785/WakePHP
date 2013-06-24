@@ -287,6 +287,7 @@ class Accounts extends ORM {
 			'username'         => '',
 			'location'         => '',
 			'password'         => '',
+			'ukey'			   => Crypt::randomString(16),
 			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
 											 . Daemon::uniqid() . "\x00"
 											 . $this->appInstance->config->cryptsalt->value . "\x00"
