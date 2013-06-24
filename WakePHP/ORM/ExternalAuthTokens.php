@@ -32,6 +32,7 @@ class ExternalAuthTokens extends ORM {
 			}
 			return;
 		}
+		unset($doc['_id']);
 		$this->externalAuthTokens->upsert(['extTokenHash' => $doc['extTokenHash']], ['$set' => $doc], false, $cb);
 	}
 

@@ -5,6 +5,7 @@ use PHPDaemon\Clients\Mongo\Collection;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use WakePHP\ORM\Sessions;
 
@@ -13,8 +14,8 @@ use WakePHP\ORM\Sessions;
  */
 class JobWorker extends AppInstance {
 	/** @var  Collection */
-	protected $jobqueue;
-	protected $jobresults;
+	public $jobqueue;
+	public $jobresults;
 	protected $resultEvent;
 
 	/**
@@ -46,18 +47,26 @@ class JobWorker extends AppInstance {
 	 */
 	protected $maxRunningJobs = 100;
 
+	protected $jobs = [];
+
 	/**
 	 *
 	 */
 	public function onReady() {
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 		$this->dbname      = $this->config->dbname->value;
-		$this->jobqueue    = $this->db->{$this->dbname . '.jobqueue'};
-		$this->jobresults  = $this->db->{$this->dbname . '.jobresults'};
+		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
+			$class         = strstr(basename($file), '.', true);
+			$prop          = lcfirst($class);
+			$class         = '\\WakePHP\\ORM\\' . $class;
+			$this->{$prop} = new $class($this);
+		}
+		
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
 			if (!$this->resultCursor) {
-				Daemon::log('find start');
+				$types = array_merge($this->jobs, [null]);
+				Daemon::log('find start: '.Debug::dump($types));
 				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) {
 					$this->resultCursor = $cursor;
 					foreach ($cursor->items as $k => $job) {
@@ -69,7 +78,8 @@ class JobWorker extends AppInstance {
 							['_id' => $job['_id'], 'status' => 'v'],
 							['$set' => ['status' => 'a']],
 							0, function ($lastError) use ($job) {
-								if ($lastError['updatedExisting']) {
+								Daemon::log('lasterror');
+								if ($lastError['updatedExisting'] || true) {
 									$job['status'] = 'a';
 									$this->startJob($job);
 								}
@@ -84,9 +94,10 @@ class JobWorker extends AppInstance {
 					   'tailable' => true,
 					   'sort'     => ['$natural' => 1],
 					   'where'    => [
-						   //'type' => ['$in' => $this->jobs],
+						   //'type' => ['$in' => $types],
 						   'status'  => 'v',
-						   'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]]
+						   'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
+						   'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
 					   ]
 				   ]);
 				$this->log('inited cursor');
@@ -95,7 +106,7 @@ class JobWorker extends AppInstance {
 			}
 			if (!$this->resultCursor->isBusyConn()) {
 				try {
-					$this->resultCursor->getMore();
+					$this->resultCursor->getMore(10);
 				} catch (ConnectionFinished $e) {
 					$this->resultCursor = false;
 				}
@@ -119,6 +130,10 @@ class JobWorker extends AppInstance {
 		$obj->run();
 	}
 
+	public function unlinkJob($id) {
+		unset($this->runningJobs[(string) $id]);
+	}
+
 	/**
 	 *
 	 */
@@ -130,20 +145,20 @@ class JobWorker extends AppInstance {
 	/**
 	 * @return array
 	 */
+
 	protected function getConfigDefaults() {
-		return [
-			'themesdir'     => dirname(__DIR__) . '/themes/',
-			'utilsdir'      => dirname(__DIR__) . '/utils/',
-			'localedir'     => dirname(__DIR__) . '/locale/',
+		return array(
+			'themesdir'     => 'themes/',
+			'utilsdir'      => 'WakePHP/Utils/',
+			'localedir'     => 'locale/',
 			'storagedir'    => '/storage/',
-			'ormdir'        => dirname(__DIR__) . '/ORM/',
+			'ormdir'        => 'WakePHP/ORM/',
 			'dbname'        => 'WakePHP',
 			'defaultlocale' => 'en',
 			'defaulttheme'  => 'simple',
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
-			'shardid'       => null,
-		];
+		);
 	}
 
 }

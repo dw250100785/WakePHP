@@ -30,8 +30,8 @@ class Sessions extends ORM {
 	/**
 	 * @param array $session
 	 */
-	public function saveSession($session) {
-		$this->sessions->upsert(['id' => $session['id']], $session);
+	public function saveSession($session, $cb = null) {
+		$this->sessions->upsert(['id' => $session['id']], $session, false, $cb);
 	}
 
 	/**
