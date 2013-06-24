@@ -871,6 +871,7 @@ class Account extends Component {
 	public function    AuthenticationController() {
 
 		$this->onSessionStart(function ($sessionEvent) {
+			Daemon::log('--auth--');
 			$username = Request::getString($this->req->attrs->request['username']);
 			if ($username === '') {
 				$this->req->setResult(array('success' => false, 'errors' => array(
