@@ -18,8 +18,6 @@ class Facebook extends Generic {
 	}
 
 	public function redirect() {
-		Daemon::log(Debug::dump($this->cmp->config->facebook_app_key->value));
-		Daemon::log(Debug::dump($this->cmp->config->facebook_app_secret->value));
 		if (!$this->checkReferer($this->appInstance->config->domain->value)) {
 			$this->req->setResult(['error' => 'Wrong referer']);
 			return;
@@ -45,10 +43,7 @@ class Facebook extends Generic {
 				}
 				parse_str($conn->body, $response);
 				if (!isset($response['access_token'])) {
-					Daemon::log(Debug::dump($this->cmp->config->facebook_app_key->value));
-					Daemon::log(Debug::dump($this->cmp->config->facebook_app_secret->value));
-					Daemon::log('log?-------------------------');
-
+					Daemon::log(Debug::dump($response));
 					$this->req->status(403);
 					$this->req->setResult(['error' => 'no access_token']);
 					return;
