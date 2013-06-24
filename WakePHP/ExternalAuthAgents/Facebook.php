@@ -3,10 +3,13 @@ namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\Core\Request;
 
 class Facebook extends Generic {
 	public function auth() {
+		Daemon::log(Debug::dump($this->cmp->config->facebook_app_key->value));
+		Daemon::log(Debug::dump($this->cmp->config->facebook_app_secret->value));
 		$this->req->redirectTo(
 			['https://www.facebook.com/dialog/oauth/',
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
