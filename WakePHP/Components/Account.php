@@ -24,8 +24,8 @@ class Account extends Component {
 	public function onAuthEvent() {
 		return function ($authEvent) {
 			/** @var DeferredEventCmp $authEvent */
-			$authEvent->component->onSessionRead(function ($sessionEvent) use ($authEvent) {
-				if (isset($authEvent->component->req->account)) {
+			$this->req->onSessionRead(function ($sessionEvent) use ($authEvent) {
+				if (isset($this->req->account)) {
 					$authEvent->setResult();
 					return;
 				}
@@ -33,21 +33,21 @@ class Account extends Component {
 					if ($account) {
 						$account['logged'] = $account['username'] !== 'Guest';
 					}
-					$authEvent->component->req->account = $account;
-					$authEvent->component->req->propertyUpdated('account');
+					$this->req->account = $account;
+					$this->req->propertyUpdated('account');
 					$authEvent->setResult();
 				};
-				if (isset($authEvent->component->req->attrs->session['accountId'])) {
-					$authEvent->component->appInstance->accounts->getAccountById($authEvent->component->req->attrs->session['accountId'], function ($account) use ($authEvent, $cb) {
+				if (isset($this->req->attrs->session['accountId'])) {
+					$this->appInstance->accounts->getAccountById($this->req->attrs->session['accountId'], function ($account) use ($authEvent, $cb) {
 						if (!$account) {
-							$authEvent->component->appInstance->accounts->getAccountByName('Guest', $cb);
+							$this->appInstance->accounts->getAccountByName('Guest', $cb);
 							return;
 						}
 						$cb($account);
 					});
 				}
 				else {
-					$authEvent->component->appInstance->accounts->getAccountByName('Guest', $cb);
+					$this->appInstance->accounts->getAccountByName('Guest', $cb);
 				}
 			});
 		};
@@ -102,7 +102,7 @@ class Account extends Component {
 	}
 
 	public function SignupController() {
-		$this->onSessionStart(function ($sessionEvent) {
+		$this->req->onSessionStart(function ($sessionEvent) {
 			/** @var ComplexJob $job */
 			$job      = $this->req->job = new ComplexJob(function ($job) {
 				$errors = array();
@@ -285,7 +285,7 @@ class Account extends Component {
 	 * @param $cb
 	 */
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
-		$this->onSessionStart(function () use ($ns, $id, $add, $cb) {
+		$this->req->onSessionStart(function () use ($ns, $id, $add, $cb) {
 			$crd = ['ns' => $ns, 'id' => $id];
 			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => $crd]],
 				function ($account) use ($ns, $id, $cb, $crd, $add) {
@@ -405,7 +405,7 @@ class Account extends Component {
 	 *
 	 */
 	public function finishSignupController() {
-		$this->onSessionRead(function () {
+		$this->req->onSessionRead(function () {
 			if (!isset($_SESSION['extAuth'])) {
 				$this->req->setResult(['success' => false,
 									   'errors'  => ['email' => 'Session expired']
@@ -773,7 +773,7 @@ class Account extends Component {
 	 *
 	 */
 	public function LogoutController() {
-		$this->onSessionRead(function ($sessionEvent) {
+		$this->req->onSessionRead(function ($sessionEvent) {
 			unset($this->req->attrs->session['accountId']);
 			$this->req->updatedSession = true;
 			$this->req->setResult(['success' => true]);
@@ -855,7 +855,7 @@ class Account extends Component {
 					$this->req->setResult(['success' => true, 'result' => 'failed']);
 					return;
 				}
-				$this->onSessionStart(function ($sessionEvent) use ($result) {
+				$this->req->onSessionStart(function ($sessionEvent) use ($result) {
 					$this->appInstance->accounts->getAccountById($result['uid'], function ($account) {
 						$this->loginAs($account);
 						$this->req->setResult(['success' => true]);
@@ -912,7 +912,7 @@ class Account extends Component {
 	 */
 	public function    RecoveryController() {
 
-		$this->onSessionStart(function () {
+		$this->req->onSessionStart(function () {
 
 			if (isset($this->req->attrs->request['email'])) {
 				$email = Request::getString($this->req->attrs->request['email']);
@@ -983,71 +983,5 @@ class Account extends Component {
 				}
 			}
 		});
-	}
-
-	/**
-	 *
-	 */
-	public function startSession() {
-		$session                   = $this->appInstance->sessions->startSession([
-																					'ip'        => $this->req->getIp(),
-																					'useragent' => Request::getString($_SERVER['HTTP_USER_AGENT']),
-																				]);
-		$this->req->attrs->session = $session;
-		$sid                       = (string)$session['id'];
-		$this->req->setcookie('SESSID', $sid, time() + 60 * 60 * 24 * 365, '/', $this->appInstance->config->cookiedomain->value);
-	}
-
-	/**
-	 * @return callable
-	 */
-	public function onSessionStartEvent() {
-		return function ($sessionStartEvent) {
-			/** @var DeferredEventCmp $sessionStartEvent */
-			$req = $sessionStartEvent->component->req;
-			if (isset($req->session['_id'])) {
-				$sessionStartEvent->setResult();
-				return;
-			}
-			$sid = Request::getString($req->attrs->request['SESSID']);
-			if ($sid === '') {
-				$sessionStartEvent->component->startSession();
-				$sessionStartEvent->setResult();
-				return;
-			}
-
-			$sessionStartEvent->component->onSessionRead(function ($session) use ($sessionStartEvent) {
-				if (!$session) {
-					$sessionStartEvent->component->startSession();
-				}
-				$sessionStartEvent->setResult();
-			});
-		};
-	}
-
-	/**
-	 * @return callable
-	 */
-	public function onSessionReadEvent() {
-
-		return function ($sessionEvent) {
-			/** @var DeferredEventCmp $sessionEvent */
-			$req = $sessionEvent->component->req;
-			$sid = Request::getString($req->attrs->cookie['SESSID']);
-			if ($sid === '') {
-				$sessionEvent->setResult();
-				return;
-			}
-			if ($req->attrs->session) {
-				$sessionEvent->setResult();
-				return;
-			}
-			$sessionEvent->component->appInstance->sessions->getSessionById($sid, function ($session) use ($sessionEvent) {
-				if ($session) {
-					$sessionEvent->component->req->attrs->session = $session;
-				}
-				$sessionEvent->setResult();
-			});
-		};
 	}
 }

@@ -498,6 +498,76 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		}
 	}
 
+	/**
+	 * Session start
+	 * @return void
+	 */
+	protected function sessionStart($force_start = true) {
+		if ($this->sessionStarted) {
+			return;
+		}
+		$this->sessionStarted = true;
+		$this->attrs->session = [];
+		$name = ini_get('session.name');
+
+
+		if (!empty($this->attrs->cookie[$name])) {
+			FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($this->attrs->cookie[$name]), 'r+!', function ($fp, $data) {
+				$fp->readAll(function($fp, $data) {
+					if ($data === false) {
+						$this->sessionStartNew();
+						return;
+					}
+					$this->sessionFp = $fp;
+					$this->sessionDecode($data);
+					if ($this->attrs->session === false) {
+						$this->sessionStartNew();
+						return;
+					}
+					$this->onSessionStarted(true);
+				});
+			});
+		} else {
+			$this->sessionStartNew();
+		}
+		$this->sleep($this->sessionStartTimeout);
+	}
+
+	protected function sessionDecode($str) {
+		$this->attrs->session = $str;
+		return $str !== false;
+	}
+	public function sessionRead($sid, $cb = null) {
+		$this->appInstance->sessions->getSessionById($sid, function ($session) use ($cb) {
+			call_user_func($cb, $session);
+		});
+	}
+
+	protected function sessionStartNew($cb = null) {
+		$session = $this->appInstance->sessions->startSession(
+			['ip' => $this->getIp(), 'useragent' => Request::getString($this->attrs->server['HTTP_USER_AGENT'])],
+			function ($lastError) use (&$session, $cb) {
+				if (!$session) {
+					if ($cb !== null) {
+						call_user_func($cb, false);
+					}
+					return;
+				}
+				$this->sessionId = (string) $session['id'];
+				$this->attrs->session = $session;
+				$this->setcookie(
+			  		ini_get('session.name')
+					, $this->sessionId
+					, ini_get('session.cookie_lifetime')
+					, ini_get('session.cookie_path')
+					, $this->appInstance->config->cookiedomain->value ?: ini_get('session.cookie_domain')
+					, ini_get('session.cookie_secure')
+					, ini_get('session.cookie_httponly')
+				);
+				call_user_func($cb, true);
+			});
+	}
+
 	public function sessionCommit($cb = null) {
 		if ($this->updatedSession) {
 			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);

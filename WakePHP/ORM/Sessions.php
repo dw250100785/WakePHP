@@ -37,12 +37,12 @@ class Sessions extends ORM {
 	/**
 	 * @return array
 	 */
-	public function startSession($add = []) {
+	public function startSession($add = [], $cb = null) {
 		$doc = array(
 			'id'   => \WakePHP\Core\Crypt::randomString(),
-			'ctime' => time(),
+			'ctime' => microtime(true),
 		) + $add;
-		$this->saveSession($doc);
+		$this->saveSession($doc, $cb);
 		return $doc;
 	}
 

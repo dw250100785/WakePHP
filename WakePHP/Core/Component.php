@@ -4,6 +4,7 @@ namespace WakePHP\Core;
 use PHPDaemon\Config\Entry\ConfigFile;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\DeferredEvent;
+use PHPDaemon\Traits\DeferredEventHandlers;
 
 /**
  * Component
@@ -11,6 +12,7 @@ use PHPDaemon\Core\DeferredEvent;
  * @method startSession
  */
 class Component {
+	use DeferredEventHandlers;
 
 	/** @var Request */
 	public $req;
@@ -88,35 +90,5 @@ class Component {
 		}
 	}
 
-	/**
-	 * @param string $event
-	 * @return null|mixed
-	 */
-	public function __get($event) {
-		if (!method_exists($this, $event . 'Event')) {
-			//throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
-			return null;
-		}
-		$this->{$event}            = new DeferredEvent($this->{$event . 'Event'}());
-		$this->{$event}->component = $this;
-		return $this->{$event};
-	}
-
-	public function cleanup() {
-		foreach ($this as $key => $property) {
-			if ($property instanceof DeferredEvent) {
-				$property->cleanup();
-			}
-			unset($this->{$key});
-		}
-	}
-
-	/**
-	 * @param string $event
-	 * @param $args
-	 * @return mixed
-	 */
-	public function __call($event, $args) {
-		return call_user_func_array($this->{$event}, $args);
-	}
+	
 }
