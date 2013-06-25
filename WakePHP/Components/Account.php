@@ -869,7 +869,7 @@ class Account extends Component {
 	 *
 	 */
 	public function    AuthenticationController() {
-
+		Daemon::log('before session start');
 		$this->onSessionStart(function ($sessionEvent) {
 			Daemon::log('--auth--');
 			$username = Request::getString($this->req->attrs->request['username']);
