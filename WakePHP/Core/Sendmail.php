@@ -7,6 +7,7 @@ use PHPDaemon\Core\Daemon;
  * Sendmail
  */
 class Sendmail {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var WakePHP

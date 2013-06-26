@@ -9,6 +9,7 @@ namespace WakePHP\Core;
  * @package WakePHP\Core
  */
 class ORM {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var WakePHP

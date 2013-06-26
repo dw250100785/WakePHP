@@ -6,6 +6,7 @@ namespace WakePHP\Core;
  * @package WakePHP\Core
  */
 class Crypt {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	/**
 	 * Generate keccak hash for string with salt
 	 * @param string $str

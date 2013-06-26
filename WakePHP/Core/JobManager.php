@@ -10,6 +10,7 @@ use PHPDaemon\Core\Timer;
  * JobManager class.
  */
 class JobManager {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var WakePHP

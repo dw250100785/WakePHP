@@ -4,6 +4,7 @@ namespace WakePHP\Core;
 use PHPDaemon\Request\IRequestUpstream;
 
 class TestCase extends \PHPUnit_Framework_TestCase implements IRequestUpstream {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	protected $appInstance;
 
 	/**

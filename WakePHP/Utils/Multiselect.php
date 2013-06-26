@@ -5,7 +5,7 @@ namespace WakePHP\Utils;
  * Multiselect class.
  */
 class Multiselect {
-
+	use \PHPDaemon\Traits\ClassWatchdog;
 	public static function getString(&$arr, $values = null) {
 		if (!is_array($arr)) {
 			$arr = array($arr);

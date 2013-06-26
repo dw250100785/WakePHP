@@ -7,6 +7,7 @@ use PHPDaemon\Core\Daemon;
  * Account component
  */
 class Components {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var Request

@@ -7,6 +7,7 @@ use WakePHP\Core\Component;
 use WakePHP\Core\Request;
 
 abstract class Generic {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	protected $appInstance;
 	protected $req;
 	protected $cmp;

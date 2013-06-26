@@ -4,7 +4,7 @@ namespace WakePHP\Components\MUChat;
 use PHPDaemon\Core\Daemon;
 
 class Session {
-
+	use \PHPDaemon\Traits\ClassWatchdog;
 	public $client;
 
 	public $username;

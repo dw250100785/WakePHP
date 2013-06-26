@@ -6,6 +6,7 @@ namespace WakePHP\Core;
  * @package WakePHP\Core
  */
 class OAuth {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	/**
 	 * Generate SHA-1 signed signature
 	 * @param $method

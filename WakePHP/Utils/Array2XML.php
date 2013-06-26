@@ -16,6 +16,7 @@ namespace WakePHP\Utils;
  * Этот класс предназначен для преобразования PHP массива в XML формат
  */
 class Array2XML {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	private $writer;
 	private $version = '1.0';

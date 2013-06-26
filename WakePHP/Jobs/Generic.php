@@ -2,6 +2,7 @@
 namespace WakePHP\Jobs;
 
 abstract class Generic {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	protected $parent;
 	protected $progress;
 	protected $status = 'a';

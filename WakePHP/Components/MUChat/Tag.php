@@ -4,6 +4,7 @@ namespace WakePHP\Components\MUChat;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
 
 class Tag {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	public $appInstance;
 	public $sessions = array();
 	public $tag;

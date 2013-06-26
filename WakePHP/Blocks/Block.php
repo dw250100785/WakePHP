@@ -9,6 +9,7 @@ use WakePHP\Core\Request;
  * @property string cachekey
  */
 class Block implements \ArrayAccess {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var string

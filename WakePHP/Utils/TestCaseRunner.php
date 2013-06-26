@@ -2,6 +2,7 @@
 namespace WakePHP\Utils;
 
 class TestCaseRunner {
+	use \PHPDaemon\Traits\ClassWatchdog;
 	public function __construct() {
 		$this->addNonPSRLibrariesAutoloader();
 	}

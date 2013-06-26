@@ -7,6 +7,7 @@ use PHPDaemon\Core\Timer;
  * DLM class.
  */
 class DLM {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var WakePHP
