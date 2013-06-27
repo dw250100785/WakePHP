@@ -1,11 +1,19 @@
 <?php
 namespace WakePHP\Jobs;
 
+/**
+ * Class Generic
+ * @package WakePHP\Jobs
+ * @dynamic_fields
+ */
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
+
+	protected $instance;
 	protected $parent;
 	protected $progress;
 	protected $status = 'a';
+	protected $_id;
 	public function __construct($job, $parent) {
 		foreach ($job as $k => $v) {
 			$this->{$k} = $v;

@@ -18,6 +18,7 @@ use WakePHP\Core\Request as WakePHPRequest;
  * @method onAuth(callable $cb)
  */
 class Account extends Component {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	/**
 	 * @return callable
 	 */

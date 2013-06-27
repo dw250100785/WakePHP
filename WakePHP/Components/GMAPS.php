@@ -7,6 +7,8 @@ use WakePHP\Core\Component;
  * GMAPS component
  */
 class GMAPS extends Component {
+	protected $httpclient;
+
 	/**
 	 * Constructor.
 	 * @return void

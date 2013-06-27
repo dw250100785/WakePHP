@@ -5,6 +5,7 @@ use PHPDaemon\Clients\Mongo\ConnectionFinished;
 
 class Tag {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	public $appInstance;
 	public $sessions = array();
 	public $tag;

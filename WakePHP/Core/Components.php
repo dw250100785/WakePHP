@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 
 /**
  * Account component
+ * @dynamic_fields
  */
 class Components {
 	use \PHPDaemon\Traits\ClassWatchdog;

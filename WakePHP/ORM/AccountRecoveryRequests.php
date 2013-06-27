@@ -8,6 +8,8 @@ use WakePHP\Core\ORM;
  */
 class AccountRecoveryRequests extends ORM {
 
+	protected $accountRecoveryRequests;
+
 	public function init() {
 		$this->accountRecoveryRequests = $this->appInstance->db->{$this->appInstance->dbname . '.accountRecoveryRequests'};
 	}

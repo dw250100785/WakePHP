@@ -8,6 +8,8 @@ use WakePHP\Core\ORM;
  */
 class Jobresults extends ORM {
 
+	protected $jobresults;
+
 	public function init() {
 		$this->jobresults = $this->appInstance->db->{$this->appInstance->dbname . '.jobresults'};
 	}

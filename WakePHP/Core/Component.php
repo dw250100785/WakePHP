@@ -14,6 +14,7 @@ use PHPDaemon\Traits\DeferredEventHandlers;
 class Component {
 	use DeferredEventHandlers;
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/** @var Request */
 	public $req;

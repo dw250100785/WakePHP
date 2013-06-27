@@ -4,6 +4,7 @@ namespace WakePHP\Components\MUChat;
 use PHPDaemon\Request\Generic as Request;
 
 class UpdateStat extends Request {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public function run() {
 

@@ -11,6 +11,7 @@ use WakePHP\ORM\Sessions;
 
 /**
  * Job worker
+ * @dynamic_fields
  */
 class JobWorker extends AppInstance {
 	/** @var  Collection */

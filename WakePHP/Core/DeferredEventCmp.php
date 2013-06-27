@@ -8,6 +8,7 @@ use PHPDaemon\Core\DeferredEvent;
  * @package WakePHP\Core
  */
 class DeferredEventCmp extends DeferredEvent {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	/** @var Component */
 	public $component;
 }

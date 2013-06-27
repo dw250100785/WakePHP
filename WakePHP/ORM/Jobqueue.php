@@ -8,6 +8,8 @@ use WakePHP\Core\ORM;
  */
 class Jobqueue extends ORM {
 
+	protected $jobqueue;
+
 	public function init() {
 		$this->jobqueue = $this->appInstance->db->{$this->appInstance->dbname . '.jobqueue'};
 	}

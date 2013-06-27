@@ -14,6 +14,7 @@ use WakePHP\Utils\Array2XML;
 /**
  * Request class.
  * @property array session
+ * @dynamic_fields
  */
 class Request extends \PHPDaemon\HTTPRequest\Generic {
 
@@ -29,6 +30,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $jobDone = 0;
 	/** @var \Quicky */
 	public $tpl;
+	/** @var Components */
 	public $components;
 	public $dispatched = false;
 	public $updatedSession = false;

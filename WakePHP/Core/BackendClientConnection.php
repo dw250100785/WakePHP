@@ -11,8 +11,9 @@ use WakePHP\Blocks\Block;
  * @refactor
  */
 class BackendClientConnection extends Connection {
-
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	public $reqCounter = 0;
+	protected $buf;
 	/** @var Request */
 	protected $requests;
 	protected $queries;

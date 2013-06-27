@@ -7,6 +7,8 @@ use WakePHP\Core\ORM;
  * MUChat
  */
 class MUChat extends ORM {
+	protected $sessions;
+	protected $accounts;
 
 	/**
 	 *

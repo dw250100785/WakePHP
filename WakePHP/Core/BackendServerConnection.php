@@ -11,10 +11,13 @@ use WakePHP\Blocks\Block;
  * @package WakePHP\Core
  */
 class BackendServerConnection extends Connection {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	/**
 	 * @var Request[]
 	 */
 	public $requests = [];
+	protected $buf;
+	protected $config;
 
 	/**
 	 *

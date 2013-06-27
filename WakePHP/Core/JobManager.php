@@ -11,6 +11,7 @@ use PHPDaemon\Core\Timer;
  */
 class JobManager {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * @var WakePHP

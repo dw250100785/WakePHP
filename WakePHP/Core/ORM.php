@@ -10,6 +10,7 @@ namespace WakePHP\Core;
  */
 class ORM {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * @var WakePHP
