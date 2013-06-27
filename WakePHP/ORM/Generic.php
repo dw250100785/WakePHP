@@ -1,14 +1,16 @@
 <?php
-namespace WakePHP\Core;
+namespace WakePHP\ORM;
 
 	/**
 	 * ORM class.
 	 */
+use WakePHP\Core\WakePHP;
+
 /**
  * Class ORM
  * @package WakePHP\Core
  */
-class ORM {
+class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 

@@ -2,13 +2,13 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Clients\Mongo\Collection;
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Class ExternalAuthTokens
  * @package WakePHP\ORM
  */
-class ExternalAuthTokens extends ORM {
+class ExternalAuthTokens extends Generic {
 
 	/** @var  Collection */
 	protected $externalAuthTokens;

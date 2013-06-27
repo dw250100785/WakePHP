@@ -2,12 +2,12 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Clients\Mongo\Collection;
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Blocks
  */
-class Blocks extends ORM {
+class Blocks extends Generic {
 
 	/** @var Collection */
 	public $blocks;

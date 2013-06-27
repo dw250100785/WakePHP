@@ -3,12 +3,12 @@ namespace WakePHP\ORM;
 
 use PHPDaemon\Core\Daemon;
 use WakePHP\Core\Crypt;
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Accounts
  */
-class Accounts extends ORM {
+class Accounts extends Generic {
 
 	/** @var \PHPDaemon\Clients\Mongo\Collection */
 	protected $accounts;

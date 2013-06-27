@@ -1,12 +1,12 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Jobqueue
  */
-class Jobqueue extends ORM {
+class Jobqueue extends Generic {
 
 	protected $jobqueue;
 

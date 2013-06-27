@@ -1,12 +1,12 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Sessions
  */
-class Sessions extends ORM {
+class Sessions extends Generic {
 	/**
 	 * @var Sessions
 	 */

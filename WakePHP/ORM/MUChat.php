@@ -1,12 +1,12 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * MUChat
  */
-class MUChat extends ORM {
+class MUChat extends Generic {
 	protected $sessions;
 	protected $accounts;
 

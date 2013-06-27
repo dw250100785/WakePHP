@@ -1,12 +1,12 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * AccountRecoveryRequests
  */
-class AccountRecoveryRequests extends ORM {
+class AccountRecoveryRequests extends Generic {
 
 	protected $accountRecoveryRequests;
 
