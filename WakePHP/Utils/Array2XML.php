@@ -17,6 +17,7 @@ namespace WakePHP\Utils;
  */
 class Array2XML {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	private $writer;
 	private $version = '1.0';

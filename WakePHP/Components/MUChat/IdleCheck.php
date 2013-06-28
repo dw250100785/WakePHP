@@ -4,6 +4,7 @@ namespace WakePHP\Components\MUChat;
 use PHPDaemon\Request\Generic as Request;
 
 class IdleCheck extends Request {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	public function run() {
 		$appInstance = $this->appInstance;
 		$this->appInstance->db->{$this->appInstance->config->dbname->value . '.muchatsessions'}->find(function ($cursor) use ($appInstance) {

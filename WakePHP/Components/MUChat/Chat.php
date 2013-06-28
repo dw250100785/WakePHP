@@ -18,9 +18,10 @@ use WakePHP\Core\Request;
 use WakePHP\ORM\MUChat;
 
 class Chat extends AppInstance {
-
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	public $sessions = array();
 
+	/** @var \PHPDaemon\Clients\Mongo\Pool */
 	public $db;
 
 	public $dbname;
@@ -167,14 +168,14 @@ class Chat extends AppInstance {
 			}
 			$appInstance = $this;
 
-			$req = new Muchat\MsgQueueRequest($this, $this);
+			$req = new MsgQueueRequest($this, $this);
 
-			$req = new Muchat\IdleCheck($appInstance, $appInstance);
+			$req = new IdleCheck($appInstance, $appInstance);
 
 			$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 
 			$this->LockClient->job(__CLASS__, true, function ($jobname) use ($appInstance) {
-				$appInstance->pushRequest(new Muchat\UpdateStat($appInstance, $appInstance));
+				$appInstance->pushRequest(new UpdateStat($appInstance, $appInstance));
 			});
 		}
 	}

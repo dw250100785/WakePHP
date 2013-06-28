@@ -1,12 +1,14 @@
 <?php
 namespace WakePHP\ORM;
 
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Jobresults
  */
-class Jobresults extends ORM {
+class Jobresults extends Generic {
+
+	protected $jobresults;
 
 	public function init() {
 		$this->jobresults = $this->appInstance->db->{$this->appInstance->dbname . '.jobresults'};

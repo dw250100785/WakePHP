@@ -1,6 +1,11 @@
 <?php
 namespace WakePHP\Components;
 
+/**
+ * Class CAPTCHASession
+ * @package WakePHP\Components
+ * @deprecated
+ */
 class CAPTCHASession extends SocketSession {
 
 	const PSTATE_FIRSTLINE = 1;
@@ -12,6 +17,8 @@ class CAPTCHASession extends SocketSession {
 	public $contentLength = 0;
 	public $body = '';
 	public $EOL = "\r\n";
+	protected $finished;
+	protected $buf;
 
 	public function validate($cb) {
 

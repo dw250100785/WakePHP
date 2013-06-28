@@ -6,6 +6,7 @@ namespace WakePHP\Core;
  * @package WakePHP\Core
  */
 class BackendClient extends \PHPDaemon\Network\Client {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

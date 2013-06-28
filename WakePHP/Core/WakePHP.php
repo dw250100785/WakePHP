@@ -11,6 +11,7 @@ use WakePHP\ORM\Sessions;
 
 /**
  * Main class of application (Quicky, MongoClient, ...)
+ * @dynamic_fields
  */
 class WakePHP extends AppInstance {
 
@@ -25,7 +26,7 @@ class WakePHP extends AppInstance {
 	/** @var Sessions */
 	public $sessions;
 	/**
-	 * @var
+	 * @var \PHPDaemon\Clients\Mongo\Pool
 	 */
 	public $db;
 	/**
@@ -66,10 +67,9 @@ class WakePHP extends AppInstance {
 	public $accountRecoveryRequests;
 	/** @var ExternalAuthTokens */
 	public $externalAuthTokens;
+	public $JobManager;
+	public $serializer;
 
-	/**
-	 *
-	 */
 	public function onReady() {
 		if (isset($this->backendServer)) {
 			$this->backendServer->onReady();
@@ -79,9 +79,6 @@ class WakePHP extends AppInstance {
 		}
 	}
 
-	/**
-	 *
-	 */
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');

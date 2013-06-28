@@ -2,13 +2,13 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Clients\Mongo\Collection;
-use WakePHP\Core\ORM;
+use WakePHP\ORM\Generic;
 
 /**
  * Class ExternalSignupRequests
  * @package WakePHP\ORM
  */
-class ExternalSignupRequests extends ORM {
+class ExternalSignupRequests extends Generic {
 
 	/** @var  Collection */
 	protected $externalSignupRequests;

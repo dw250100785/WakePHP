@@ -7,6 +7,7 @@ use WakePHP\Core\Request;
 /**
  * Block instance class.
  * @property string cachekey
+ * @dynamic_fields
  */
 class Block implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
