@@ -89,9 +89,9 @@ class JobManager {
 	 * @param $type
 	 * @param $args
 	 */
-	public function enqueue($cb, $type, $args, $add = []) {
+	public function enqueue($cb, $type, $args, $add = [], $cb = null) {
 		$ts = microtime(true);
-		$jobId = $this->appInstance->jobqueue->push($type, $args, $ts, $add);
+		$jobId = $this->appInstance->jobqueue->push($type, $args, $ts, $add, $cb);
 		if ($cb !== NULL) {
 			$this->callbacks[(string)$jobId] = $cb;
 			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);

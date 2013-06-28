@@ -102,6 +102,8 @@ class WakePHP extends AppInstance {
 			$class         = strstr(basename($file), '.', true);
 			$prop          = lcfirst($class);
 			$class         = '\\WakePHP\\ORM\\' . $class;
+			$this->{$prop} = &$a; // trick ;-)
+			unset($a);
 			$this->{$prop} = new $class($this);
 		}
 

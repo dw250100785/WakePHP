@@ -13,7 +13,6 @@ use PHPDaemon\Traits\DeferredEventHandlers;
  */
 class Component {
 	use DeferredEventHandlers;
-	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/** @var Request */
 	public $req;
