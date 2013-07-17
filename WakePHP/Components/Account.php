@@ -256,6 +256,9 @@ class Account extends Component {
 		if ($this->req->controller === 'GenKeccak') {
 			return true;
 		}
+		if ($this->req->controller === 'Authentication') {
+			return true;
+		}
 		return $this->req->checkDomainMatch();
 	}
 
@@ -870,9 +873,7 @@ class Account extends Component {
 	 *
 	 */
 	public function    AuthenticationController() {
-		Daemon::log('before session start');
-		$this->onSessionStart(function ($sessionEvent) {
-			Daemon::log('--auth--');
+		$this->req->onSessionStart(function ($sessionEvent) {
 			$username = Request::getString($this->req->attrs->request['username']);
 			if ($username === '') {
 				$this->req->setResult(array('success' => false, 'errors' => array(

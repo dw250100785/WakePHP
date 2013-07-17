@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\ORM;
-
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\ORM\Generic;
 
 /**
@@ -31,7 +32,8 @@ class Sessions extends Generic {
 	 * @param array $session
 	 */
 	public function saveSession($session, $cb = null) {
-		$this->sessions->upsert(['id' => $session['id']], $session, false, $cb);
+		Daemon::log(Debug::dump($session, $cb));
+		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
 	}
 
 	/**

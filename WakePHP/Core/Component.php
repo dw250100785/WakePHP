@@ -90,4 +90,8 @@ class Component {
 			}
 		}
 	}
+
+	public function cleanup() {
+		$this->cleanupDeferredEventHandlers();
+	}
 }

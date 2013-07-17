@@ -5,6 +5,7 @@ use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\IRequestUpstream;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Structures\StackCallbacks;
@@ -498,45 +499,12 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->backendClientConn->endRequest($this);
 			unset($this->backendClientConn);
 		}
-	}
-
-	/**
-	 * Session start
-	 * @return void
-	 */
-	protected function sessionStart($force_start = true) {
-		if ($this->sessionStarted) {
-			return;
-		}
-		$this->sessionStarted = true;
-		$this->attrs->session = [];
-		$name = ini_get('session.name');
-
-
-		if (!empty($this->attrs->cookie[$name])) {
-			FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($this->attrs->cookie[$name]), 'r+!', function ($fp, $data) {
-				$fp->readAll(function($fp, $data) {
-					if ($data === false) {
-						$this->sessionStartNew();
-						return;
-					}
-					$this->sessionFp = $fp;
-					$this->sessionDecode($data);
-					if ($this->attrs->session === false) {
-						$this->sessionStartNew();
-						return;
-					}
-					$this->onSessionStarted(true);
-				});
-			});
-		} else {
-			$this->sessionStartNew();
-		}
-		$this->sleep($this->sessionStartTimeout);
+		$this->components->cleanup();
+		Daemon::log('onFinish - ' . $this->attrs->server['REQUEST_URI']);
 	}
 
 	protected function sessionDecode($str) {
-		$this->attrs->session = $str;
+		$this->setSessionState($str);
 		return $str !== false;
 	}
 	public function sessionRead($sid, $cb = null) {
@@ -573,11 +541,15 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public function sessionCommit($cb = null) {
 		if ($this->updatedSession) {
 			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
+		} else {
+			if ($cb !== null) {
+				call_user_func($cb);
+			}
 		}
 	}
 
 	public function __destruct() {
-		Daemon::log('destruct - ' . $this->path);
+		Daemon::log('destruct - ' . $this->attrs->server['REQUEST_URI']);
 	}
 
 	/**

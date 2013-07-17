@@ -9,6 +9,6 @@ use PHPDaemon\Core\DeferredEvent;
  */
 class DeferredEventCmp extends DeferredEvent {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
-	/** @var Component */
-	public $component;
+
+	public $parent;
 }

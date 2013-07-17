@@ -34,4 +34,13 @@ class Components {
 		}
 		return $this->{$name} = new $class($this->req);
 	}
+
+	public function cleanup() {
+		foreach ($this as $k => $c) {
+			if ($k === 'req') {
+				continue;
+			}
+			$c->cleanup();
+		}
+	}
 }
