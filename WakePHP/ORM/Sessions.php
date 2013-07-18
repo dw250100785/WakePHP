@@ -32,7 +32,6 @@ class Sessions extends Generic {
 	 * @param array $session
 	 */
 	public function saveSession($session, $cb = null) {
-		Daemon::log(Debug::dump($session, $cb));
 		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
 	}
 

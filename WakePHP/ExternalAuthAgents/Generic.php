@@ -71,5 +71,6 @@ abstract class Generic {
 		$url = $this->req->getBackUrl(Request::getString($_REQUEST['backurl']));
 		$this->req->header('Location: ' . $url);
 		$this->req->setResult(['redirectTo' => $url]);
+		$this->req = null;
 	}
 }

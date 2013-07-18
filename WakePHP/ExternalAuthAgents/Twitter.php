@@ -21,7 +21,6 @@ class Twitter extends Generic {
 					 return;
 				 }
 				 if ($conn->responseCode > 299) {
-					 Daemon::log($conn->responseCode . ': ' . $conn->body);
 					 $this->req->redirectTo($this->req->getBaseUrl());
 					 return;
 				 }

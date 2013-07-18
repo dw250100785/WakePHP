@@ -12,7 +12,7 @@ class BlockAccountProfile extends Block {
 			$req = $block->req;
 
 			if (!$req->account['logged']) {
-				$req->header('Location: /' . $req->locale . '/account/login?backurl=' . urlencode($req->attrs->server['REQUEST_URI']));
+				$req->redirectTo('/' . $req->locale . '/account/login?backurl=' . urlencode($req->attrs->server['REQUEST_URI']));
 				$req->finish();
 				return;
 			}

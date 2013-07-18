@@ -2,6 +2,8 @@
 namespace WakePHP\Blocks;
 
 use PHPDaemon\Clients\Mongo\Cursor;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\Core\Request;
 
 /**
@@ -163,6 +165,61 @@ class Block implements \ArrayAccess {
 		// @TODO: more flexible arguments order
 	}
 
+	protected function executeTemplate() {
+		$tpl = $this->req->tpl;
+		$tpl->assign('block', $this);
+		$tpl->assign($this->tplvars);
+		$tpl->register_function('getblock', array($this, 'getBlock'));
+		static $cache = array();
+		if (isset($cache[$this->cachekey])) {
+			$cb = $cache[$this->cachekey];
+		}
+		else {
+			$cb = eval($this->templatePHP);
+			//\PHPdaemon\Core\Daemon::log(\PHPdaemon\Core\Debug::dump($this->templatePHP));
+			$cache[$this->cachekey] = $cb;
+		}
+		ob_start();
+		call_user_func($cb, $tpl);
+		$this->html = ob_get_contents();
+		ob_end_clean();
+		//$this->html = $tpl->_block_props['capture']['w'];
+	}
+
+	protected function getNestedBlocks() {
+		++$this->req->jobTotal;
+		$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function ($cursor) {
+			Daemon::log('got cursor');
+			/** @var Cursor $cursor */
+			if (!$cursor->finished) {
+				$cursor->getMore();
+			}
+			else {
+				$dbprops = array();
+				foreach ($cursor->items as $k => $block) {
+					if (isset($block['name'])) {
+						$dbprops[$block['name']] = $block;
+					}
+				}
+					$cursor->destroy();
+					foreach ($this->addedBlocks as $block) {
+						if (isset($block['name']) && isset($dbprops[$block['name']])) {
+							$block = array_merge($block, $dbprops[$block['name']]);
+						}
+						if ((!isset($block['type'])) || (!class_exists($class = __NAMESPACE__ . '\\Block' . $block['type']))) {
+							$class = __NAMESPACE__ . '\\Block';
+						}
+						new $class($block, $this);
+				}
+				unset($this->addedBlocks);
+				++$this->req->jobDone;
+				$this->req->wakeup();
+			}
+		});
+		$this->addedBlocksNames = null;
+		$this->req->tpl->register_function('getblock', array($this->parentNode, 'getBlock'));
+	}
+
 	/**
 	 *
 	 */
@@ -174,62 +231,14 @@ class Block implements \ArrayAccess {
 		}
 		$this->req->onWakeup();
 		if (isset($this->template)) {
-			$tpl = $this->req->tpl;
-			$tpl->assign('block', $this);
-			$tpl->assign($this->tplvars);
-			$tpl->register_function('getblock', array($this, 'getBlock'));
-			static $cache = array();
-			if (isset($cache[$this->cachekey])) {
-				$cb = $cache[$this->cachekey];
-			}
-			else {
-				$cb = eval($this->templatePHP);
-				//\PHPdaemon\Core\Daemon::log(\PHPdaemon\Core\Debug::dump($this->templatePHP));
-				$cache[$this->cachekey] = $cb;
-			}
-			ob_start();
-			call_user_func($cb, $tpl);
-			$this->html = ob_get_contents();
-			ob_end_clean();
-			//$this->html = $tpl->_block_props['capture']['w'];
-
-			++$this->req->jobTotal;
-			$node = $this;
-			$this->req->appInstance->blocks->getBlocksByNames(array_unique($this->addedBlocksNames), function ($cursor) use ($node) {
-				/** @var Cursor $cursor */
-				if (!$cursor->finished) {
-					$cursor->getMore();
-				}
-				else {
-					$dbprops = array();
-					foreach ($cursor->items as $k => $block) {
-						if (isset($block['name'])) {
-							$dbprops[$block['name']] = $block;
-						}
-					}
-					$cursor->destroy();
-					foreach ($node->addedBlocks as $block) {
-						if (isset($block['name']) && isset($dbprops[$block['name']])) {
-							$block = array_merge($block, $dbprops[$block['name']]);
-						}
-						if ((!isset($block['type'])) || (!class_exists($class = __NAMESPACE__ . '\\Block' . $block['type']))) {
-							$class = __NAMESPACE__ . '\\Block';
-						}
-						new $class($block, $node);
-					}
-					unset($node->addedBlocks);
-
-					++$node->req->jobDone;
-					$node->req->wakeup();
-				}
-			});
-			unset($this->addedBlocksNames);
-			$this->req->tpl->register_function('getblock', array($this->parentNode, 'getBlock'));
+			$this->executeTemplate();
+			$this->getNestedBlocks();
 		}
+		$req = $this->req;
 		if ($this->readyBlocks >= $this->numBlocks) {
 			$this->execute();
 		}
-		$this->req->onSleep();
+		$req->onSleep();
 	}
 
 	/**
@@ -291,5 +300,8 @@ class Block implements \ArrayAccess {
 		}
 		++$this->parentNode->readyBlocks;
 		$this->parentNode->onReadyBlock($this);
+		//$this->req = null;
+		//$this->parentNode = null;
+		//Daemon::log('ready '.get_class($this));
 	}
 }

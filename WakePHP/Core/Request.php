@@ -307,8 +307,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 		ready:
 
-		unset($this->tpl);
-
 		echo $this->html;
 	}
 
@@ -499,8 +497,17 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->backendClientConn->endRequest($this);
 			unset($this->backendClientConn);
 		}
-		$this->components->cleanup();
-		Daemon::log('onFinish - ' . $this->attrs->server['REQUEST_URI']);
+
+		if ($this->components !== null) {
+			$this->components->cleanup();
+			$this->components = null;
+		}
+
+		if ($this->tpl !== null) {
+			$this->tpl->assign('req', null);
+			$this->tpl = null;
+		}
+		Daemon::log('onFinish -- ' . $_SERVER['REQUEST_URI']);
 	}
 
 	protected function sessionDecode($str) {
@@ -561,6 +568,10 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->header('Pragma: no-cache');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 		$this->header('Location: ' . HTTPClient::buildUrl($url));
-		$this->setResult([]);
+		if ($this->component !== null) {
+			$this->setResult([]);
+		} else {
+			$this->finish();
+		}
 	}
 }

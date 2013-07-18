@@ -247,6 +247,9 @@ class Account extends Component {
 		if ($this->req->controller === 'ExternalAuthRedirect') {
 			return true;
 		}
+		elseif ($this->req->controller === 'ExternalAuth') { // @todo: //
+			return true;
+		}
 		if ($this->req->controller === 'ExtAuth') {
 			return true;
 		}
@@ -256,7 +259,7 @@ class Account extends Component {
 		if ($this->req->controller === 'GenKeccak') {
 			return true;
 		}
-		if ($this->req->controller === 'Authentication') {
+		if ($this->req->controller === 'UsernameAvailablityCheck') {
 			return true;
 		}
 		return $this->req->checkDomainMatch();

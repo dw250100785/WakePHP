@@ -14,6 +14,7 @@ class Facebook extends Generic {
 				'scope'         => 'email',
 				'redirect_uri'  => $this->getCallbackURL()
 			]);
+		
 	}
 
 	public function redirect() {
