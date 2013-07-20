@@ -18,6 +18,10 @@ use WakePHP\Utils\Array2XML;
  * @dynamic_fields
  */
 class Request extends \PHPDaemon\HTTPRequest\Generic {
+	use \WakePHP\Core\Traits\Sessions;
+	use \WakePHP\Core\Traits\Datetime;
+	use \WakePHP\Core\Traits\Blocks;
+	use \WakePHP\Core\Traits\URLToolkit;
 
 	public $locale;
 	public $path;
@@ -67,40 +71,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 */
 	public function __construct($appInstance, $upstream, $parent = null) {
 		if (self::$emulMode) {
-			Daemon::log('emulMode');
 			return;
 		}
 		parent::__construct($appInstance, $upstream, $parent);
 	}
 	
-	public function handleException($e) {
-		if ($this->cmpName !== null) {
-			$this->setResult(['exception' => ['type' => ClassFinder::getClassBasename($e), 'code' => $e->getCode(), 'msg' => $e->getMessage()]]);
-			return true;
-		}
-	}
-	/**
-	 * @return string
-	 */
-	public function getBaseUrl() {
-		return ($this->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getBackUrl($backUrl) {
-		if ($backUrl !== null) {
-			$domain = parse_url($backUrl, PHP_URL_HOST);
-			if (!$this->checkDomainMatch($domain)) {
-				return $this->getBaseUrl();
-			}
-			return $backUrl;
-		} else {
-			return $this->getBaseUrl();
-		}
-	}
-
 	public function init() {
 		try {
 			$this->header('Content-Type: text/html');
@@ -149,140 +124,14 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		return $req;
 	}
 
-	/**
-	 * @param Block $block
-	 * @return bool
-	 */
-	public function getBlock($block) {
-		if (!$this->appInstance->backendClient) {
-			return false;
+	public function handleException($e) {
+		if ($this->cmpName !== null) {
+			$this->setResult(['exception' => ['type' => ClassFinder::getClassBasename($e), 'code' => $e->getCode(), 'msg' => $e->getMessage()]]);
+			return true;
 		}
-		if ($this->upstream instanceof BackendServerConnection) {
-			return false;
-		}
-
-		if (ClassFinder::getClassBasename($block) === 'Block') {
-			return false;
-		}
-
-		/**
-		 * @param BackendClientConnection $conn
-		 */
-		$fc = function ($conn) use ($block) {
-			if (!$conn->connected) {
-				// fail
-				return;
-			}
-			if (!$this->backendClientConn) {
-				$this->backendClientConn = $conn;
-				$conn->beginRequest($this);
-			}
-			$conn->getBlock($this->rid, $block);
-			if ($this->backendClientCbs !== null) {
-				$this->backendClientCbs->executeAll($conn);
-				$this->backendClientCbs = null;
-			}
-		};
-		if ($this->backendClientConn) {
-			$this->backendClientConn->onConnected($fc);
-		}
-		else {
-			if ($this->backendClientInited) {
-				if ($this->backendClientCbs === null) {
-					$this->backendClientCbs = new StackCallbacks();
-				}
-				$this->backendClientCbs->push($fc);
-			}
-			else {
-				$this->appInstance->backendClient->getConnection($fc);
-				$this->backendClientInited = true;
-			}
-		}
-		return true;
 	}
 
-	/**
-	 * @param string $format
-	 * @param integer $ts
-	 * @return mixed
-	 */
-	public function date($format, $ts = null) { // @todo
-		if ($ts === null) {
-			$ts = time();
-		}
-		$t      = array();
-		$format = preg_replace_callback('~%n2?~', function ($m) use (&$t) {
-			$t[] = $m[0];
-			return "\x01";
-		}, $format);
-		$r      = date($format, $ts);
-		$req    = $this;
-		$r      = preg_replace_callback('~\x01~s', function ($m) use ($t, $ts, $req) {
-			static $i = 0;
-			switch ($t[$i++]) {
-				case "%n":
-					return $req->monthes[date('n', $ts)];
-				case "%n2":
-					return $req->monthes2[date('n', $ts)];
-			}
-		}, $r);
-		return $r;
-	}
 
-	/**
-	 * @param $st
-	 * @param $fin
-	 * @return array
-	 */
-	public function date_period($st, $fin) {
-		if ((is_int($st)) || (ctype_digit($st))) {
-			$st = $this->date('d-m-Y-H-i-s', $st);
-		}
-		$st = explode('-', $st);
-		if ((is_int($fin)) || (ctype_digit($fin))) {
-			$fin = $this->date('d-m-Y-H-i-s', $fin);
-		}
-		$fin = explode('-', $fin);
-		if (($seconds = $fin[5] - $st[5]) < 0) {
-			$fin[4]--;
-			$seconds += 60;
-		}
-		if (($minutes = $fin[4] - $st[4]) < 0) {
-			$fin[3]--;
-			$minutes += 60;
-		}
-		if (($hours = $fin[3] - $st[3]) < 0) {
-			$fin[0]--;
-			$hours += 24;
-		}
-		if (($days = $fin[0] - $st[0]) < 0) {
-			$fin[1]--;
-			$days += $this->date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));
-		}
-		if (($months = $fin[1] - $st[1]) < 0) {
-			$fin[2]--;
-			$months += 12;
-		}
-		$years = $fin[2] - $st[2];
-		return array($seconds, $minutes, $hours, $days, $months, $years);
-	}
-
-	/**
-	 * @param $str
-	 * @return int
-	 */
-	public function strtotime($str) {
-		return \WakePHP\Utils\Strtotime::parse($str);
-	}
-
-	/**
-	 * @param $obj
-	 */
-	public function onReadyBlock($obj) {
-		$this->html = str_replace($obj->tag, $obj->html, $this->html);
-		unset($this->inner[$obj->_nid]);
-		$this->wakeup();
-	}
 
 	/**
 	 * Called when request iterated.
@@ -311,33 +160,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	/**
-	 * @param string $domain
-	 * @param string $pattern
-	 * @return bool
-	 */
-	public function checkDomainMatch($domain = null, $pattern = null) {
-		if ($domain === null) {
-			$domain = parse_url(Request::getString($this->attrs->server['HTTP_REFERER']), PHP_URL_HOST);
-		}
-		if ($pattern === null) {
-			$pattern = $this->appInstance->config->cookiedomain->value;
-		}
-		foreach (explode(', ', $pattern) as $part) {
-			if (substr($part, 0, 1) === '.') {
-				if ('.' . ltrim(substr($domain, -strlen($part)), '.') === $part) {
-					return true;
-				}
-			}
-			else {
-				if ($domain === $part) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * URI parser.
 	 * @return void.
 	 */
@@ -356,17 +178,17 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->cmpName    = $e[1];
 			$this->controller = isset($e[2]) ? $e[2] : '';
 			$this->dataType   = isset($e[3]) ? $e[3] : 'json';
-			if ($this->components->{$this->cmpName}) {
+			if ($cmp = $this->components->{$this->cmpName}) {
 				$method = $this->controller . 'Controller';
-				if (!$this->components->{$this->cmpName}->checkReferer()) {
+				if (!$cmp->checkReferer()) {
 					$this->setResult(array('errmsg' => 'Unacceptable referer.'));
 					return;
 				}
-				if (method_exists($this->components->{$this->cmpName}, $method)) {
-					$this->components->{$this->cmpName}->$method();
+				if (method_exists($cmp, $method)) {
+					$cmp->$method();
 				}
 				else {
-					$this->setResult(array('errmsg' => 'Unknown controller.'));
+					$cmp->defaultControllerHandler($this->controller);
 				}
 			}
 			else {
@@ -440,58 +262,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->wakeup();
 	}
 
-	/**
-	 * @param array $block
-	 */
-	public function addBlock($block) {
-		if ((!isset($block['type'])) || (!class_exists($class = '\\WakePHP\\Blocks\\Block' . $block['type']))) {
-			$class = '\\WakePHP\\Blocks\\Block';
-		}
-		$block['tag']    = (string)new \MongoId;
-		$block['nowrap'] = true;
-		$this->html .= $block['tag'];
-		new $class($block, $this);
-	}
-
-	/**
-	 * @param $page
-	 */
-	public function loadPage($page) {
-
-		++$this->jobDone;
-
-		if (!$page) {
-			++$this->jobTotal;
-			try {
-				$this->header('404 Not Found');
-			} catch (RequestHeadersAlreadySent $e) {
-			}
-			$this->appInstance->blocks->getBlock(array(
-													 'theme' => $this->theme,
-													 'path'  => '/404',
-												 ), array($this, 'loadErrorPage'));
-			return;
-		}
-		$this->addBlock($page);
-	}
-
-	/**
-	 * @param $page
-	 */
-	public function loadErrorPage($page) {
-
-		++$this->jobDone;
-
-		if (!$page) {
-			$this->html = 'Unable to load error-page.';
-			$this->wakeup();
-			return;
-		}
-
-		$this->addBlock($page);
-
-	}
-
 	public function onFinish() {
 		if ($this->backendClientConn) {
 			$this->backendClientConn->endRequest($this);
@@ -508,51 +278,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->tpl = null;
 		}
 		Daemon::log('onFinish -- ' . $_SERVER['REQUEST_URI']);
-	}
-
-	protected function sessionDecode($str) {
-		$this->setSessionState($str);
-		return $str !== false;
-	}
-	public function sessionRead($sid, $cb = null) {
-		$this->appInstance->sessions->getSessionById($sid, function ($session) use ($cb) {
-			call_user_func($cb, $session);
-		});
-	}
-
-	protected function sessionStartNew($cb = null) {
-		$session = $this->appInstance->sessions->startSession(
-			['ip' => $this->getIp(), 'useragent' => Request::getString($this->attrs->server['HTTP_USER_AGENT'])],
-			function ($lastError) use (&$session, $cb) {
-				if (!$session) {
-					if ($cb !== null) {
-						call_user_func($cb, false);
-					}
-					return;
-				}
-				$this->sessionId = (string) $session['id'];
-				$this->attrs->session = $session;
-				$this->setcookie(
-			  		ini_get('session.name')
-					, $this->sessionId
-					, ini_get('session.cookie_lifetime')
-					, ini_get('session.cookie_path')
-					, $this->appInstance->config->cookiedomain->value ?: ini_get('session.cookie_domain')
-					, ini_get('session.cookie_secure')
-					, ini_get('session.cookie_httponly')
-				);
-				call_user_func($cb, true);
-			});
-	}
-
-	public function sessionCommit($cb = null) {
-		if ($this->updatedSession) {
-			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
-		} else {
-			if ($cb !== null) {
-				call_user_func($cb);
-			}
-		}
 	}
 
 	public function __destruct() {

@@ -39,6 +39,18 @@ class Component {
 		$this->init();
 	}
 
+	public function defaultControllerHandler($name) {
+		$class = '\\WakePHP\\Actions\\' . ClassFinder::getClassBasename($this). '\\' . $name;
+		if (class_exists($class)) {
+			$action = new $class;
+			$action->setAppInstance($this->appInstance);
+			$action->setRequest($this->req);
+			$action->perform();
+		} else {
+			$this->req->setResult(array('errmsg' => 'Unknown controller.'));
+		}
+	}
+
 	public function init() {
 	}
 
