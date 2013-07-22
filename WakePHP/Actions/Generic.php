@@ -12,6 +12,11 @@ abstract class Generic {
 
 	protected $appInstance;
 	protected $callback;
+	protected $req;
+
+	public function setRequest($req) {
+		$this->req = $req;
+	}
 
 	public function __construct($params = []) {
 		foreach ($params as $k => $v) {
@@ -29,6 +34,19 @@ abstract class Generic {
 	}
 
 	abstract public function perform();
-
 	
+	public static function resultMap(&$m) {
+		if (is_array($m)) {
+			foreach ($m as &$v) {
+				$this->resultMap($v);
+			}
+		} else {
+			if ($m instanceof \MongoBinData) {
+				$m = base64_encode($m->bin);
+			}
+			elseif ($m instanceof \MongoId) {
+				$m = (string )$m;
+			}
+		}
+	}	
 }

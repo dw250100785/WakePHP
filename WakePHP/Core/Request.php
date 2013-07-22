@@ -255,7 +255,15 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			$this->html = $converter->convert($result);
 		}
+		elseif ($this->dataType === 'bson') {
+			try {
+				$this->header('Content-Type: application/octet-stream');
+			} catch (RequestHeadersAlreadySent $e) {
+			}
+			$this->html = bson_encode($result);
+		}
 		else {
+			$this->header('Content-Type: application/x-javascript');
 			$this->html = json_encode(['errmsg' => 'Unsupported data-type.']);
 		}
 		++$this->jobDone;

@@ -175,6 +175,8 @@ class Account extends Component {
 					/** @var ComplexJob $job */
 					if ($result['n'] > 0) {
 						$job('captcha', CAPTCHA::checkJob());
+					} else {
+						$job('captcha', CAPTCHA::checkJob()); // !!!!
 					}
 					$job->setResult($jobname, array());
 				});
