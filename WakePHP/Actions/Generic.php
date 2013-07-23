@@ -38,7 +38,7 @@ abstract class Generic {
 	public static function resultMap(&$m) {
 		if (is_array($m)) {
 			foreach ($m as &$v) {
-				$this->resultMap($v);
+				static::resultMap($v);
 			}
 		} else {
 			if ($m instanceof \MongoBinData) {

@@ -3,6 +3,7 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
 use WakePHP\ORM\ExternalAuthTokens;
@@ -97,7 +98,10 @@ class WakePHP extends AppInstance {
 
 		foreach (Daemon::glob($appInstance->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
-			$prop          = lcfirst($class);
+			if ($class === 'Generic') {
+				continue;
+			}
+			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
 			$class         = '\\WakePHP\\ORM\\' . $class;
 			$this->{$prop} = &$a; // trick ;-)
 			unset($a);

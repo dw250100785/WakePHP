@@ -2,6 +2,8 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Clients\Mongo\Collection;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use WakePHP\ORM\Generic;
 
 /**
@@ -83,6 +85,6 @@ class Blocks extends Generic {
 					. '<?php };';
 		}
 		$block['cachekey'] = md5($block['templatePHP']);
-		$this->blocks->upsert($find, $update ? array('$set' => $block) : $block);
+		$this->blocks->upsertOne($find, $update ? array('$set' => $block) : $block);
 	}
 }

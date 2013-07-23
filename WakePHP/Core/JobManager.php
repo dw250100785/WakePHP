@@ -30,6 +30,8 @@ class JobManager {
 	 */
 	public $callbacks = array();
 
+	protected $lastTs;
+
 	/**
 	 * @param WakePHP $appInstance
 	 */
@@ -43,7 +45,7 @@ class JobManager {
 	 */
 	public function init() {
 		$this->resultEvent = Timer::add(function ($event) {
-
+//Daemon::log('timer called');
 			if (!$this->resultCursor) {
 				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobresults'}->find(function ($cursor)  {
 					$this->resultCursor = $cursor;
@@ -65,11 +67,15 @@ class JobManager {
 					   'tailable' => true,
 					   'sort'     => array('$natural' => 1),
 					   'fields'   => 'status,result',
-					   'where'    => array('instance' => $this->appInstance->ipcId, 'ts' => array('$gt' => microtime(true)))
+					   'where'    => array(
+					   		'instance' => $this->appInstance->ipcId,
+					   		'ts' => array('$gt' => $this->lastTs)
+					   	)
 				   ));
+				$this->lastTs = null;
 				Daemon::log('[JobManager] inited cursor - ' . $this->appInstance->ipcId);
 			}
-			elseif (!$this->resultCursor->session->busy) {
+			elseif (!$this->resultCursor->isBusyConn()) {
 				try {
 					$this->resultCursor->getMore();
 				} catch (ConnectionFinished $e) {
@@ -79,9 +85,6 @@ class JobManager {
 			if (sizeof($this->callbacks)) {
 				$event->timeout(0.02e6);
 			}
-			else {
-				$event->timeout(5e6);
-			}
 		});
 	}
 
@@ -90,13 +93,18 @@ class JobManager {
 	 * @param $type
 	 * @param $args
 	 */
-	public function enqueue($cb, $type, $args, $add = [], $cb = null) {
+	public function enqueue($cb, $type, $args, $add = []) {
 		$ts = microtime(true);
-		$jobId = $this->appInstance->jobqueue->push($type, $args, $ts, $add, $cb);
-		if ($cb !== NULL) {
-			$this->callbacks[(string)$jobId] = $cb;
-			\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
+		if ($this->lastTs === null) {
+			$this->lastTs = $ts;
 		}
+		$jobId = $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($lastError) use ($cb, &$jobId) {
+			if ($cb !== NULL) {
+				$this->callbacks[(string)$jobId] = $cb;
+				Daemon::log('setTimeout!');
+				\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
+			}
+		});
 		return $jobId;
 	}
 }

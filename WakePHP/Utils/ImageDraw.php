@@ -90,7 +90,10 @@ class Imagedraw {
 		}
 		else {return $this->res = imagecreate($w,$h);}
 	}
-	public function out() {
+	public function out($file = null) {
+		if ($file !== null) {
+			$this->outfile = $file;
+		}
 		if ($this->type === 'png') {
 			return $this->outfile !== '' ? imagepng($this->res, strval($this->outfile)) : imagepng($this->res);
 		}

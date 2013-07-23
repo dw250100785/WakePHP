@@ -1,6 +1,6 @@
 <?php
 namespace WakePHP\Utils;
-class CAPTCHA_draw {
+class CaptchaDraw {
 	public $text;
 	public $heigth;
 	public $width;
@@ -23,9 +23,9 @@ class CAPTCHA_draw {
 		return \PHPDaemon\Utils\Crypt::randomString(4, 'ABCDEFGHKLMNPQRSTUVWXYZ23456789abcdefghkmnpqrstuvwxyz23456789');
 	}
 
-	public function show() {
+	public function show($file = null) {
 		$text = $this->text;
-		$draw = new ImagedDraw;
+		$draw = new ImageDraw;
 		$draw->type = 'png';
 		$draw->W = 150;
 		$draw->H = 50;
@@ -93,6 +93,6 @@ class CAPTCHA_draw {
 	//$draw->line(0,0,0,$draw->H,$borderlight);
 	//$draw->line($draw->W-1,1,$draw->W-1,$draw->H,$borderdark);
 	if ($this->skin == 'white') {imagefilter($draw->res,IMG_FILTER_NEGATE);}
-	$draw->out();
+	$draw->out($file);
  }
 }
