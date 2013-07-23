@@ -18,8 +18,12 @@ class GetImage extends \WakePHP\Actions\Generic {
 	
 	public function perform() {
 		$this->appInstance->captcha->get(Request::getString($_REQUEST['token']), function($token) {
-			Daemon::log(Debug::dump($token));
-			echo $token['img'];
+			if (!isset($token['img'])) {
+				// @TODO: show mock
+			} else {
+				$this->req->header('Content-Type: image/png');
+				echo $token['img']->bin;
+			}
 			$this->req->finish();
 		});	
 	}

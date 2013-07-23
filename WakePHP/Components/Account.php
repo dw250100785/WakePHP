@@ -174,9 +174,9 @@ class Account extends Component {
 				$job->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
 					if ($result['n'] > 0) {
-						$job('captcha', CAPTCHA::checkJob());
+						$job('captcha', Captcha::checkJob());
 					} else {
-						$job('captcha', CAPTCHA::checkJob()); // !!!!
+						$job('captcha', Captcha::checkJob()); // !!!!
 					}
 					$job->setResult($jobname, array());
 				});
