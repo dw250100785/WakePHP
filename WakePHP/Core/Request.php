@@ -301,7 +301,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->header('Pragma: no-cache');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 		$this->header('Location: ' . HTTPClient::buildUrl($url));
-		if ($this->component !== null) {
+		if ($this->cmpName !== null) {
 			$this->setResult([]);
 		} else {
 			$this->finish();

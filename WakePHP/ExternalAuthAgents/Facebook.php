@@ -32,7 +32,7 @@ class Facebook extends Generic {
 		$this->appInstance->httpclient->get(
 			['https://graph.facebook.com/oauth/access_token',
 				'client_id'     => $this->cmp->config->facebook_app_key->value,
-				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=Facebook',
+				'redirect_uri'  => $this->req->getBaseUrl() . $_SERVER['REQUEST_URI'],
 				'client_secret' => $this->cmp->config->facebook_app_secret->value,
 				'code'          => $code],
 			function ($conn, $success) {

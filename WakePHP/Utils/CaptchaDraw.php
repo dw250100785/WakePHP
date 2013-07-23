@@ -20,7 +20,8 @@ class CaptchaDraw {
 	}
 
 	public static function getRandomText() {
-		return \PHPDaemon\Utils\Crypt::randomString(4, 'ABCDEFGHKLMNPQRSTUVWXYZ23456789abcdefghkmnpqrstuvwxyz23456789');
+		return \PHPDaemon\Utils\Crypt::randomString(4, '23456789abcdefghkmnpqrstuvwxyz23456789');
+		//return \PHPDaemon\Utils\Crypt::randomString(4, 'ABCDEFGHKLMNPQRSTUVWXYZ23456789abcdefghkmnpqrstuvwxyz23456789');
 	}
 
 	public function show($file = null) {
@@ -32,10 +33,10 @@ class CaptchaDraw {
 		$draw->init();
 		$draw->createtruecolor();
 		$draw->antialias(TRUE);
-		$bgcolor = 0x1F1F1F;
-		$textcolor = 0xC0C0C0;
+		$bgcolor = 0xFFFFFF;
+		$textcolor = 0x77B4E3;
 		$draw->setbgcolor($bgcolor);
-		$draw->colortransparent(0x000000);
+		$draw->colortransparent($bgcolor);
 	
 		$fonts = [];
 		$fonts = [
@@ -74,8 +75,8 @@ class CaptchaDraw {
 		0x000000,6);
 	 }
 	}*/
-		//for ($i = 0; $i < $this->noise_wave_n; $i++) {$draw->wave_region(0,0,$draw->W,$draw->H);}
-		for ($i = 0; $i < $this->noise_skew_n; $i++) {$draw->skew_waves();}
+		for ($i = 0; $i < $this->noise_wave_n; $i++) {$draw->wave_region(0,0,$draw->W,$draw->H);}
+		//for ($i = 0; $i < $this->noise_skew_n; $i++) {$draw->skew_waves();}
 		/*for ($i = 0; $i < $draw->W; ++$i)
 		{
 	 		for ($j = 0; $j < $draw->H; ++$j)
@@ -84,15 +85,15 @@ class CaptchaDraw {
 			}
 		}*/
 	
-	//if ($this->noise1) {for($x = 1; $x < $draw->W-1; $x++) {for($y = 1; $y < $draw->H-1; $y++) {if ($y%2 == 0 and $x%2 == 0) {$draw->setpixel($x,$y,'000000');}}}}
-	//if ($this->noise2) {for($x=1;$x<$draw->W;$x++) {for($y=1;$y<$draw->H;$y++) {if (rand(0,10) == 0) {$draw->setpixel($x,$y,'FFFFFF');}}}}
+	if ($this->noise1) {for($x = 1; $x < $draw->W-1; $x++) {for($y = 1; $y < $draw->H-1; $y++) {if ($y%2 == 0 and $x%2 == 0) {$draw->setpixel($x,$y,'000000');}}}}
+	if ($this->noise2) {for($x=1;$x<$draw->W;$x++) {for($y=1;$y<$draw->H;$y++) {if (rand(0,10) == 0) {$draw->setpixel($x,$y,'FFFFFF');}}}}
 	//$draw->border2();
 	//$borderlight = 0xA2A2A2;
 	//$borderdark = 0x4D4D4D;
 	//$draw->line(0,0,$draw->W,0,$borderlight);
 	//$draw->line(0,0,0,$draw->H,$borderlight);
 	//$draw->line($draw->W-1,1,$draw->W-1,$draw->H,$borderdark);
-	if ($this->skin == 'white') {imagefilter($draw->res,IMG_FILTER_NEGATE);}
+	//if ($this->skin == 'white' ||1) {imagefilter($draw->res,IMG_FILTER_NEGATE);}
 	$draw->out($file);
  }
 }

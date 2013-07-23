@@ -116,7 +116,6 @@ class Account extends Component {
 				$req = $job->req;
 
 				if (sizeof($errors) === 0) {
-
 					$req->appInstance->accounts->saveAccount(
 						array(
 							'email'            => $email = Request::getString($req->attrs->request['email']),
@@ -271,6 +270,9 @@ class Account extends Component {
 		if (!($AuthAgent = \WakePHP\ExternalAuthAgents\Generic::getAgent(Request::getString($this->req->attrs->get['agent']), $this))) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
 			return;
+		}
+		if (isset($_GET['backurl'])) {
+			$AuthAgent->setBackUrl(Request::getString($_GET['backurl']));
 		}
 		$AuthAgent->redirect();
 	}

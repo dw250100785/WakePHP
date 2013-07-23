@@ -56,7 +56,7 @@ abstract class Generic {
 	 * @return string
 	 */
 	public function getBackUrl() {
-		return $this->backUrl;
+		return $this->backUrl !== null ? $this->backUrl : $this->req->getBaseUrl() . '/' . $this->req->locale . '/';
 	}
 
 	/**
@@ -68,7 +68,7 @@ abstract class Generic {
 
 	protected function finalRedirect() {
 		$this->req->status(302);
-		$url = $this->req->getBackUrl(Request::getString($_REQUEST['backurl']));
+		$url = $this->getBackUrl();
 		$this->req->header('Location: ' . $url);
 		$this->req->setResult(['redirectTo' => $url]);
 		$this->req = null;

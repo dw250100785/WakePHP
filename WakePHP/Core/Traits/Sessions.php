@@ -2,6 +2,7 @@
 namespace WakePHP\Core\Traits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use WakePHP\Core\Request;
 
 /**
  * Sessions
