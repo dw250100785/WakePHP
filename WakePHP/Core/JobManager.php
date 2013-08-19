@@ -84,6 +84,11 @@ class JobManager {
 			}
 			if (sizeof($this->callbacks)) {
 				$event->timeout(0.02e6);
+			} else {
+				if ($this->resultCursor) {
+					$this->resultCursor->destroy();
+					$this->resultCursor = null;
+				}
 			}
 		});
 	}

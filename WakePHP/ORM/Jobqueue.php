@@ -26,7 +26,7 @@ class Jobqueue extends Generic {
 		if (is_string($id)) {
 			$id = new \MongoId($id);
 		}
-		$this->jobqueue->findOne($accesskey !== null ? ['_id' => $id, 'accesskey' => $accesskey] : ['_id' => $id], $cb);
+		$this->jobqueue->findOne($cb, ['where' => $accesskey !== null ? ['_id' => $id, 'accesskey' => $accesskey] : ['_id' => $id]]);
 	}
 	public function push($type, $args, $ts, $add, $cb = null) {
 		return $this->jobqueue->insert([

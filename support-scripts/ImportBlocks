@@ -16,7 +16,10 @@ $decoder = function($json) {
 	);
 	return json_decode(strtr($json,$pairs), true);
 };
-foreach (glob('./themes/'.$theme.'/blocks/*.obj') as $file) {
+foreach (explode("\n", shell_exec('find ' . escapeshellarg('./themes/'.$theme.'/') . ' -name \'*.obj\'')) as $file) {
+	if ($file === '') {
+		continue;
+	}
 	$block = $decoder(file_get_contents($file));
 	$block['name'] = pathinfo($file,PATHINFO_FILENAME);
 	$tplFilename = dirname($file).'/'.$block['name'].'.tpl';

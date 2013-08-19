@@ -295,12 +295,15 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	/**
 	 * @param $url
 	 */
-	public function redirectTo($url) {
+	public function redirectTo($url, $finish = true) {
 		$this->status(302);
 		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
 		$this->header('Pragma: no-cache');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 		$this->header('Location: ' . HTTPClient::buildUrl($url));
+		if (!$finish) {
+			return;
+		}
 		if ($this->cmpName !== null) {
 			$this->setResult([]);
 		} else {

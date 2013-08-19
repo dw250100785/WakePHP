@@ -30,9 +30,12 @@ abstract class Generic {
 	}
 	public function sendResult($result) {
 		$this->status = $result !== false ? 's' : 'f';
+		if ($this->status === 's') {
+			$this->progress = 1;
+		}
 		$this->parent->jobqueue->update(
 			['_id' => $this->_id],
-			['$set' => ['status' => $this->status]]
+			['$set' => ['status' => $this->status, 'progress' => $this->progress]]
 		);
 		$this->parent->jobresults->insert([
 					  '_id'      => $this->_id,

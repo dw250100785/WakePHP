@@ -105,7 +105,8 @@ class Account extends Component {
 	public function SignupController() {
 		$this->req->onSessionStart(function ($sessionEvent) {
 			/** @var ComplexJob $job */
-			$job      = $this->req->job = new ComplexJob(function ($job) {
+			$captchaPostCheck = false;
+			$job      = $this->req->job = new ComplexJob(function ($job) use (&$captchaPostCheck) {
 				$errors = array();
 				foreach ($job->results as $result) {
 					if (sizeof($result) > 0) {
@@ -115,54 +116,61 @@ class Account extends Component {
 				/** @var WakePHPRequest $req */
 				$req = $job->req;
 
-				if (sizeof($errors) === 0) {
-					$req->appInstance->accounts->saveAccount(
-						array(
-							'email'            => $email = Request::getString($req->attrs->request['email']),
-							'username'         => Request::getString($req->attrs->request['username']),
-							'location'         => $location = Request::getString($req->attrs->request['location']),
-							'password'         => $password = Request::getString($req->attrs->request['password']),
-							'confirmationcode' => $code = $this->getConfirmationCode($email),
-							'regdate'          => time(),
-							'etime'            => time(),
-							'ip'               => $req->attrs->server['REMOTE_ADDR'],
-							'subscription'     => 'daily',
-							'aclgroups'        => array('Users'),
-							'acl'              => array(),
-						), function ($lastError) use ($req, $email, $password, $location, $code) {
-						if ($location !== '') {
-
-							$req->components->GMAPS->geo($location, function ($geo) use ($req, $email) {
-
-								$req->appInstance->accounts->saveAccount(array(
-																			 'email'          => $email,
-																			 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
-																		 ), null, true);
-
-							});
-
-						}
-						$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $password, $code) {
-							if (!$account) {
-								$req->setResult(array('success' => false));
-								return;
-							}
-							$req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
-								'email'    => $account['email'],
-								'password' => $password,
-								'code'     => $code,
-								'locale'   => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
-							));
-
-							$req->attrs->session['accountId'] = $account['_id'];
-							$req->updatedSession              = true;
-							$req->setResult(array('success' => true));
-						});
-					});
-				}
-				else {
+				if (sizeof($errors) > 0) {
 					$req->setResult(array('success' => false, 'errors' => $errors));
+					return;
 				}
+				if (!$captchaPostCheck) {
+					$captchaPostCheck = true;
+					if (isset($job->results['captcha'])) {
+						$job('captcha', Captcha::checkJob(true));
+						return;
+					}
+				}
+
+				$req->appInstance->accounts->saveAccount(
+					array(
+						'email'            => $email = Request::getString($req->attrs->request['email']),
+						'username'         => Request::getString($req->attrs->request['username']),
+						'location'         => $location = Request::getString($req->attrs->request['location']),
+						'password'         => $password = Request::getString($req->attrs->request['password']),
+						'confirmationcode' => $code = $this->getConfirmationCode($email),
+						'regdate'          => time(),
+						'etime'            => time(),
+						'ip'               => $req->attrs->server['REMOTE_ADDR'],
+						'subscription'     => 'daily',
+						'aclgroups'        => array('Users'),
+						'acl'              => array(),
+					), function ($lastError) use ($req, $email, $password, $location, $code) {
+					if ($location !== '') {
+
+						$req->components->GMAPS->geo($location, function ($geo) use ($req, $email) {
+
+							$req->appInstance->accounts->saveAccount(array(
+																		 'email'          => $email,
+																		 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
+																	 ), null, true);
+
+						});
+
+					}
+					$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $password, $code) {
+						if (!$account) {
+							$req->setResult(array('success' => false));
+							return;
+						}
+						$req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
+							'email'    => $account['email'],
+							'password' => $password,
+							'code'     => $code,
+							'locale'   => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+						));
+
+						$req->attrs->session['accountId'] = $account['_id'];
+						$req->updatedSession              = true;
+						$req->setResult(array('success' => true));
+					});
+				});
 
 			});
 			$job->req = $this->req;
@@ -173,9 +181,9 @@ class Account extends Component {
 				$job->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
 					if ($result['n'] > 0) {
-						$job('captcha', Captcha::checkJob());
+						$job('captcha', Captcha::checkJob(false));
 					} else {
-						$job('captcha', Captcha::checkJob()); // !!!!
+						$job('captcha', Captcha::checkJob(false)); // !!!!
 					}
 					$job->setResult($jobname, array());
 				});
@@ -308,8 +316,7 @@ class Account extends Component {
 						$_SESSION['extAuth']       = $crd;
 						$_SESSION['extAuthAdd']    = $add;
 						$this->req->updatedSession = true;
-						$this->req->header('Location: ' . $this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
-						$this->req->setResult([]);
+						$this->req->redirectTo($this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
 						return;
 					}
 					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add, $cb) {
@@ -824,8 +831,7 @@ class Account extends Component {
 					// send email....
 				}
 				elseif ($type === 'redirect') {
-					$this->req->status(302);
-					$this->req->header('Location: ' . HTTPClient::buildUrl(['/' . $this->req->locale . '/account/extauth', 'i' => $intToken]));
+					$this->req->redirectTo(HTTPClient::buildUrl(['/' . $this->req->locale . '/account/extauth', 'i' => $intToken]), false);
 				}
 				$this->req->setResult(['success' => true, 'intToken' => $intToken]);
 			});

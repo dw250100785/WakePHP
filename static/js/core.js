@@ -64,8 +64,9 @@ jQuery.queryOptions = function(method, success, data, dataType) {
 		type: "POST",
 		url: "/component/"+method+"/"+dataType,
 		dataType: dataType,
-		data: data,
-		success: success
+		data: $.toJSON(data),
+		success: success,
+		contentType: 'application/json'
 	};
 	return options;
 };
