@@ -38,8 +38,8 @@ class Account extends Component {
 					$this->req->propertyUpdated('account');
 					$authEvent->setResult();
 				};
-				if (isset($this->req->attrs->session['accountId'])) {
-					$this->appInstance->accounts->getAccountById($this->req->attrs->session['accountId'], function ($account) use ($authEvent, $cb) {
+				if (isset($_SESSION['accountId'])) {
+					$this->appInstance->accounts->getAccountById($_SESSION['accountId'], function ($account) use ($authEvent, $cb) {
 						if (!$account) {
 							$this->appInstance->accounts->getAccountByName('Guest', $cb);
 							return;
@@ -114,10 +114,9 @@ class Account extends Component {
 					}
 				}
 				/** @var WakePHPRequest $req */
-				$req = $job->req;
 
 				if (sizeof($errors) > 0) {
-					$req->setResult(array('success' => false, 'errors' => $errors));
+					$this->req->setResult(array('success' => false, 'errors' => $errors));
 					return;
 				}
 				if (!$captchaPostCheck) {
@@ -128,25 +127,25 @@ class Account extends Component {
 					}
 				}
 
-				$req->appInstance->accounts->saveAccount(
+				$this->req->appInstance->accounts->saveAccount(
 					array(
-						'email'            => $email = Request::getString($req->attrs->request['email']),
-						'username'         => Request::getString($req->attrs->request['username']),
-						'location'         => $location = Request::getString($req->attrs->request['location']),
-						'password'         => $password = Request::getString($req->attrs->request['password']),
+						'email'            => $email = Request::getString($_REQUEST['email']),
+						'username'         => Request::getString($_REQUEST['username']),
+						'location'         => $location = Request::getString($_REQUEST['location']),
+						'password'         => $password = Request::getString($_REQUEST['password']),
 						'confirmationcode' => $code = $this->getConfirmationCode($email),
 						'regdate'          => time(),
 						'etime'            => time(),
-						'ip'               => $req->attrs->server['REMOTE_ADDR'],
+						'ip'               => $_SERVER['REMOTE_ADDR'],
 						'subscription'     => 'daily',
 						'aclgroups'        => array('Users'),
 						'acl'              => array(),
-					), function ($lastError) use ($req, $email, $password, $location, $code) {
+					), function ($lastError) use ($email, $password, $location, $code) {
 					if ($location !== '') {
 
-						$req->components->GMAPS->geo($location, function ($geo) use ($req, $email) {
+						$this->req->components->GMAPS->geo($location, function ($geo) use ($email) {
 
-							$req->appInstance->accounts->saveAccount(array(
+							$this->req->appInstance->accounts->saveAccount(array(
 																		 'email'          => $email,
 																		 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
 																	 ), null, true);
@@ -154,30 +153,27 @@ class Account extends Component {
 						});
 
 					}
-					$req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($req, $password, $code) {
+					$this->req->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($password, $code) {
 						if (!$account) {
-							$req->setResult(array('success' => false));
+							$this->req->setResult(array('success' => false));
 							return;
 						}
-						$req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
+						$this->req->appInstance->Sendmail->mailTemplate('mailAccountConfirmation', $account['email'], array(
 							'email'    => $account['email'],
 							'password' => $password,
 							'code'     => $code,
-							'locale'   => $req->appInstance->getLocaleName(Request::getString($req->attrs->request['LC'])),
+							'locale'   => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
 						));
 
-						$req->attrs->session['accountId'] = $account['_id'];
-						$req->updatedSession              = true;
-						$req->setResult(array('success' => true));
+						$this->req->attrs->session['accountId'] = $account['_id'];
+						$this->req->updatedSession              = true;
+						$this->req->setResult(array('success' => true));
 					});
 				});
 
 			});
-			$job->req = $this->req;
-
 			$job('captchaPreCheck', function ($jobname, $job) {
 				/** @var ComplexJob $job */
-				/** @var WakePHPRequest $job->req */
 				$job->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
 					if ($result['n'] > 0) {
@@ -192,7 +188,7 @@ class Account extends Component {
 			$job('username', function ($jobname, $job) {
 				/** @var ComplexJob $job */
 				/** @var WakePHPRequest $job->req */
-				$username = Request::getString($job->req->attrs->request['username']);
+				$username = Request::getString($_REQUEST['username']);
 				if ($username === '') {
 					$job->setResult($jobname, array());
 					return;
@@ -217,12 +213,12 @@ class Account extends Component {
 			$job('email', function ($jobname, $job) {
 				/** @var ComplexJob $job */
 				/** @var WakePHPRequest $job->req */
-				if (filter_var(Request::getString($job->req->attrs->request['email']), FILTER_VALIDATE_EMAIL) === false) {
+				if (filter_var(Request::getString($_REQUEST['email']), FILTER_VALIDATE_EMAIL) === false) {
 					$job->setResult($jobname, array('email' => 'Incorrect E-Mail.'));
 					return;
 				}
 				$job->req->appInstance->accounts->getAccountByUnifiedEmail(
-					Request::getString($job->req->attrs->request['email']),
+					Request::getString($_REQUEST['email']),
 					function ($account) use ($jobname, $job) {
 
 						$errors = array();
@@ -458,7 +454,7 @@ class Account extends Component {
 							$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
 								'email'  => $email,
 								'code'   => $code,
-								'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+								'locale' => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
 							]);
 							$this->req->setResult(['success' => true, 'status' => 'sent']);
 							return;
@@ -469,7 +465,7 @@ class Account extends Component {
 						$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
 							'email'  => $email,
 							'code'   => $request['code'],
-							'locale' => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
+							'locale' => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
 						]);
 						$this->req->setResult(['success' => true, 'status' => 'sent']);
 						return;
@@ -507,13 +503,12 @@ class Account extends Component {
 	}
 
 	public function ProfileController() {
-		$req = $this->req;
-		$this->onAuth(function ($result) use ($req) {
-			if (!$req->account['logged']) {
-				$req->setResult(array('success' => false, 'goLoginPage' => true));
+		$this->onAuth(function ($result) {
+			if (!$this->req->account['logged']) {
+				$this->req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
-			$job      = $req->job = new ComplexJob(function ($job) {
+			$job      = $this->req->job = new ComplexJob(function ($job) {
 				/** @var ComplexJob $job */
 				$errors = array();
 				foreach ($job->results as $result) {
@@ -522,28 +517,27 @@ class Account extends Component {
 					}
 				}
 				/** @var WakePHPRequest $req */
-				$req = $job->req;
 				if (sizeof($errors) === 0) {
 
 					$update = array(
 						'email'        => $req->account['email'],
-						'location'     => $location = Request::getString($req->attrs->request['location']),
-						'firstname'    => Request::getString($req->attrs->request['firstname']),
-						'lastname'     => Request::getString($req->attrs->request['lastname']),
-						'gender'       => Request::getString($req->attrs->request['gender'], array('', 'm', 'f')),
-						'birthdate'    => Request::getString($req->attrs->request['birthdate']),
-						'subscription' => Request::getString($req->attrs->request['subscription'], array('', 'daily', 'thematic')),
+						'location'     => $location = Request::getString($_REQUEST['location']),
+						'firstname'    => Request::getString($_REQUEST['firstname']),
+						'lastname'     => Request::getString($_REQUEST['lastname']),
+						'gender'       => Request::getString($_REQUEST['gender'], array('', 'm', 'f')),
+						'birthdate'    => Request::getString($_REQUEST['birthdate']),
+						'subscription' => Request::getString($_REQUEST['subscription'], array('', 'daily', 'thematic')),
 						'etime'        => time(),
 					);
-					if (($password = Request::getString($req->attrs->request['password'])) !== '') {
+					if (($password = Request::getString($_REQUEST['password'])) !== '') {
 						$update['password'] = $password;
 					}
-					$req->appInstance->accounts->saveAccount($update, function ($lastError) use ($req, $password, $location) {
+					$this->req->appInstance->accounts->saveAccount($update, function ($lastError) use ($password, $location) {
 						if ($location !== '') {
 
-							$req->components->GMAPS->geo($location, function ($geo) use ($req) {
+							$this->req->components->GMAPS->geo($location, function ($geo) {
 
-								$req->appInstance->accounts->saveAccount(array(
+								$this->req->appInstance->accounts->saveAccount(array(
 																			 'email'          => $req->account['email'],
 																			 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
 																		 ), null, true);
@@ -551,32 +545,30 @@ class Account extends Component {
 							});
 
 						}
-						$req->setResult(array('success' => true));
+						$this->req->setResult(array('success' => true));
 					}, true);
 				}
 				else {
-					$req->setResult(array('success' => false, 'errors' => $errors));
+					$this->req->setResult(array('success' => false, 'errors' => $errors));
 				}
 
 			});
-			$job->req = $req;
 
 			$job('password', function ($jobname, $job) {
 				$errors = array();
 				/** @var ComplexJob $job */
 				/** @var WakePHPRequest $job->req */
 				/** @var WakePHPRequest $req */
-				$req = $job->req;
-				if (($curpassword = Request::getString($req->attrs->request['currentpassword'])) !== '') {
-					if (!$req->appInstance->accounts->checkPassword($job->req->account, $curpassword)) {
+				if (($curpassword = Request::getString($_REQUEST['currentpassword'])) !== '') {
+					if (!$req->appInstance->accounts->checkPassword($this->req->account, $curpassword)) {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
 				}
-				if (($password = Request::getString($req->attrs->request['password'])) !== '') {
-					if (Request::getString($req->attrs->request['currentpassword']) == '') {
+				if (($password = Request::getString($_REQUEST['password'])) !== '') {
+					if (Request::getString($_REQUEST['currentpassword']) == '') {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
-					if (($r = $req->components->Account->checkPasswordFormat($password)) !== true) {
+					if (($r = $this->req->components->Account->checkPasswordFormat($password)) !== true) {
 						$errors['password'] = $r;
 					}
 				}
@@ -591,10 +583,9 @@ class Account extends Component {
 	 *
 	 */
 	public function ManageAccountsController() {
-		$req = $this->req;
-		$this->onAuth(function ($result) use ($req) {
-			if (!in_array('Superusers', $req->account['aclgroups'], true)) {
-				$req->setResult(array('success' => false, 'goLoginPage' => true));
+		$this->onAuth(function ($result) {
+			if (!in_array('Superusers', $this->req->account['aclgroups'], true)) {
+				$this->req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
 
@@ -617,9 +608,9 @@ class Account extends Component {
 				return $fieldNames[$n];
 			};
 
-			$action = Request::getString($req->attrs->request['action']);
+			$action = Request::getString($_REQUEST['action']);
 			if ($action === 'EditColumn') {
-				$column = $field(Request::getInteger($req->attrs->request['column']));
+				$column = $field(Request::getInteger($_REQUEST['column']));
 				if ($column === null) {
 					$req->setResult(array('success' => false, 'error' => 'Column not found.'));
 					return;
@@ -627,8 +618,8 @@ class Account extends Component {
 
 				/** @noinspection PhpIllegalArrayKeyTypeInspection */
 				$req->appInstance->accounts->saveAccount(array(
-															 '_id'   => Request::getString($req->attrs->request['id']),
-															 $column => $value = Request::getString($req->attrs->request['value'])
+															 '_id'   => Request::getString($_REQUEST['id']),
+															 $column => $value = Request::getString($_REQUEST['value'])
 														 ), function ($lastError) use ($req, $value) {
 					if ($lastError['updatedExisting']) {
 						$req->setResult(array('success' => true, 'value' => $value));
@@ -641,27 +632,27 @@ class Account extends Component {
 				return;
 			}
 
-			$where   = array();
-			$sort    = array();
-			$sortDir = array();
+			$where   = [];
+			$sort    = [];
+			$sortDir = [];
 
-			foreach ($req->attrs->request as $k => $value) {
+			foreach ($_REQUEST as $k => $value) {
 				list ($type, $index) = explode('_', $k . '_');
 				if ($type === 'iSortCol') {
 					/** @noinspection PhpIllegalArrayKeyTypeInspection */
-					$sort[$field($value)] = Request::getString($req->attrs->request['sSortDir_' . $index]) == 'asc' ? 1 : -1;
+					$sort[$field($value)] = Request::getString($_REQUEST['sSortDir_' . $index]) == 'asc' ? 1 : -1;
 				}
 			}
 			unset($sort[null]);
 
-			$offset = Request::getInteger($req->attrs->request['iDisplayStart']);
-			$limit  = Request::getInteger($req->attrs->request['iDisplayLength']);
+			$offset = Request::getInteger($_REQUEST['iDisplayStart']);
+			$limit  = Request::getInteger($_REQUEST['iDisplayLength']);
 
 			$job = $req->job = new ComplexJob(function ($job) {
 
 				$job->req->setResult(array(
 										 'success'              => true,
-										 'sEcho'                => (int)Request::getString($job->req->attrs->request['sEcho']),
+										 'sEcho'                => (int)Request::getString($_REQUEST['sEcho']),
 										 'iTotalRecords'        => $job->results['countTotal'],
 										 'iTotalDisplayRecords' => $job->results['countFiltered'],
 										 'aaData'               => $job->results['find'],
@@ -727,8 +718,6 @@ class Account extends Component {
 
 			});
 
-			$job->req = $req;
-
 			$job();
 
 		});
@@ -738,13 +727,12 @@ class Account extends Component {
 	 *
 	 */
 	public function ManageAccountsDeleteController() {
-		$req = $this->req;
-		$this->onAuth(function ($result) use ($req) {
-			if (!in_array('Superusers', $req->account['aclgroups'], true)) {
+		$this->onAuth(function ($result) {
+			if (!in_array('Superusers', $this->req->account['aclgroups'], true)) {
 				$req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
-			$req->appInstance->accounts->deleteAccount(array('_id' => Request::getString($req->attrs->request['id'])), function ($lastError) use ($req) {
+			$req->appInstance->accounts->deleteAccount(array('_id' => Request::getString($_REQUEST['id'])), function ($lastError) {
 
 				if ($lastError['n'] > 0) {
 					$req->setResult(array(
@@ -802,7 +790,7 @@ class Account extends Component {
 	 *
 	 */
 	public function ExtAuthController() {
-		$hash = Request::getString($this->req->attrs->request['x']);
+		$hash = Request::getString($_REQUEST['x']);
 		if (!strlen($hash) || base64_decode($hash, true) === false) {
 			$this->req->setResult(['success' => false, 'error' => 'Wrong format of extTokenHash']);
 			return;
@@ -842,7 +830,7 @@ class Account extends Component {
 	 *
 	 */
 	public function ExtAuthPingController() {
-		$extToken = Request::getString($this->req->attrs->request['p']);
+		$extToken = Request::getString($_REQUEST['p']);
 		if (!strlen($extToken)) {
 			$this->req->setResult(['success' => false, 'error' => 'Wrong format of extTokenHash']);
 			return;
@@ -887,7 +875,7 @@ class Account extends Component {
 	 */
 	public function    AuthenticationController() {
 		$this->req->onSessionStart(function ($sessionEvent) {
-			$username = Request::getString($this->req->attrs->request['username']);
+			$username = Request::getString($_REQUEST['username']);
 			if ($username === '') {
 				$this->req->setResult(array('success' => false, 'errors' => array(
 					'username' => 'Unrecognized username.'
@@ -904,7 +892,7 @@ class Account extends Component {
 							'username' => 'Unrecognized username.'
 						)));
 					}
-					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($this->req->attrs->request['password']))) {
+					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($_REQUEST['password']))) {
 						$this->req->attrs->session['accountId'] = $account['_id'];
 						$this->req->updatedSession              = true;
 						$r                                      = array('success' => true);
@@ -928,74 +916,75 @@ class Account extends Component {
 	public function    RecoveryController() {
 
 		$this->req->onSessionStart(function () {
+			if (!isset($_REQUEST['email'])) {
+				$this->req->setResult(['success' => false, 'errors' => ['email' => 'Empty E-Mail.']]);
+				return;
+			}
+			$email = Request::getString($_REQUEST['email']);
+			$code  = trim(Request::getString($_REQUEST['code']));
+			if ($code !== '') {
 
-			if (isset($this->req->attrs->request['email'])) {
-				$email = Request::getString($this->req->attrs->request['email']);
-				$code  = trim(Request::getString($this->req->attrs->request['code']));
-				if ($code !== '') {
+				$this->appInstance->accountRecoveryRequests->invalidateCode(function ($lastError) use ($email, $code) {
+					if ($lastError['n'] > 0) {
 
-					$this->appInstance->accountRecoveryRequests->invalidateCode(function ($lastError) use ($email, $code) {
-						if ($lastError['n'] > 0) {
+						$this->appInstance->accountRecoveryRequests->getCode(function ($result) {
+							if (!$result) {
+								$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+								return;
+							}
 
-							$this->appInstance->accountRecoveryRequests->getCode(function ($result) {
-								if (!$result) {
-									$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
-									return;
+							$this->appInstance->accounts->saveAccount(array(
+																		  'email'    => $result['email'],
+																		  'password' => $result['password'],
+																	  ), function ($lastError) use ($result) {
+								if ($lastError['updatedExisting']) {
+									$this->req->setResult(array('success' => true, 'status' => 'recovered'));
+
+									$this->appInstance->accounts->confirmAccount(array(
+																					 'email' => $result['email'],
+																				 ));
+
 								}
+								else {
+									$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
+								}
+							}, true);
 
-								$this->appInstance->accounts->saveAccount(array(
-																			  'email'    => $result['email'],
-																			  'password' => $result['password'],
-																		  ), function ($lastError) use ($result) {
-									if ($lastError['updatedExisting']) {
-										$this->req->setResult(array('success' => true, 'status' => 'recovered'));
+						}, $email, $code);
 
-										$this->appInstance->accounts->confirmAccount(array(
-																						 'email' => $result['email'],
-																					 ));
+					}
+					else {
+						$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Incorrect code.')));
+					}
+				}, $email, $code);
+			}
+			else {
+				$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
+					if (!$account) {
+						$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Account not found.')));
+						return;
+					}
+					$this->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($email) {
 
-									}
-									else {
-										$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Error happened.')));
-									}
-								}, true);
-
-							}, $email, $code);
-
+						if (0) { //$result['ts'] + 900 > time()) {
+							$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 						}
 						else {
-							$this->req->setResult(array('success' => false, 'errors' => array('code' => 'Incorrect code.')));
+							$password = substr(md5($email . "\x00" . $result['code'] . "\x00" . $this->appInstance->config->cryptsalt->value . "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
+
+							$code = $this->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($_SERVER['REMOTE_ADDR']), $password);
+
+							$this->appInstance->Sendmail->mailTemplate('mailAccountAccessRecovery', $email, array(
+								'email'    => $email,
+								'password' => $password,
+								'code'     => $code,
+								'locale'   => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
+							));
+							$this->req->setResult(array('success' => true, 'status' => 'sent'));
 						}
-					}, $email, $code);
-				}
-				else {
-					$this->appInstance->accounts->getAccountByUnifiedEmail($email, function ($account) use ($email) {
-						if (!$account) {
-							$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Account not found.')));
-							return;
-						}
-						$this->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($email) {
 
-							if (0) { //$result['ts'] + 900 > time()) {
-								$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
-							}
-							else {
-								$password = substr(md5($email . "\x00" . $result['code'] . "\x00" . $this->appInstance->config->cryptsalt->value . "\x00" . mt_rand(0, mt_getrandmax())), mt_rand(0, 26), 6);
-
-								$code = $this->appInstance->accountRecoveryRequests->addRecoveryCode($email, Request::getString($this->req->attrs->server['REMOTE_ADDR']), $password);
-
-								$this->appInstance->Sendmail->mailTemplate('mailAccountAccessRecovery', $email, array(
-									'email'    => $email,
-									'password' => $password,
-									'code'     => $code,
-									'locale'   => $this->req->appInstance->getLocaleName(Request::getString($this->req->attrs->request['LC'])),
-								));
-								$this->req->setResult(array('success' => true, 'status' => 'sent'));
-							}
-
-						});
 					});
-				}
+				});
 			}
 		});
 	}
