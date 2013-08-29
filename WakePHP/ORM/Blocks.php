@@ -70,8 +70,8 @@ class Blocks extends Generic {
 		if (isset($block['template'])) {
 
 			$tpl = $this->appInstance->getQuickyInstance();
-			$tpl->register_function('getblock', function ($args) {
-			});
+			$tpl->register_function('getblock', function ($args) {});
+			$tpl->load_filter('pre', 'optimize');
 			$block['templatePHP'] = 'return function($tpl) {
 			$var = &$tpl->_tpl_vars;
 			$config = &$tpl->_tpl_config;

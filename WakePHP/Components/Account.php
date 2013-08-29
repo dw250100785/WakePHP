@@ -174,7 +174,7 @@ class Account extends Component {
 			});
 			$job('captchaPreCheck', function ($jobname, $job) {
 				/** @var ComplexJob $job */
-				$job->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
+				$this->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
 					if ($result['n'] > 0) {
 						$job('captcha', Captcha::checkJob(false));
@@ -187,17 +187,16 @@ class Account extends Component {
 
 			$job('username', function ($jobname, $job) {
 				/** @var ComplexJob $job */
-				/** @var WakePHPRequest $job->req */
 				$username = Request::getString($_REQUEST['username']);
 				if ($username === '') {
 					$job->setResult($jobname, array());
 					return;
 				}
-				if (($r = $job->req->components->Account->checkUsernameFormat($username)) !== true) {
+				if (($r = $this->req->components->Account->checkUsernameFormat($username)) !== true) {
 					$job->setResult($jobname, array($r));
 					return;
 				}
-				$job->req->appInstance->accounts->getAccountByUnifiedName(
+				$this->req->appInstance->accounts->getAccountByUnifiedName(
 					$username,
 					function ($account) use ($jobname, $job) {
 
@@ -212,12 +211,11 @@ class Account extends Component {
 
 			$job('email', function ($jobname, $job) {
 				/** @var ComplexJob $job */
-				/** @var WakePHPRequest $job->req */
 				if (filter_var(Request::getString($_REQUEST['email']), FILTER_VALIDATE_EMAIL) === false) {
 					$job->setResult($jobname, array('email' => 'Incorrect E-Mail.'));
 					return;
 				}
-				$job->req->appInstance->accounts->getAccountByUnifiedEmail(
+				$this->req->appInstance->accounts->getAccountByUnifiedEmail(
 					Request::getString($_REQUEST['email']),
 					function ($account) use ($jobname, $job) {
 
@@ -520,7 +518,7 @@ class Account extends Component {
 				if (sizeof($errors) === 0) {
 
 					$update = array(
-						'email'        => $req->account['email'],
+						'email'        => $this->req->account['email'],
 						'location'     => $location = Request::getString($_REQUEST['location']),
 						'firstname'    => Request::getString($_REQUEST['firstname']),
 						'lastname'     => Request::getString($_REQUEST['lastname']),
@@ -538,7 +536,7 @@ class Account extends Component {
 							$this->req->components->GMAPS->geo($location, function ($geo) {
 
 								$this->req->appInstance->accounts->saveAccount(array(
-																			 'email'          => $req->account['email'],
+																			 'email'          => $this->req->account['email'],
 																			 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
 																		 ), null, true);
 
@@ -560,7 +558,7 @@ class Account extends Component {
 				/** @var WakePHPRequest $job->req */
 				/** @var WakePHPRequest $req */
 				if (($curpassword = Request::getString($_REQUEST['currentpassword'])) !== '') {
-					if (!$req->appInstance->accounts->checkPassword($this->req->account, $curpassword)) {
+					if (!$this->req->appInstance->accounts->checkPassword($this->req->account, $curpassword)) {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
 				}
@@ -612,20 +610,20 @@ class Account extends Component {
 			if ($action === 'EditColumn') {
 				$column = $field(Request::getInteger($_REQUEST['column']));
 				if ($column === null) {
-					$req->setResult(array('success' => false, 'error' => 'Column not found.'));
+					$this->req->setResult(array('success' => false, 'error' => 'Column not found.'));
 					return;
 				}
 
 				/** @noinspection PhpIllegalArrayKeyTypeInspection */
-				$req->appInstance->accounts->saveAccount(array(
+				$this->req->appInstance->accounts->saveAccount(array(
 															 '_id'   => Request::getString($_REQUEST['id']),
 															 $column => $value = Request::getString($_REQUEST['value'])
-														 ), function ($lastError) use ($req, $value) {
+														 ), function ($lastError) use ($value) {
 					if ($lastError['updatedExisting']) {
-						$req->setResult(array('success' => true, 'value' => $value));
+						$this->req->setResult(array('success' => true, 'value' => $value));
 					}
 					else {
-						$req->setResult(array('success' => false, 'error' => 'Account not found.'));
+						$this->req->setResult(array('success' => false, 'error' => 'Account not found.'));
 					}
 				}, true);
 
@@ -648,9 +646,9 @@ class Account extends Component {
 			$offset = Request::getInteger($_REQUEST['iDisplayStart']);
 			$limit  = Request::getInteger($_REQUEST['iDisplayLength']);
 
-			$job = $req->job = new ComplexJob(function ($job) {
+			$job = $this->req->job = new ComplexJob(function ($job) {
 
-				$job->req->setResult(array(
+				$this->req->setResult(array(
 										 'success'              => true,
 										 'sEcho'                => (int)Request::getString($_REQUEST['sEcho']),
 										 'iTotalRecords'        => $job->results['countTotal'],
@@ -661,7 +659,7 @@ class Account extends Component {
 			});
 
 			$job('countTotal', function ($jobname, $job) {
-				$job->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname) {
+				$this->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
 					$job->setResult($jobname, $result['n']);
 				});
@@ -670,7 +668,7 @@ class Account extends Component {
 			$job('countFiltered', function ($jobname, $job) use ($where, $limit) {
 				/** @var ComplexJob $job */
 				/** @var WakePHPRequest $job->req */
-				$job->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname, $where) {
+				$this->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname, $where) {
 					$job->setResult($jobname, $result['n']);
 				}, array(
 					   'where' => $where,
@@ -678,7 +676,7 @@ class Account extends Component {
 			});
 
 			$job('find', function ($jobname, $job) use ($where, $sort, $fields, $fieldNames, $field, $offset, $limit) {
-				$job->req->appInstance->accounts->findAccounts(function ($cursor) use ($jobname, $job, $fieldNames, $offset, $limit) {
+				$this->req->appInstance->accounts->findAccounts(function ($cursor) use ($jobname, $job, $fieldNames, $offset, $limit) {
 					/** @var Cursor $cursor */
 					/** @var ComplexJob $job */
 					$accounts = array();
@@ -729,18 +727,18 @@ class Account extends Component {
 	public function ManageAccountsDeleteController() {
 		$this->onAuth(function ($result) {
 			if (!in_array('Superusers', $this->req->account['aclgroups'], true)) {
-				$req->setResult(array('success' => false, 'goLoginPage' => true));
+				$this->req->setResult(array('success' => false, 'goLoginPage' => true));
 				return;
 			}
-			$req->appInstance->accounts->deleteAccount(array('_id' => Request::getString($_REQUEST['id'])), function ($lastError) {
+			$this->req->appInstance->accounts->deleteAccount(array('_id' => Request::getString($_REQUEST['id'])), function ($lastError) {
 
 				if ($lastError['n'] > 0) {
-					$req->setResult(array(
+					$this->req->setResult(array(
 										'success' => true,
 									));
 				}
 				else {
-					$req->setResult(array(
+					$this->req->setResult(array(
 										'success' => false,
 										'error'   => 'Account not found.'
 									));
@@ -780,7 +778,7 @@ class Account extends Component {
 	 */
 	public function LogoutController() {
 		$this->req->onSessionRead(function ($sessionEvent) {
-			unset($this->req->attrs->session['accountId']);
+			unset($_SESSION['accountId']);
 			$this->req->updatedSession = true;
 			$this->req->setResult(['success' => true]);
 		});

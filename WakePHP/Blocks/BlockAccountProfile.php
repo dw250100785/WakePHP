@@ -6,31 +6,26 @@ use PHPDaemon\Core\ComplexJob;
 class BlockAccountProfile extends Block {
 	public function init() {
 
-		$block = $this;
-		$this->req->components->Account->onAuth(function ($result) use ($block) {
+		$this->req->components->Account->onAuth(function ($result) {
 
-			$req = $block->req;
-
-			if (!$req->account['logged']) {
-				$req->redirectTo('/' . $req->locale . '/account/login?backurl=' . urlencode($req->attrs->server['REQUEST_URI']));
-				$req->finish();
+			if (!$this->req->account['logged']) {
+				$this->req->redirectTo('/' . $this->req->locale . '/account/login?backurl=' . urlencode($_SERVER['REQUEST_URI']));
+				$this->req->finish();
 				return;
 			}
 
-			$job = $req->job = new ComplexJob(function ($job) use ($block) {
-				$block->tplvars = $job->results;
-				$job->block->runTemplate();
+			$job = $this->req->job = new ComplexJob(function ($job) {
+				$this->tplvars = $job->results;
+				$this->runTemplate();
 			});
 
-			$job->req   = $req;
-			$job->block = $block;
 
 			/*$job('couponsNumber', function($jobname, $job) {
-				$job->req->appInstance->coupons->countCoupons(function($result) use ($job, $jobname) {
+				$this->req->appInstance->coupons->countCoupons(function($result) use ($job, $jobname) {
           $job->setResult($jobname, $result['n']);
           
 				}, array(
-					'where' => array('account' => $job->req->account['_id'])
+					'where' => array('account' => $this->req->account['_id'])
 				));
 			});*/
 
