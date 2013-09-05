@@ -55,8 +55,7 @@ class VK extends Generic {
 					function ($conn, $success) use ($user_id) {
 						$response = json_decode($conn->body, true);
 						if (!$success || !is_array($response) || empty($user_id)) {
-							$this->req->status(302);
-							$this->req->header('Location: ' . $this->req->getBaseUrl());
+							$this->req->redirectTo($this->req->getBaseUrl(), false);
 							$this->req->setResult(['error' => 'Unrecognized response']);
 							return;
 						}

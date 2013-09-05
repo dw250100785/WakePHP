@@ -62,6 +62,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $job;
 	protected $theme;
 
+	public $pjax;
+
 	/**
 	 * Constructor
 	 * @param WakePHP $appInstance
@@ -198,16 +200,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		}
 		$this->locale = $e[0];
 		$this->path   = '/' . (isset($e[1]) ? $e[1] : '');
-		if (isset($_SERVER['HTTP_X_PJAX'])) {
-			$this->header('X-PJAX-Version: 1');
-		}
+		$this->pjax = isset($_SERVER['HTTP_X_PJAX']);
 		if (!in_array($this->locale, $this->appInstance->locales, true)) {
 			$this->locale = $this->appInstance->config->defaultlocale->value;
 			if ($this->path !== '/') {
-				try {
-					$this->header('Location: /' . $this->locale . $this->path);
-				} catch (RequestHeadersAlreadySent $e) {}
-				$this->finish();
+				try {$this->redirectTo('/' . $this->locale . $this->path);} catch (RequestHeadersAlreadySent $e) {}
 				return;
 			}
 		}
@@ -292,19 +289,29 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	/**
 	 * @param $url
 	 */
-	public function redirectTo($url, $finish = true) {
-		$this->status(302);
-		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
-		$this->header('Pragma: no-cache');
-		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
-		$this->header('Location: ' . HTTPClient::buildUrl($url));
-		if (!$finish) {
-			return;
-		}
-		if ($this->cmpName !== null) {
-			$this->setResult([]);
-		} else {
+	public function redirectTo($url, $finish = true, $perm = false) {
+		$e = null;
+		try {
+			$url = HTTPClient::buildUrl($url);
+			if (substr($url, 0, 1) === '/') {
+				$url = $this->getBaseUrl() . $url;
+			}
+			if ($perm) {
+				$this->status(301);
+				$this->header('Location: ' . $url);
+			} else {
+				$this->status(302);
+				$this->header('Cache-Control: no-cache, no-store, must-revalidate');
+				$this->header('Pragma: no-cache');
+				$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+				$this->header('Location: ' . $url);
+			}
+		}  catch (RequestHeadersAlreadySent $e) {}
+		if ($finish) {
 			$this->finish();
+		}
+		if ($e) {
+			throw $e;
 		}
 	}
 }

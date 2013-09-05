@@ -62,9 +62,7 @@ class Facebook extends Generic {
 						$response = json_decode($conn->body, true);
 						$id       = Request::getString($response['id']);
 						if (!$success || !is_array($response) || empty($id)) {
-							$this->req->status(302);
-							$this->req->header('Location: ' . $this->req->getBaseUrl());
-							$this->req->setResult(['error' => 'Unrecognized response']);
+							$this->req->redirectTo('/');
 							return;
 						}
 						$data = [];

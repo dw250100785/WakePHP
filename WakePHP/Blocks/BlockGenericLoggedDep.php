@@ -10,8 +10,7 @@ class BlockGenericLoggedDep extends Block
 		{
 			if (!$this->req->account['logged'])
 			{
-				$this->req->header('Location: /'.$this->req->locale.'/account/login?backurl='.urlencode($this->req->attrs->server['REQUEST_URI']));
-				$this->req->finish();
+				$this->req->redirectTo([$this->req->locale.'/account/login', 'backurl' => $this->req->attrs->server['REQUEST_URI']]));
 			}
 			else
 			{

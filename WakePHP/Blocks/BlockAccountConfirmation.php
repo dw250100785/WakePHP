@@ -3,24 +3,16 @@ namespace WakePHP\Blocks;
 
 use PHPDaemon\Request\Generic as Request;
 
-class BlockAccountConfirmation extends Block
-{
+class BlockAccountConfirmation extends Block {
 
-	public function init()
-	{
-
-		$this->req->components->Account->onAuth(function ($result)
-		{
-			if (isset($this->req->attrs->request['email']))
-			{
+	public function init() {
+		$this->req->components->Account->onAuth(function ($result) {
+			if (isset($this->req->attrs->request['email']))	{
 				$email = Request::getString($this->req->attrs->request['email']);
 			}
-			else
-			{
-				if (!$this->req->account['logged'])
-				{
-					$this->req->header('Location: /'.$this->req->locale.'/account/login');
-					$this->req->finish();
+			else {
+				if (!$this->req->account['logged'])	{
+					$this->req->redirectTo('/'.$this->req->locale.'/account/login');
 					return;
 				}
 				$email = $this->req->account['email'];
@@ -53,10 +45,8 @@ class BlockAccountConfirmation extends Block
 		});
 	}
 
-	public function success()
-	{
-		$this->req->header('Location: /'.$this->req->locale.'/account/profile');
-		$this->req->finish();
+	public function success() {
+		$this->req->redirectTo('/'.$this->req->locale.'/account/profile');
 	}
 
 }

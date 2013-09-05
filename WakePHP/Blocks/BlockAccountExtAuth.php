@@ -8,8 +8,7 @@ class BlockAccountExtAuth extends Block {
 	public function init() {
 		$this->req->components->Account->onAuth(function ($result) {
 			if (!$this->req->account['logged']) {
-				$this->req->header('Location: /' . $this->req->locale . '/account/login?backurl=' . urlencode($_SERVER['REQUEST_URI']));
-				$this->req->finish();
+				$this->req->redirectTo(['/' . $this->req->locale . '/account/login', 'backurl' => $_SERVER['REQUEST_URI']]);
 				return;
 			}
 
