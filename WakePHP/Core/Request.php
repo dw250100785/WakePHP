@@ -196,36 +196,33 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			return;
 		}
-
-		if (!isset($e[1])) {
-			$this->locale = $this->appInstance->config->defaultlocale->value;
-			$this->path   = '/' . $e[0];
+		$this->locale = $e[0];
+		$this->path   = '/' . (isset($e[1]) ? $e[1] : '');
+		if (isset($_SERVER['HTTP_X_PJAX'])) {
+			$this->header('X-PJAX-Version: 1');
 		}
-		else {
-			$this->locale = $e[0];
-			$this->path   = '/' . $e[1];
-			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+		if (!in_array($this->locale, $this->appInstance->locales, true)) {
+			$this->locale = $this->appInstance->config->defaultlocale->value;
+			if ($this->path !== '/') {
 				try {
-					$this->header('Location: /' . $this->appInstance->config->defaultlocale->value . $this->path);
-				} catch (RequestHeadersAlreadySent $e) {
-				}
+					$this->header('Location: /' . $this->locale . $this->path);
+				} catch (RequestHeadersAlreadySent $e) {}
 				$this->finish();
 				return;
 			}
-			$req        = $this;
-			$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req) {
-				$type  = '';
-				$value = null;
-				if (isset($m[1]) && $m[1] !== '') {
-					$type  = 'id';
-					$value = $m[1];
-				}
-				$req->pathArgType[] = $type;
-				$req->pathArg[]     = $value;
-				return '/%' . $type;
-			}, $this->path);
-
 		}
+		$req        = $this;
+		$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req) {
+			$type  = '';
+			$value = null;
+			if (isset($m[1]) && $m[1] !== '') {
+				$type  = 'id';
+				$value = $m[1];
+			}
+			$req->pathArgType[] = $type;
+			$req->pathArg[]     = $value;
+			return '/%' . $type;
+		}, $this->path);
 
 		if ($this->backendServerConn) {
 			return;

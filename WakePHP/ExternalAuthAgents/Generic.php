@@ -56,7 +56,7 @@ abstract class Generic {
 	 * @return string
 	 */
 	public function getBackUrl() {
-		return $this->backUrl !== null ? $this->backUrl : $this->req->getBaseUrl() . '/' . $this->req->locale . '/';
+		return strlen($this->backUrl) ? $this->backUrl : $this->req->getBaseUrl() . '/' . $this->req->locale . '/';
 	}
 
 	/**
