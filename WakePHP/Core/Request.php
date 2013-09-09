@@ -31,6 +31,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $inner = array();
 	public $startTime;
 	public $req;
+	public $layoutTs;
 	public $jobTotal = 0;
 	public $jobDone = 0;
 	/** @var \Quicky */
@@ -284,6 +285,12 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function __destruct() {
 		Daemon::log('destruct - ' . $this->attrs->server['REQUEST_URI']);
+	}
+
+	public function cacheControl($date = false) {
+		$this->header('Cache-Control: no-cache, no-store, must-revalidate');
+		$this->header('Pragma: no-cache');
+		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 	}
 
 	/**

@@ -38,9 +38,10 @@ class Components {
 	public function cleanup() {
 		foreach ($this as $k => $c) {
 			if ($k === 'req') {
-				continue;
+				$this->req = null;
+			} else {
+				$c->cleanup();
 			}
-			$c->cleanup();
 		}
 	}
 }
