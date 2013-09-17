@@ -2,7 +2,7 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Core\Daemon;
-use WakePHP\Core\Crypt;
+use PHPDaemon\Utils\Crypt;
 use WakePHP\ORM\Generic;
 
 /**
@@ -138,7 +138,7 @@ class Accounts extends Generic {
 		if ($account && !isset($account['password'])) {
 			return false;
 		}
-		return $account['password'] === Crypt::hash($password, $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
+		return Crypt::compareStrings($account['password'], Crypt::hash($password, $account['salt'] . $this->appInstance->config->cryptsaltextra->value));
 	}
 
 	/**

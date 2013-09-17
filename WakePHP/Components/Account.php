@@ -4,6 +4,7 @@ namespace WakePHP\Components;
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Core\ComplexJob;
+use PHPDaemon\Utils\Crypt;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
@@ -85,7 +86,7 @@ class Account extends Component {
 			$rounds = 24;
 		}
 		$salt = '$512=24';
-		$hash = \WakePHP\Core\Crypt::hash($str, $salt);
+		$hash = Crypt::hash($str, $salt);
 		$hex  = trim(str_replace('\\x', ' ', \PHPDaemon\Core\Debug::exportBytes(base64_decode($hash), true)));
 		$this->req->setResult(['stringWithSalt' => $str . $salt, 'base64' => $hash, 'salt' => $salt, 'hex' => $hex, 'rounds' => 24]);
 	}
@@ -535,7 +536,7 @@ class Account extends Component {
 
 							$this->req->components->GMAPS->geo($location, function ($geo) {
 
-								$this->req->appInstance->accounts->saveAccount(array(
+								$this->appInstance->accounts->saveAccount(array(
 																			 'email'          => $this->req->account['email'],
 																			 'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
 																		 ), null, true);

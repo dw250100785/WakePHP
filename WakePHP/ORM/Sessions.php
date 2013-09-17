@@ -2,6 +2,7 @@
 namespace WakePHP\ORM;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Utils\Crypt;
 use WakePHP\ORM\Generic;
 
 /**
@@ -40,7 +41,7 @@ class Sessions extends Generic {
 	 */
 	public function startSession($add = [], $cb = null) {
 		$doc = array(
-			'id'   => \WakePHP\Core\Crypt::randomString(),
+			'id'   => Crypt::randomString(),
 			'ctime' => microtime(true),
 		) + $add;
 		$this->saveSession($doc, $cb);
