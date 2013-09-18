@@ -19,16 +19,18 @@ class Captcha extends Component {
 	public function checkReferer() {
 		return true;
 	}
-	public static function checkJob($invalidate = true) {
-		return function ($jobname, $job) use ($invalidate) {
-			$token = Request::getString($job->req->attrs->request['captcha_token']);
+	public static function checkJob($req, $invalidate = true) {
+		$token = Request::getString($req->attrs->request['captcha_token']);
+		$text = Request::getString($req->attrs->request['captcha_text']);
+		return function ($jobname, $job) use ($token, $text, $req, $invalidate) {
+			Daemon::log(Debug::dump([$token, $text, $invalidate]));
 			if ($token === '')  {
 				$job->setResult($jobname, ['captcha' => 'need']);
 				return;
 			}
-			$job->req->appInstance->captcha->check(
+			$req->appInstance->captcha->check(
 				$token,
-				Request::getString($job->req->attrs->request['captcha_text']),
+				$text,
 				$invalidate,
 			 	function ($result) use ($jobname, $job) {
 			 		$errors = [];

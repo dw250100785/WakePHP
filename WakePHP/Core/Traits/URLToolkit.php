@@ -17,7 +17,8 @@ trait URLToolkit {
 	 * @return string
 	 */
 	public function getBaseUrl() {
-		return ($this->attrs->server['HTTPS'] === 'off' ? 'http' : 'https') . '://' . $this->appInstance->config->domain->value;
+		return 'http' . ((isset($this->attrs->server['HTTPS']) && $this->attrs->server['HTTPS'] === 'on') ? 's' : '') .
+		 '://' . $this->attrs->server['HTTP_HOST'];
 	}
 
 	/**

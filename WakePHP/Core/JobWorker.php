@@ -81,8 +81,7 @@ class JobWorker extends AppInstance {
 							['_id' => $job['_id'], 'status' => 'v'],
 							['$set' => ['status' => 'a']],
 							0, function ($lastError) use ($job) {
-								Daemon::log('lasterror');
-								if ($lastError['updatedExisting'] || true) {
+								if ($lastError['updatedExisting']) {
 									$job['status'] = 'a';
 									$this->startJob($job);
 								}

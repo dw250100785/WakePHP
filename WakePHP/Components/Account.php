@@ -123,7 +123,7 @@ class Account extends Component {
 				if (!$captchaPostCheck) {
 					$captchaPostCheck = true;
 					if (isset($job->results['captcha'])) {
-						$job('captcha', Captcha::checkJob(true));
+						$job('captcha', Captcha::checkJob($this->req, true));
 						return;
 					}
 				}
@@ -177,12 +177,10 @@ class Account extends Component {
 				/** @var ComplexJob $job */
 				$this->req->components->Account->getRecentSignupsCount(function ($result) use ($job, $jobname) {
 					/** @var ComplexJob $job */
-					if ($result['n'] > 0) {
-						$job('captcha', Captcha::checkJob(false));
-					} else {
-						$job('captcha', Captcha::checkJob(false)); // !!!!
+					if ($result['n'] > -1) {
+						$job('captcha', Captcha::checkJob($this->req, false));
 					}
-					$job->setResult($jobname, array());
+					$job->setResult($jobname, []);
 				});
 			});
 
@@ -800,7 +798,7 @@ class Account extends Component {
 				return;
 			}
 			$ip       = $this->req->getIp();
-			$intToken = \WakePHP\Core\Crypt::hash(Daemon::uniqid() . "\x00" . $ip . "\x00" . \WakePHP\Core\Crypt::randomString());
+			$intToken = Crypt::hash(Daemon::uniqid() . "\x00" . $ip . "\x00" . Crypt::randomString());
 			$this->appInstance->externalAuthTokens->save([
 															 'extTokenHash' => $hash,
 															 'intToken'     => $intToken,
@@ -965,7 +963,7 @@ class Account extends Component {
 					}
 					$this->appInstance->accountRecoveryRequests->getLastCodeByEmail($email, function ($result) use ($email) {
 
-						if (0) { //$result['ts'] + 900 > time()) {
+						if ($result['ts'] + 900 > time()) {
 							$this->req->setResult(array('success' => false, 'errors' => array('email' => 'Too often. Wait a bit before next try.')));
 						}
 						else {
