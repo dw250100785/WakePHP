@@ -64,7 +64,7 @@ class JobWorker extends AppInstance {
 			unset($a);
 			$this->{$prop} = new $class($this);
 		}
-		
+		$this->components = new Components($this->fakeRequest());
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
 			if (!$this->resultCursor) {
@@ -115,6 +115,12 @@ class JobWorker extends AppInstance {
 			}
 			$event->timeout(0.02e6);
 		}, 1);
+	}
+
+	protected function fakeRequest() {
+		$req = new \stdClass;
+		$req->appInstance = $this;
+		return $req;
 	}
 
 	/**

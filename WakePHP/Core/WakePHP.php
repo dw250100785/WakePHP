@@ -83,12 +83,11 @@ class WakePHP extends AppInstance {
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
-		$appInstance             = $this;
-		$appInstance->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance();
-		$appInstance->dbname     = $this->config->dbname->value;
-		$appInstance->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
-		$appInstance->JobManager = new JobManager($this);
-		$appInstance->Sendmail   = new Sendmail($this);
+		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance();
+		$this->dbname     = $this->config->dbname->value;
+		$this->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
+		$this->JobManager = new JobManager($this);
+		$htis->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
 			$this->backendServer = BackendServer::getInstance($this->config->BackendServer, true, $this);
 		}
@@ -96,7 +95,7 @@ class WakePHP extends AppInstance {
 			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, true, $this);
 		}
 
-		foreach (Daemon::glob($appInstance->config->ormdir->value . '*.php') as $file) {
+		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
 			if ($class === 'Generic') {
 				continue;
@@ -108,23 +107,21 @@ class WakePHP extends AppInstance {
 			$this->{$prop} = new $class($this);
 		}
 
-		$appInstance->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
-		$appInstance->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) use ($appInstance) {
-			foreach (glob($appInstance->config->themesdir->value . '*/blocks/*') as $file) {
-				Daemon::$process->fileWatcher->addWatch($file, array($appInstance, 'onBlockFileChanged'));
+		$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
+		$this->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) {
+			foreach (glob($this->config->themesdir->value . '*/blocks/*') as $file) {
+				Daemon::$process->fileWatcher->addWatch($file, array($this, 'onBlockFileChanged'));
 			}
 		});
-		$this->locales = array_map('basename', glob($appInstance->config->localedir->value . '*', GLOB_ONLYDIR));
+		$this->locales = array_map('basename', glob($this->config->localedir->value . '*', GLOB_ONLYDIR));
 		if (!in_array($this->config->defaultlocale->value, $this->locales, true)) {
 			$this->locales[] = $this->config->defaultlocale->value;
 		}
 		if (!in_array('en', $this->locales, true)) {
 			$this->locales[] = 'en';
 		}
-		$req                     = new \stdClass; // @TODO: refactor this shit
-		$req->appInstance        = $appInstance;
-		$appInstance->components = new Components($req);
-		foreach ($appInstance->config as $k => $c) {
+		$this->components = new Components($this->fakeRequest());
+		foreach ($this->config as $k => $c) {
 			if (isset($c->run->value) && $c->run->value) {
 				if (substr($k, 0, 3) === 'Cmp') {
 					$appInstance->components->{substr($k, 3)};
@@ -173,6 +170,12 @@ class WakePHP extends AppInstance {
 			ob_end_clean();
 			$cb($r);
 		});
+	}
+
+	protected function fakeRequest() { // @TODO: refactor this shit
+		$req = new \stdClass;
+		$req->appInstance = $this;
+		return $req;
 	}
 
 	/**
