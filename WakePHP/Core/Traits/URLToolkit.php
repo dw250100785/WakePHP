@@ -2,6 +2,7 @@
 namespace WakePHP\Core\Traits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CappedStorageHits;
 
 /**
  * URLToolkit
@@ -12,7 +13,8 @@ use PHPDaemon\Core\Debug;
  */
 
 trait URLToolkit {
-	
+
+	protected static $getBrowserCache;	
 	/**
 	 * @return string
 	 */
@@ -34,6 +36,13 @@ trait URLToolkit {
 		} else {
 			return $this->getBaseUrl();
 		}
+	}
+
+	public function getBrowser() {
+		if (self::$getBrowserCache === null) {
+			self::$getBrowserCache = new CappedStorageHits;
+		}
+		$b = get_browser($_SERVER['HTTP_USER_AGENT'], true);
 	}
 
 	/**

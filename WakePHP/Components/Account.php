@@ -91,6 +91,12 @@ class Account extends Component {
 		$this->req->setResult(['stringWithSalt' => $str . $salt, 'base64' => $hash, 'salt' => $salt, 'hex' => $hex, 'rounds' => 24]);
 	}
 
+	public function TestController() {
+	
+		Daemon::log(Debug::dump());
+		$this->req->setResult();
+	}
+
 	/**
 	 * @param string $email
 	 * @return string
@@ -259,6 +265,9 @@ class Account extends Component {
 			return true;
 		}
 		if ($this->req->controller === 'GenKeccak') {
+			return true;
+		}
+		if ($this->req->controller === 'Test') {
 			return true;
 		}
 		if ($this->req->controller === 'UsernameAvailablityCheck') {

@@ -87,7 +87,7 @@ class WakePHP extends AppInstance {
 		$this->dbname     = $this->config->dbname->value;
 		$this->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
 		$this->JobManager = new JobManager($this);
-		$htis->Sendmail   = new Sendmail($this);
+		$this->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
 			$this->backendServer = BackendServer::getInstance($this->config->BackendServer, true, $this);
 		}

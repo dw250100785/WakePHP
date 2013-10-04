@@ -50,6 +50,7 @@ class JobWorker extends AppInstance {
 
 	protected $jobs = [];
 
+	public $httpclient;
 	/**
 	 *
 	 */
@@ -58,12 +59,13 @@ class JobWorker extends AppInstance {
 		$this->dbname      = $this->config->dbname->value;
 		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
-			$prop          = lcfirst($class);
+			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
 			$class         = '\\WakePHP\\ORM\\' . $class;
 			$this->{$prop} = &$a; // trick ;-)
 			unset($a);
 			$this->{$prop} = new $class($this);
 		}
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 		$this->components = new Components($this->fakeRequest());
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
