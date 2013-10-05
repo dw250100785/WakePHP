@@ -69,6 +69,7 @@ trait Blocks {
 	 * @param $obj
 	 */
 	public function onReadyBlock($obj) {
+		$obj->html = str_replace("\n", '', $obj->html);
 		$this->html = str_replace($obj->tag, $obj->html, $this->html);
 		unset($this->inner[$obj->_nid]);
 		$this->wakeup();

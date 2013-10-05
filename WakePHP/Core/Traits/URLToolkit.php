@@ -3,6 +3,7 @@ namespace WakePHP\Core\Traits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CappedStorageHits;
+use PHPDaemon\Core\DeferredEvent;
 
 /**
  * URLToolkit
@@ -14,7 +15,8 @@ use PHPDaemon\Core\CappedStorageHits;
 
 trait URLToolkit {
 
-	protected static $getBrowserCache;	
+	protected $getBrowserDefEvent;
+	public $browser;
 	/**
 	 * @return string
 	 */
@@ -38,11 +40,16 @@ trait URLToolkit {
 		}
 	}
 
-	public function getBrowser() {
-		if (self::$getBrowserCache === null) {
-			self::$getBrowserCache = new CappedStorageHits;
+	public function getBrowser($cb) {
+		if ($this->getBrowserDefEvent === null) {
+			$this->getBrowserDefEvent = new DeferredEvent(function($ev) {
+				$this->appInstance->browsers->get(static::getString($this->attrs->server['HTTP_USER_AGENT']), function ($browser) use ($ev) {
+					$this->browser = $browser;
+					$ev->setResult(true);
+				});
+			});
 		}
-		$b = get_browser($_SERVER['HTTP_USER_AGENT'], true);
+		$this->getBrowserDefEvent->addListener($cb);
 	}
 
 	/**

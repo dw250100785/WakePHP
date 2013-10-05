@@ -270,6 +270,7 @@ class Block implements \ArrayAccess {
 			return;
 		}
 		foreach ($this->inner as $k => $obj) {
+			$obj->html = str_replace("\n", '', $obj->html);
 			$this->html = str_replace($obj->tag, $obj->html, $this->html);
 			unset($this->inner[$k]);
 		}
