@@ -45,6 +45,10 @@ class Account extends Component {
 							$this->appInstance->accounts->getAccountByName('Guest', $cb);
 							return;
 						}
+						if (isset($account['ttlSession']) && $_SESSION['ttl'] !== $account['ttlSession']) {
+							$_SESSION['ttl'] = $account['ttlSession'];
+							$this->req->updatedSession = true;
+						}
 						$cb($account);
 					});
 				}
@@ -53,6 +57,18 @@ class Account extends Component {
 				}
 			});
 		};
+	}
+
+	public function CloseSessionController() {
+		$this->onAuth(function () {
+			if (!$this->req->account['logged']) {
+				$this->req->setResult(['success' => false, 'error' => 'Not logged in.']);
+				return;
+			}
+			$this->appInstance->sessions->closeSession(Request::getString($_REQUEST['id']), $this->req->account['_id'], function ($lastError) {
+
+			});
+		});	
 	}
 
 	/**
@@ -509,6 +525,10 @@ class Account extends Component {
 	}
 
 	public function ProfileController() {
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			return;
+		}
 		$this->onAuth(function ($result) {
 			if (!$this->req->account['logged']) {
 				$this->req->setResult(array('success' => false, 'goLoginPage' => true));
@@ -785,6 +805,10 @@ class Account extends Component {
 	 *
 	 */
 	public function LogoutController() {
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			return;
+		}
 		$this->req->onSessionRead(function ($sessionEvent) {
 			unset($_SESSION['accountId']);
 			$this->req->updatedSession = true;
@@ -880,6 +904,10 @@ class Account extends Component {
 	 *
 	 */
 	public function    AuthenticationController() {
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			return;
+		}
 		$this->req->onSessionStart(function ($sessionEvent) {
 			$username = Request::getString($_REQUEST['username']);
 			if ($username === '') {
@@ -920,7 +948,10 @@ class Account extends Component {
 	 *
 	 */
 	public function    RecoveryController() {
-
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			return;
+		}
 		$this->req->onSessionStart(function () {
 			if (!isset($_REQUEST['email'])) {
 				$this->req->setResult(['success' => false, 'errors' => ['email' => 'Empty E-Mail.']]);

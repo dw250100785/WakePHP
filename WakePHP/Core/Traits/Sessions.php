@@ -13,6 +13,8 @@ use WakePHP\Core\Request;
  */
 
 trait Sessions {
+
+	protected $defaultSessionTTL = 1200;
 	
 	protected function sessionDecode($str) {
 		$this->setSessionState($str);
@@ -23,10 +25,34 @@ trait Sessions {
 			call_user_func($cb, $session);
 		});
 	}
+	protected function sessionKeepalive() {
+		if ($this->attrs->session) {
+			$this->updatedSession = true;
+			$this->attrs->session['expires'] = $this->getSessionExpires();
+		}
+	}
+
+	protected function getSessionExpires() {
+		return time() + (isset($this->attrs->session['ttl']) ? $this->attrs->session['ttl'] : $this->defaultSessionTTL);
+	}
 
 	protected function sessionStartNew($cb = null) {
-		$session = $this->appInstance->sessions->startSession(
-			['ip' => $this->getIp(), 'useragent' => Request::getString($this->attrs->server['HTTP_USER_AGENT'])],
+		$this->getBrowser(function() use ($cb) {
+			$session = $this->appInstance->sessions->startSession(
+			[
+				'ip' => $this->getIp(),
+				'atime' => time(),
+				'expires' => $this->getSessionExpires(),
+				'ttl' => $this->defaultSessionTTL,
+				'browser' => [
+					'agent' => $this->browser['_id'],
+					'os' => $this->browser['platform'],
+					'name' => $this->browser['name'],
+					'majorver' => $this->browser['majorver'],
+					'comment' => $this->browser['comment'],
+				],
+				'location' => 'UNK',
+			],
 			function ($lastError) use (&$session, $cb) {
 				if (!$session) {
 					if ($cb !== null) {
@@ -47,6 +73,7 @@ trait Sessions {
 				);
 				call_user_func($cb, true);
 			});
+		});
 	}
 
 	public function sessionCommit($cb = null) {

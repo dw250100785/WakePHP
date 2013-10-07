@@ -17,6 +17,7 @@ class Sessions extends Generic {
 	public function init() {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};
 		$this->sessions->ensureIndex(['id' => 1], ['unique' => true]);
+		$this->sessions->ensureIndex(['expires' => 1], ['expireAfterSeconds' => 0]); // @TODO: questionable reasonability
 	}
 
 	/**
@@ -24,28 +25,40 @@ class Sessions extends Generic {
 	 * @param callable $cb
 	 */
 	public function getSessionById($id, $cb) {
-		$this->sessions->findOne($cb, array(
-			'where' => array('id' => $id)
-		));
+		$this->sessions->findOne($cb, [
+			'where' => ['id' => $id, 'expires' => ['$gte' => time()]]
+		]);
+	}
+
+	public function getSessionsByAccount($id, $cb) {
+		$this->sessions->find($cb, ['limit' => -0xFFFF, 'where' => ['accountId' => $id, 'expires' => ['$gte' => time()]]]);
+	}
+
+	public function swipeExpired() { /* it is not gonna be used because of expireAfterSeconds index */
+		$this->sessions->remove(['expires' => ['$lt' => time()]]);
+	}
+
+	public function closeSession($id, $accountId, $cb) {
+		$this->sessions->remove(['id' => $id, 'accountId' => $accountId], $cb);
 	}
 
 	/**
 	 * @param array $session
 	 */
 	public function saveSession($session, $cb = null) {
-		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
+		$this->sessions->updateOne(['id' => $session['id']], $session, $cb);
 	}
 
 	/**
 	 * @return array
 	 */
 	public function startSession($add = [], $cb = null) {
-		$doc = array(
+		$session = [
 			'id'   => Crypt::randomString(),
 			'ctime' => microtime(true),
-		) + $add;
-		$this->saveSession($doc, $cb);
-		return $doc;
+		] + $add;
+		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
+		return $session;
 	}
 
 	/**

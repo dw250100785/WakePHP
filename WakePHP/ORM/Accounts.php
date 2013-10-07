@@ -296,6 +296,7 @@ class Accounts extends Generic {
 				, 0, 6),
 			'regdate'          => time(),
 			'etime'            => time(),
+			'ttlSession'		=> 1200,
 			'ip'               => $req->attrs->server['REMOTE_ADDR'],
 			'subscription'     => 'daily',
 			'aclgroups'        => array('Users'),
