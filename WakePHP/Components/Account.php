@@ -548,8 +548,7 @@ class Account extends Component {
 					$update = array(
 						'email'        => $this->req->account['email'],
 						'location'     => $location = Request::getString($_REQUEST['location']),
-						'firstname'    => Request::getString($_REQUEST['firstname']),
-						'lastname'     => Request::getString($_REQUEST['lastname']),
+						'name'    => Request::getString($_REQUEST['name']),
 						'gender'       => Request::getString($_REQUEST['gender'], array('', 'm', 'f')),
 						'birthdate'    => Request::getString($_REQUEST['birthdate']),
 						'subscription' => Request::getString($_REQUEST['subscription'], array('', 'daily', 'thematic')),

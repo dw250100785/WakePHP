@@ -63,6 +63,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $job;
 	protected $theme;
 
+	public $sPrefix;
+
 	public $pjax;
 	public $extra;
 
