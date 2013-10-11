@@ -34,6 +34,7 @@ class Account extends Component {
 				$cb = function ($account) use ($authEvent) {
 					if ($account) {
 						$account['logged'] = $account['username'] !== 'Guest';
+						unset($account['password'], $account['salt']);
 					}
 					$this->req->account = $account;
 					$this->req->propertyUpdated('account');
@@ -66,7 +67,7 @@ class Account extends Component {
 				return;
 			}
 			$this->appInstance->sessions->closeSession(Request::getString($_REQUEST['id']), $this->req->account['_id'], function ($lastError) {
-
+				$this->req->setResult(['success' => $lastError['n'] > 0]);
 			});
 		});	
 	}
@@ -188,8 +189,7 @@ class Account extends Component {
 							'locale'   => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
 						));
 
-						$this->req->attrs->session['accountId'] = $account['_id'];
-						$this->req->updatedSession              = true;
+						$this->loginAs($account);
 						$this->req->setResult(array('success' => true));
 					});
 				});
@@ -308,7 +308,12 @@ class Account extends Component {
 	 * @param null $cb
 	 */
 	public function loginAs($account, $cb = null) {
-		$_SESSION['accountId']     = $account['_id'];
+		if ($account) {
+			$_SESSION['accountId']     = $account['_id'];
+			$_SESSION['ltime'] = time();
+		} else {
+			unset($_SESSION['accountId'], $_SESSION['ltime']);
+		}
 		$this->req->updatedSession = true;
 		if ($cb !== null) {
 			call_user_func($cb);
@@ -809,8 +814,7 @@ class Account extends Component {
 			return;
 		}
 		$this->req->onSessionRead(function ($sessionEvent) {
-			unset($_SESSION['accountId']);
-			$this->req->updatedSession = true;
+			$this->loginAs(false);
 			$this->req->setResult(['success' => true]);
 		});
 	}
@@ -926,8 +930,7 @@ class Account extends Component {
 						)));
 					}
 					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($_REQUEST['password']))) {
-						$this->req->attrs->session['accountId'] = $account['_id'];
-						$this->req->updatedSession              = true;
+						$this->loginAs($account);
 						$r                                      = array('success' => true);
 						if (isset($account['confirmationcode'])) {
 							$r['needConfirm'] = true;

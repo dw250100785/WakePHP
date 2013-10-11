@@ -78,6 +78,33 @@ trait Datetime {
 		$years = $fin[2] - $st[2];
 		return array($seconds, $minutes, $hours, $days, $months, $years);
 	}
+	
+	public function date_period_text_($date_start, $date_finish) {
+		$result = $this->date_period($date_start,$date_finish);
+		$str  = '';
+ 		if ($result[5] > 0) {
+ 			$str .= $result[5].' '.$this->gettext('_YEARS'). ' ';
+ 		}
+ 		if ($result[4] > 0) {$str .= $result[4].' '.$this->gettext('_MONTHS'). ' ';}
+ 		if ($result[3] > 0) {$str .= $result[3].' '.$this->gettext('_DAYS'). ' ';}
+ 		if ($result[2] > 0) {$str .= $result[2].' '.$this->gettext('_HOURS'). ' ';}
+ 		if ($result[1] > 0) {$str .= $result[1].' '.$this->gettext('_MINUTES'). ' ';}
+ 		if ($result[0] > 0 or $str == '') {$str .= $result[0].' '.$this->gettext('_SECONDS'). ' ';}
+ 		return trim($str);
+	}
+	public function date_period_text($date_start, $date_finish) {
+		$result = $this->date_period($date_start,$date_finish);
+		$str  = '';
+ 		if ($result[5] > 0) {
+ 			$str .= $result[5].' year(s) ';
+ 		}
+ 		if ($result[4] > 0) {$str .= $result[4].' month(s) ';}
+ 		if ($result[3] > 0) {$str .= $result[3].' day(s) ';}
+ 		if ($result[2] > 0) {$str .= $result[2].' hour(s) ';}
+ 		if ($result[1] > 0) {$str .= $result[1].' minute(s) ';}
+ 		if ($result[0] > 0 or $str === '') {$str .= $result[0].' second(s) ';}
+ 		return rtrim($str);
+	}
 
 	/**
 	 * @param $str

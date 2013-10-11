@@ -22,6 +22,9 @@ trait Sessions {
 	}
 	public function sessionRead($sid, $cb = null) {
 		$this->appInstance->sessions->getSessionById($sid, function ($session) use ($cb) {
+			if ($session) {
+				$this->sessionId = (string) $session['_id'];
+			}
 			call_user_func($cb, $session);
 		});
 	}
@@ -50,6 +53,7 @@ trait Sessions {
 					'name' => $this->browser['name'],
 					'majorver' => $this->browser['majorver'],
 					'comment' => $this->browser['comment'],
+					'ismobiledevice' => $this->browser['ismobiledevice'],
 				],
 				'location' => 'UNK',
 			],
@@ -60,7 +64,7 @@ trait Sessions {
 					}
 					return;
 				}
-				$this->sessionId = (string) $session['id'];
+				$this->sessionId = (string) $session['_id'];
 				$this->attrs->session = $session;
 				$this->setcookie(
 			  		ini_get('session.name')
