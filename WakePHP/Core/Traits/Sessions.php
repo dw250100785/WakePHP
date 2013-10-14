@@ -23,7 +23,7 @@ trait Sessions {
 	public function sessionRead($sid, $cb = null) {
 		$this->appInstance->sessions->getSessionById($sid, function ($session) use ($cb) {
 			if ($session) {
-				$this->sessionId = (string) $session['_id'];
+				$this->sessionId = (string) $session['id'];
 			}
 			call_user_func($cb, $session);
 		});
@@ -31,12 +31,8 @@ trait Sessions {
 	protected function sessionKeepalive() {
 		if ($this->attrs->session) {
 			$this->updatedSession = true;
-			$this->attrs->session['expires'] = $this->getSessionExpires();
+			$this->attrs->session['expires'] = time() + (isset($this->attrs->session['ttl']) ? $this->attrs->session['ttl'] : $this->defaultSessionTTL);
 		}
-	}
-
-	protected function getSessionExpires() {
-		return time() + (isset($this->attrs->session['ttl']) ? $this->attrs->session['ttl'] : $this->defaultSessionTTL);
 	}
 
 	protected function sessionStartNew($cb = null) {
@@ -45,8 +41,7 @@ trait Sessions {
 			[
 				'ip' => $this->getIp(),
 				'atime' => time(),
-				'expires' => $this->getSessionExpires(),
-				'ttl' => $this->defaultSessionTTL,
+				'expires' => time() + $this->defaultSessionTTL,
 				'browser' => [
 					'agent' => $this->browser['_id'],
 					'os' => $this->browser['platform'],
@@ -64,7 +59,7 @@ trait Sessions {
 					}
 					return;
 				}
-				$this->sessionId = (string) $session['_id'];
+				$this->sessionId = (string) $session['id'];
 				$this->attrs->session = $session;
 				$this->setcookie(
 			  		ini_get('session.name')

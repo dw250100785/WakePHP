@@ -16,6 +16,7 @@ class Sessions extends Generic {
 
 	public function init() {
 		$this->sessions = $this->appInstance->db->{$this->appInstance->dbname . '.sessions'};
+		$this->sessions->ensureIndex(['id' => 1], ['unique' => true]);
 		$this->sessions->ensureIndex(['expires' => 1], ['expireAfterSeconds' => 0]); // @TODO: questionable reasonability
 	}
 
@@ -25,7 +26,7 @@ class Sessions extends Generic {
 	 */
 	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb, [
-			'where' => ['_id' => $id, 'expires' => ['$gte' => time()]]
+			'where' => ['id' => $id, 'expires' => ['$gte' => time()]]
 		]);
 	}
 
@@ -37,7 +38,7 @@ class Sessions extends Generic {
 		$this->sessions->remove(['expires' => ['$lt' => time()]]);
 	}
 
-	public function closeSession($id, $accountId, $cb) {
+	public function closeSessionByObjectId($id, $accountId, $cb) {
 		$this->sessions->remove(['_id' => $id, 'accountId' => $accountId], $cb);
 	}
 
@@ -45,7 +46,7 @@ class Sessions extends Generic {
 	 * @param array $session
 	 */
 	public function saveSession($session, $cb = null) {
-		$this->sessions->updateOne(['_id' => $session['_id']], $session, $cb);
+		$this->sessions->updateOne(['id' => $session['id']], $session, $cb);
 	}
 
 	/**
@@ -53,10 +54,10 @@ class Sessions extends Generic {
 	 */
 	public function startSession($add = [], $cb = null) {
 		$session = [
-			'_id'   => Crypt::randomString(),
+			'id'   => Crypt::randomString(),
 			'ctime' => microtime(true),
 		] + $add;
-		$this->sessions->upsertOne(['_id' => $session['_id']], $session, $cb);
+		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
 		return $session;
 	}
 
