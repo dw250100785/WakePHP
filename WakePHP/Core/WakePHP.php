@@ -83,7 +83,7 @@ class WakePHP extends AppInstance {
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
-		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance();
+		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname     = $this->config->dbname->value;
 		$this->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
 		$this->JobManager = new JobManager($this);
@@ -241,6 +241,7 @@ class WakePHP extends AppInstance {
 			'defaulttheme'  => 'simple',
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
+			'mongoname'		=> '',
 		);
 	}
 

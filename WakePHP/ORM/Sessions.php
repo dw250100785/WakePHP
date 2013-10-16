@@ -26,7 +26,7 @@ class Sessions extends Generic {
 	 */
 	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb, [
-			'where' => ['id' => $id, 'expires' => ['$gte' => time()]]
+			'where' => ['id' => (string) $id, 'expires' => ['$gte' => time()]]
 		]);
 	}
 
@@ -39,6 +39,9 @@ class Sessions extends Generic {
 	}
 
 	public function closeSessionByObjectId($id, $accountId, $cb) {
+		if (is_string($id)) {
+			$id = new \MongoId($id);
+		}
 		$this->sessions->remove(['_id' => $id, 'accountId' => $accountId], $cb);
 	}
 
@@ -46,7 +49,7 @@ class Sessions extends Generic {
 	 * @param array $session
 	 */
 	public function saveSession($session, $cb = null) {
-		$this->sessions->updateOne(['id' => $session['id']], $session, $cb);
+		$this->sessions->updateOne(['id' => (string) $session['id']], $session, $cb);
 	}
 
 	/**
@@ -57,7 +60,7 @@ class Sessions extends Generic {
 			'id'   => Crypt::randomString(),
 			'ctime' => microtime(true),
 		] + $add;
-		$this->sessions->upsertOne(['id' => $session['id']], $session, $cb);
+		$this->sessions->upsertOne(['id' => (string) $session['id']], $session, $cb);
 		return $session;
 	}
 

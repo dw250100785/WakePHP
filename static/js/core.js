@@ -1,4 +1,8 @@
 $(function() {
+	setInterval(function() {
+
+	}, 5000);
+	
 	$.ongt(function() {
 		var delim = ' - ';
 		var title = document.title.split(delim);

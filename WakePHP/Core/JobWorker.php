@@ -55,7 +55,7 @@ class JobWorker extends AppInstance {
 	 *
 	 */
 	public function onReady() {
-		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance();
+		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname      = $this->config->dbname->value;
 		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
@@ -168,6 +168,7 @@ class JobWorker extends AppInstance {
 			'defaulttheme'  => 'simple',
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
+			'mongoname' 	=> '',
 		);
 	}
 

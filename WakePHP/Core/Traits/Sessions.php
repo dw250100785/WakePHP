@@ -28,7 +28,7 @@ trait Sessions {
 			call_user_func($cb, $session);
 		});
 	}
-	protected function sessionKeepalive() {
+	public function sessionKeepalive() {
 		if ($this->attrs->session) {
 			$this->updatedSession = true;
 			$this->attrs->session['expires'] = time() + (isset($this->attrs->session['ttl']) ? $this->attrs->session['ttl'] : $this->defaultSessionTTL);

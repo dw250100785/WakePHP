@@ -50,6 +50,7 @@ class Account extends Component {
 							$_SESSION['ttl'] = $account['ttlSession'];
 							$this->req->updatedSession = true;
 						}
+						$this->req->sessionKeepalive();
 						$cb($account);
 					});
 				}
@@ -60,8 +61,41 @@ class Account extends Component {
 		};
 	}
 
+	public function KeepaliveController() {
+		$this->req->onSessionRead(function () {
+			if (!isset($_SESSION['expires'])) {
+				$this->req->setResult(['success' => false]);
+				return;
+			}
+			$this->req->sessionKeepalive();
+			$this->req->setResult(['success' => true]);
+		});
+	}
+
+	public function GetExpiresController() {
+		$this->req->onSessionRead(function () {
+			if (!isset($_SESSION['expires'])) {
+				$this->req->setResult(['success' => false]);
+				return;
+			}
+			$this->req->setResult(['success' => true, 'expires' => $_SESSION['expires'], 'ttl' => $_SESSION['ttl']]);
+		});
+	}
+
+	public function CloseThisSessionController() {
+		$this->onAuth(function() {
+			if (!$this->req->account['logged']) {
+				$this->req->setResult(['success' => false, 'error' => 'Not logged in.']);
+				return;
+			}
+			$this->appInstance->sessions->closeSessionByObjectId(Request::getString($_REQUEST['id']), $this->req->account['_id'], function ($lastError) {
+				$this->req->setResult(['success' => $lastError['n'] > 0]);
+			});
+		});	
+	}
+
 	public function CloseSessionController() {
-		$this->onAuth(function () {
+		$this->onAuth(function() {
 			if (!$this->req->account['logged']) {
 				$this->req->setResult(['success' => false, 'error' => 'Not logged in.']);
 				return;
