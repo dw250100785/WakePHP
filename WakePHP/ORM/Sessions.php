@@ -26,16 +26,16 @@ class Sessions extends Generic {
 	 */
 	public function getSessionById($id, $cb) {
 		$this->sessions->findOne($cb, [
-			'where' => ['id' => (string) $id, 'expires' => ['$gte' => time()]]
+			'where' => ['id' => (string) $id, 'expires' => ['$gt' => time()]]
 		]);
 	}
 
 	public function getSessionsByAccount($id, $cb) {
-		$this->sessions->find($cb, ['limit' => -0xFFFF, 'where' => ['accountId' => $id, 'expires' => ['$gte' => time()]]]);
+		$this->sessions->find($cb, ['limit' => -0xFFFF, 'where' => ['accountId' => $id, 'expires' => ['$gt' => time()]]]);
 	}
 
 	public function swipeExpired() { /* it is not gonna be used because of expireAfterSeconds index */
-		$this->sessions->remove(['expires' => ['$lt' => time()]]);
+		$this->sessions->remove(['expires' => ['$lte' => time()]]);
 	}
 
 	public function closeSessionByObjectId($id, $accountId, $cb) {

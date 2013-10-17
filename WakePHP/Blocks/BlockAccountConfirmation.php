@@ -12,7 +12,7 @@ class BlockAccountConfirmation extends Block {
 			}
 			else {
 				if (!$this->req->account['logged'])	{
-					$this->req->redirectTo('/'.$this->req->locale.'/account/login');
+					$this->req->redirectToLogin();
 					return;
 				}
 				$email = $this->req->account['email'];

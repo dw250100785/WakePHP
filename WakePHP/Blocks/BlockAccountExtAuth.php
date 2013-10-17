@@ -7,8 +7,8 @@ use PHPDaemon\Core\ComplexJob;
 class BlockAccountExtAuth extends Block {
 	public function init() {
 		$this->req->components->Account->onAuth(function ($result) {
-			if (!$this->req->account['logged']) {
-				$this->req->redirectTo(['/' . $this->req->locale . '/account/login', 'backurl' => $_SERVER['REQUEST_URI']]);
+			if (!$this->req->account['logged'])	{
+				$this->req->redirectToLogin();
 				return;
 			}
 

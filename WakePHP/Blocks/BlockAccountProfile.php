@@ -8,9 +8,8 @@ class BlockAccountProfile extends Block {
 
 		$this->req->components->Account->onAuth(function ($result) {
 
-			if (!$this->req->account['logged']) {
-				$this->req->redirectTo('/' . $this->req->locale . '/account/login?backurl=' . urlencode($_SERVER['REQUEST_URI']));
-				$this->req->finish();
+			if (!$this->req->account['logged'])	{
+				$this->req->redirectToLogin();
 				return;
 			}
 

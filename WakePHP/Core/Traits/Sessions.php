@@ -14,8 +14,17 @@ use WakePHP\Core\Request;
 
 trait Sessions {
 
-	protected $defaultSessionTTL = 1200;
+	//protected $defaultSessionTTL = 1200;
+	protected $defaultSessionTTL = 30;
+	public $noKeepalive = false;
 	
+	public function redirectToLogin() {
+		if ($this->pjax) {
+			$this->header('X-PJAX-Version: refresh');
+		} else {
+			$this->redirectTo(['/' . $this->locale . '/account/login', 'backurl' => $this->attrs->server['REQUEST_URI']]);
+		}
+	}
 	protected function sessionDecode($str) {
 		$this->setSessionState($str);
 		return $str !== false;
@@ -24,24 +33,32 @@ trait Sessions {
 		$this->appInstance->sessions->getSessionById($sid, function ($session) use ($cb) {
 			if ($session) {
 				$this->sessionId = (string) $session['id'];
+				if (!$this->noKeepalive) {
+					$this->sessionKeepalive();
+				}
 			}
 			call_user_func($cb, $session);
 		});
 	}
-	public function sessionKeepalive() {
-		if ($this->attrs->session) {
-			$this->updatedSession = true;
-			$this->attrs->session['expires'] = time() + (isset($this->attrs->session['ttl']) ? $this->attrs->session['ttl'] : $this->defaultSessionTTL);
+	public function sessionKeepalive($force = false) {
+		$s = &$this->attrs->session;
+		if (!$s) {
+			return;
+		}
+		if ($force || (time() - $s['expires'] < $s['ttl'] * 0.8)) {
+			 $this->updatedSession = true;
 		}
 	}
 
 	protected function sessionStartNew($cb = null) {
 		$this->getBrowser(function() use ($cb) {
+			Daemon::log('startSession()');
 			$session = $this->appInstance->sessions->startSession(
 			[
 				'ip' => $this->getIp(),
 				'atime' => time(),
 				'expires' => time() + $this->defaultSessionTTL,
+				'ttl' => $this->defaultSessionTTL,
 				'browser' => [
 					'agent' => $this->browser['_id'],
 					'os' => $this->browser['platform'],
@@ -53,6 +70,7 @@ trait Sessions {
 				'location' => 'UNK',
 			],
 			function ($lastError) use (&$session, $cb) {
+						Daemon::log('startSessionCb(): '.Debug::dump($session));
 				if (!$session) {
 					if ($cb !== null) {
 						call_user_func($cb, false);
@@ -77,6 +95,11 @@ trait Sessions {
 
 	public function sessionCommit($cb = null) {
 		if ($this->updatedSession) {
+			if (!$this->noKeepalive) {
+				$this->attrs->session['atime'] = time();
+				$this->attrs->session['expires'] = time() + $this->attrs->session['ttl'];
+				Daemon::log('update expires '.json_encode($this->attrs->session['expires']).'!! '.$this->attrs->server['REQUEST_URI']);
+			}
 			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
 		} else {
 			if ($cb !== null) {

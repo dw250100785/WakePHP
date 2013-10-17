@@ -67,18 +67,30 @@ class Account extends Component {
 				$this->req->setResult(['success' => false]);
 				return;
 			}
-			$this->req->sessionKeepalive();
-			$this->req->setResult(['success' => true]);
+			$this->req->sessionKeepalive(true);
+			$this->req->setResult([
+				'success' => true,
+				'expires' => $_SESSION['expires'],
+				'ttl' => $_SESSION['ttl'],
+				'now' => time()
+			]);
 		});
 	}
 
 	public function GetExpiresController() {
+		$this->req->noKeepalive = true;
 		$this->req->onSessionRead(function () {
+			Daemon::log(Debug::dump($_SESSION));
 			if (!isset($_SESSION['expires'])) {
 				$this->req->setResult(['success' => false]);
 				return;
 			}
-			$this->req->setResult(['success' => true, 'expires' => $_SESSION['expires'], 'ttl' => $_SESSION['ttl']]);
+			$this->req->setResult([
+				'success' => true,
+				'expires' => $_SESSION['expires'],
+				'ttl' => $_SESSION['ttl'],
+				'now' => time()
+			]);
 		});
 	}
 
@@ -88,7 +100,7 @@ class Account extends Component {
 				$this->req->setResult(['success' => false, 'error' => 'Not logged in.']);
 				return;
 			}
-			$this->appInstance->sessions->closeSessionByObjectId(Request::getString($_REQUEST['id']), $this->req->account['_id'], function ($lastError) {
+			$this->appInstance->sessions->closeSessionByObjectId($_SESSION['_id'], $this->req->account['_id'], function ($lastError) {
 				$this->req->setResult(['success' => $lastError['n'] > 0]);
 			});
 		});	

@@ -203,7 +203,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			return;
 		}
-		$this->sessionKeepalive();
 		$this->locale = $e[0];
 		$this->path   = '/' . (isset($e[1]) ? $e[1] : '');
 		$this->pjax = isset($_SERVER['HTTP_X_PJAX']);
