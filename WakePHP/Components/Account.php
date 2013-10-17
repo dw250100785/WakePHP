@@ -80,7 +80,6 @@ class Account extends Component {
 	public function GetExpiresController() {
 		$this->req->noKeepalive = true;
 		$this->req->onSessionRead(function () {
-			Daemon::log(Debug::dump($_SESSION));
 			if (!isset($_SESSION['expires'])) {
 				$this->req->setResult(['success' => false]);
 				return;

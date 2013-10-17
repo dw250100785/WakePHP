@@ -52,7 +52,6 @@ trait Sessions {
 
 	protected function sessionStartNew($cb = null) {
 		$this->getBrowser(function() use ($cb) {
-			Daemon::log('startSession()');
 			$session = $this->appInstance->sessions->startSession(
 			[
 				'ip' => $this->getIp(),
@@ -70,7 +69,6 @@ trait Sessions {
 				'location' => 'UNK',
 			],
 			function ($lastError) use (&$session, $cb) {
-						Daemon::log('startSessionCb(): '.Debug::dump($session));
 				if (!$session) {
 					if ($cb !== null) {
 						call_user_func($cb, false);
@@ -79,16 +77,19 @@ trait Sessions {
 				}
 				$this->sessionId = (string) $session['id'];
 				$this->attrs->session = $session;
-				$this->setcookie(
-			  		ini_get('session.name')
-					, $this->sessionId
-					, ini_get('session.cookie_lifetime')
-					, ini_get('session.cookie_path')
-					, $this->appInstance->config->cookiedomain->value ?: ini_get('session.cookie_domain')
-					, ini_get('session.cookie_secure')
-					, ini_get('session.cookie_httponly')
-				);
-				call_user_func($cb, true);
+				try {
+					$this->setcookie(
+			  			ini_get('session.name')
+						, $this->sessionId
+						, ini_get('session.cookie_lifetime')
+						, ini_get('session.cookie_path')
+						, $this->appInstance->config->cookiedomain->value ?: ini_get('session.cookie_domain')
+						, ini_get('session.cookie_secure')
+						, ini_get('session.cookie_httponly')
+					);
+				} finally {
+					call_user_func($cb, true);
+				}
 			});
 		});
 	}
