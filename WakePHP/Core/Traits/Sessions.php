@@ -52,7 +52,7 @@ trait Sessions {
 
 	protected function sessionStartNew($cb = null) {
 		$job = new ComplexJob(function() use (&$job, $cb) {
-			$this->appInstance->sessions->startSession([
+			$session = $this->appInstance->sessions->startSession([
 				'ip' => $this->getIp(),
 				'atime' => time(),
 				'expires' => time() + $this->defaultSessionTTL,
@@ -91,15 +91,15 @@ trait Sessions {
 			});
 		});
 		$job('browser', function($jobname, $job) {
-			$this->getBrowser(function() use ($cb, $jobname, $job) {
+			$this->getBrowser(function() use ($jobname, $job) {
 				$job->setResult($jobname);
 			});
-		})
+		});
 		$job('geoip', function($jobname, $job) {
-			$this->appInstance->geoIP->query($this->function($loc) use ($cb, $jobname, $job) {
+			$this->appInstance->geoIP->query($this->getIp(true), function($loc) use ($jobname, $job) {
 				$job->setResult($jobname, $loc);
 			});
-		})
+		});
 		$job();
 	}
 
