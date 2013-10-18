@@ -2,6 +2,7 @@
 namespace WakePHP\Core\Traits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\ComplexJob;
 use WakePHP\Core\Request;
 
 /**
@@ -14,8 +15,7 @@ use WakePHP\Core\Request;
 
 trait Sessions {
 
-	//protected $defaultSessionTTL = 1200;
-	protected $defaultSessionTTL = 30;
+	protected $defaultSessionTTL = 1200;
 	public $noKeepalive = false;
 	
 	public function redirectToLogin() {
@@ -51,9 +51,8 @@ trait Sessions {
 	}
 
 	protected function sessionStartNew($cb = null) {
-		$this->getBrowser(function() use ($cb) {
-			$session = $this->appInstance->sessions->startSession(
-			[
+		$job = new ComplexJob(function() use (&$job, $cb) {
+			$this->appInstance->sessions->startSession([
 				'ip' => $this->getIp(),
 				'atime' => time(),
 				'expires' => time() + $this->defaultSessionTTL,
@@ -66,9 +65,8 @@ trait Sessions {
 					'comment' => $this->browser['comment'],
 					'ismobiledevice' => $this->browser['ismobiledevice'],
 				],
-				'location' => 'UNK',
-			],
-			function ($lastError) use (&$session, $cb) {
+				'location' => $job->getResult('geoip'),
+			], function ($lastError) use (&$session, $cb) {
 				if (!$session) {
 					if ($cb !== null) {
 						call_user_func($cb, false);
@@ -92,6 +90,17 @@ trait Sessions {
 				}
 			});
 		});
+		$job('browser', function($jobname, $job) {
+			$this->getBrowser(function() use ($cb, $jobname, $job) {
+				$job->setResult($jobname);
+			});
+		})
+		$job('geoip', function($jobname, $job) {
+			$this->appInstance->geoIP->query($this->function($loc) use ($cb, $jobname, $job) {
+				$job->setResult($jobname, $loc);
+			});
+		})
+		$job();
 	}
 
 	public function sessionCommit($cb = null) {
@@ -99,7 +108,6 @@ trait Sessions {
 			if (!$this->noKeepalive) {
 				$this->attrs->session['atime'] = time();
 				$this->attrs->session['expires'] = time() + $this->attrs->session['ttl'];
-				Daemon::log('update expires '.json_encode($this->attrs->session['expires']).'!! '.$this->attrs->server['REQUEST_URI']);
 			}
 			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
 		} else {

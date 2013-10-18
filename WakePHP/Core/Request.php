@@ -98,18 +98,19 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		$this->tpl->assign('req', $this);
 	}
 
-	public function getIp() {
-		$s = &$this->attrs->server;
-		$ip = $s['REMOTE_ADDR'];
-		$for = '';
-		if (isset($s['HTTP_CLIENT_IP'])) {
-			$for = $s['HTTP_CLIENT_IP'];
-		} elseif (isset($s['HTTP_X_FORWARDED_FOR'])) {
-			$for = $s['HTTP_X_FORWARDED_FOR'];
-		} elseif (isset($s['HTTP_VIA'])) {
-			$for = $s['HTTP_VIA'];
+	public function getIp($real = false) {
+		if ($real) {
+			return $this->attrs->server['REMOTE_ADDR'];
 		}
-		return $ip . ($for !== '' ? ' for ' . $for : '');
+		$s = &$this->attrs->server;
+		$r = ['ip' => $s['REMOTE_ADDR']];
+		$ip = $s['REMOTE_ADDR'];
+		if (isset($s['HTTP_CLIENT_IP'])) {
+			$r['client'] = $s['HTTP_CLIENT_IP'];
+		} elseif (isset($s['HTTP_X_FORWARDED_FOR'])) {
+			$r['for'] = $s['HTTP_X_FORWARDED_FOR'];
+		}
+		return sizeof($r) > 1 ? $r : $r['ip'];
 	}
 
 	/**

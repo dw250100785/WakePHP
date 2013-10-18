@@ -1,0 +1,148 @@
+#!/usr/bin/env php
+<?php
+include 'generic.php';
+
+if (file_exists($zip = 'GeoLiteCity-latest.zip')) {
+	shell_exec('unzip '.escapeshellarg($zip));
+}
+
+/* blocks */ 
+$db = $mongo->{'geoip'};
+$blocks = $db->selectCollection('blocks');
+$locations = $db->selectCollection('locations');
+$map = $db->selectCollection('map');
+
+$importBlocks = function($filename) use ($blocks, $db) {
+	$blocks->drop();
+	//$blocks = $db->createCollection('blocks', ['autoIndexId' => false]);
+	$fp = fopen($filename, 'r');
+	$header = null;
+	$i = 0;
+	$batch = [];
+	$skey = 's';
+	while (($entry = fgetcsv($fp)) !== false) {
+		if (sizeof($entry) < 3) {
+			continue;
+		}
+		if ($header === null) {
+			$header = $entry;
+			if ($header !== ['startIpNum', 'endIpNum', 'locId']) {
+				echo "importBlocks: wrong header\n";
+				break;
+			}
+			continue;
+		}
+		$doc = [
+				'_id' => (int) $entry[0],
+				's' => (int) $entry[0],
+				//'e' => (int) $entry[1],
+				'l' => (int) $entry[2],
+		];
+		if ($batch !== null) {
+			$batch[] = $doc;
+			if (sizeof($batch) >= 100) {
+				$blocks->batchInsert($batch, ['w' => 0]);
+				$batch = [];
+			}
+		} else {
+			$blocks->insert($doc, ['w' => 1]);
+		}
+	}
+	if (sizeof($batch)) {
+		$blocks->batchInsert($batch, ['w' => 0]);
+	}
+	if ($skey == 's') {
+		$blocks->ensureIndex(['s' => 1]);
+	}
+	//$blocks->ensureIndex(['l' => 1]);
+	fclose($fp);
+};
+
+$importLocations = function($path) use ($locations, $blocks) {
+	$locations->drop();
+	$start = microtime(true);
+	$fp = fopen($path, 'r');
+	$header = null;
+	$i = 0;
+	$batch = [];
+	while (($entry = fgetcsv($fp)) !== false) {
+		if (sizeof($entry) < 3) {
+			continue;
+		}
+		if ($header === null) {
+			$header = $entry;
+			if ($header !== ["locId","country","region","city","postalCode","latitude","longitude","metroCode","areaCode"]) {
+				echo "importLocations: wrong header\n";
+				break;
+			}
+			continue;
+		}
+		$names = ['_id', 'cc', 'r', 'c', 'p', 'la', 'lo', 'm', 'a'];
+		$doc = [];
+		foreach ($names as $i => $k) {
+			if ($entry[$i] === '') {
+				continue;
+			}
+			if ($k == 'la' || $k == 'lo') {
+				$doc[$k] = (float) $entry[$i];	
+			} elseif ($k === '_id' || $k === 'p' || $k === 'mc' || $k === 'ac') {
+				$doc[$k] = (int) $entry[$i];
+			} else {
+				$doc[$k] = iconv('ISO-8859-1', 'UTF-8', $entry[$i]);
+			}
+		}
+		/*$doc['b'] = [];
+		$cursor = $blocks->find(['l' => $doc['_id']]);
+		foreach ($cursor as $block) {
+			$doc['b'][] = [
+				's' => $block['s'],
+				'e' => $block['e'],
+			];
+		}*/
+		if ($batch !== null) {
+			$batch[] = $doc;
+			if (sizeof($batch) >= 10) {
+				$locations->batchInsert($batch, ['w' => 0]);
+				$batch = [];
+			}
+		}
+		else {
+			$locations->insert($doc, ['w' => 0]);
+		}
+	}
+	if (sizeof($batch)) {
+		$locations->batchInsert($batch, ['w' => 0]);
+	}
+	/*indexes:
+	$locations->ensureIndex(['b.s' => 1, 'b.e' => 1]);
+	$locations->ensureIndex(['b.s' => 1, 'b.e' => -1]);
+	$locations->ensureIndex(['b.e' => 1]);*/
+	$time = microtime(true) - $start;
+	echo 'importLocations took: '.round($time, 4). ' seconds'.PHP_EOL;
+	fclose($fp);
+};
+$buildMap = function() use ($locations, $blocks, $map) {
+
+};
+$checked = [];
+$paths = [];
+foreach (explode("\n", trim(shell_exec('find ./support-scripts/GeoLiteCity_*/*.csv'))) as $file) {
+	$b = basename($file);
+	if (in_array($b, $checked)) {
+		continue;
+	}
+	$checked[] = $b;
+	if ($b === 'GeoLiteCity-Location.csv') {
+		$paths['locations'] = $file;
+	}
+	elseif ($b === 'GeoLiteCity-Blocks.csv') {
+		$paths['blocks'] = $file;
+	}
+}
+if (isset($paths['blocks'])) {
+	$importBlocks($paths['blocks']);
+}
+if (isset($paths['locations'])) {
+	$importLocations($paths['locations']);
+}
+$buildMap();
