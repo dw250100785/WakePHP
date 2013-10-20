@@ -178,7 +178,6 @@ class GeoIP extends Generic {
 						$loc['text'] =  $loc['c'] . ', ' . $loc['text'];
 					}
 				}
-        Daemon::log(Debug::dump($loc));
 				call_user_func($cb, $loc);
 			}, ['where' => ['_id' => $blk['l']]]);
 		}, [
