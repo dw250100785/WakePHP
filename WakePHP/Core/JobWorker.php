@@ -73,7 +73,13 @@ class JobWorker extends AppInstance {
 				$types = array_merge($this->jobs, [null]);
 				Daemon::log('find start: '.Debug::dump($types));
 				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) {
+					if ($cursor->isDead()) {
+						$cursor->destroy();
+						$this->resultCursor = null;
+						return;
+					}
 					$this->resultCursor = $cursor;
+					$this->resultCursor->getMore(1);
 					foreach ($cursor->items as $k => $job) {
 						Daemon::log('find: ' . json_encode($job));
 						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
@@ -91,9 +97,6 @@ class JobWorker extends AppInstance {
 						);
 						unset($cursor->items[$k]);
 					}
-					/*if ($cursor->finished) {
-						$cursor->destroy();
-					}*/
 				}, [
 					   'tailable' => true,
 					   'sort'     => ['$natural' => 1],
@@ -107,13 +110,6 @@ class JobWorker extends AppInstance {
 				$this->log('inited cursor');
 				$event->timeout(1e6);
 				return;
-			}
-			if (!$this->resultCursor->isBusyConn()) {
-				try {
-					$this->resultCursor->getMore(10);
-				} catch (ConnectionFinished $e) {
-					$this->resultCursor = false;
-				}
 			}
 			$event->timeout(0.02e6);
 		}, 1);

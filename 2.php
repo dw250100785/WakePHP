@@ -1,15 +1,18 @@
 <?php
-$id = new MongoId;
-$id = new MongoId;
+$m = new MongoClient( 'mongodb://127.0.0.1:27017');
+$c = $m->WakePHP->selectCollection( 'jobqueue' );
+$cursor = $c->find( array('status' => 'v' ));
+$cursor->sort(['$natural' => 1]);
+$cursor->tailable( true );
+$cursor->awaitData( true );
 
-$str = (string) $id;
-$sbin = '';
-$len = strlen( $str );
-for ( $i = 0; $i < $len; $i += 2 ) {
-	$sbin .= pack( "H*", substr( $str, $i, 2 ) );
+while (true) {
+    if (!$cursor->hasNext()) {
+        // we've read all the results, exit
+        if ($cursor->dead()) {
+            break;
+        }
+    } else {
+        var_dump( $cursor->getNext() );
+    }
 }
-
-echo base64_encode($sbin);
-
-echo PHP_EOL;
-echo PHP_EOL;

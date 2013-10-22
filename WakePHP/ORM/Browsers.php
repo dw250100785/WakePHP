@@ -19,7 +19,7 @@ class Browsers extends Generic {
 	 */
 	public function init() {
 		$this->browsers = $this->appInstance->db->{$this->appInstance->dbname . '.browsers'};
-		get_browser('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66 Safari/537.36', true);
+		\get_browser('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66 Safari/537.36', true);
 	}
 
 	/**
