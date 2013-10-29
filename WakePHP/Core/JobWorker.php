@@ -6,6 +6,7 @@ use PHPDaemon\Clients\Mongo\ConnectionFinished;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Timer;
 use WakePHP\ORM\Sessions;
 
@@ -54,7 +55,12 @@ class JobWorker extends AppInstance {
 	/**
 	 *
 	 */
+
+	public $mycb;
 	public function onReady() {
+		$this->mycb = CallbackWrapper::wrap(function($test) {
+			Daemon::log(Debug::dump($test));
+		}, 1e6);
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname      = $this->config->dbname->value;
 		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {

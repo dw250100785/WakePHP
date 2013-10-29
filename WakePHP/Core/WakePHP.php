@@ -4,6 +4,7 @@ namespace WakePHP\Core;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
 use WakePHP\ORM\ExternalAuthTokens;

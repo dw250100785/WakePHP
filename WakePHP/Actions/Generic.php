@@ -13,9 +13,14 @@ abstract class Generic {
 	protected $appInstance;
 	protected $callback;
 	protected $req;
+	protected $cmp;
 
 	public function setRequest($req) {
 		$this->req = $req;
+	}
+	
+	public function setComponent($cmp) {
+		$this->cmp = $cmp;
 	}
 
 	public function __construct($params = []) {

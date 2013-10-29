@@ -203,7 +203,7 @@ class Accounts extends Generic {
 		if (!is_string($group)) {
 			return;
 		}
-		$this->accounts->update($account, array('$addToSet' => array('aclgroups' => $group)), 0, $cb);
+		$this->accounts->updateOne($account, array('$addToSet' => array('aclgroups' => $group)), $cb);
 	}
 
 	/**
@@ -221,7 +221,7 @@ class Accounts extends Generic {
 		else {
 			$find = $account;
 		}
-		$this->accounts->update($find, ['$push' => ['credentials' => $credentials]], 0, $cb);
+		$this->accounts->updateOne($find, ['$push' => ['credentials' => $credentials]], $cb);
 	}
 
 	/**
@@ -233,7 +233,7 @@ class Accounts extends Generic {
 		if (isset($account['_id']) && is_string($account['_id'])) {
 			$account['_id'] = new \MongoId($account['_id']);
 		}
-		$this->accounts->update($account, $update, 0, $cb);
+		$this->accounts->updateOne($account, $update, $cb);
 	}
 
 	/**
@@ -270,10 +270,10 @@ class Accounts extends Generic {
 		}
 		if ($update) {
 			unset($account['_id']);
-			$this->accounts->update($cond, array('$set' => $account), 0, $cb);
+			$this->accounts->updateOne($cond, array('$set' => $account), $cb);
 		}
 		else {
-			$this->accounts->upsert($cond, $account, false, $cb);
+			$this->accounts->upsertOne($cond, $account, $cb);
 		}
 	}
 

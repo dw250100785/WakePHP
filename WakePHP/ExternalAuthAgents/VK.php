@@ -63,10 +63,7 @@ class VK extends Generic {
 						if (isset($response['screen_name'])) {
 							$data['username'] = Request::getString($response['screen_name']);
 						}
-						$this->req->components->account->acceptUserAuthentication('VK', $user_id, $data,
-							function () {
-								$this->finalRedirect();
-							});
+						$this->req->components->account->acceptUserAuthentication('VK', $user_id, $data, [$this, 'finalRedirect']);
 					});
 			}
 		);

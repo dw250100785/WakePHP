@@ -82,10 +82,7 @@ class Twitter extends Generic {
 					 $data['username'] = Request::getString($response['screen_name']);
 				 }
 
-				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data,
-					 function () {
-						 $this->finalRedirect();
-					 });
+				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data, [$this, 'finalRedirect']);
 			 }
 			]
 		);

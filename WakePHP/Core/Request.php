@@ -238,13 +238,20 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 											 ), array($this, 'loadPage'));
 	}
 
-	public function setResult($result = NULL) {
+	public function setResult($result = null, $multi = false) {
 		if ($this->dataType === 'json') {
 			try {
 				$this->header('Content-Type: text/json');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = json_encode($result);
+			$this->html = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ($multi ? "\n" : '');
+		}
+		elseif ($this->dataType === 'jsonp') {
+			try {
+				$this->header('Content-Type: text/plain');
+			} catch (RequestHeadersAlreadySent $e) {
+			}
+			$this->html = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . ($multi ? "\n" : '');
 		}
 		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
@@ -262,12 +269,42 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			$this->html = bson_encode($result);
 		}
+		elseif ($this->dataType === 'dump') {
+			try {
+				$this->header('Content-Type: text/plain');
+			} catch (RequestHeadersAlreadySent $e) {
+			}
+			$this->html = Debug::dump($result);
+		}
 		else {
 			$this->header('Content-Type: application/x-javascript');
 			$this->html = json_encode(['errmsg' => 'Unsupported data-type.']);
 		}
-		++$this->jobDone;
-		$this->wakeup();
+		if (!$multi) {
+			++$this->jobDone;
+			$this->wakeup();
+		}
+	}
+
+	public function addMultiResult($result, $finish = false) {
+		if ($this->dataType === 'json') {
+			try {
+				$this->header('Content-Type: text/json');
+			} catch (RequestHeadersAlreadySent $e) {
+			}
+			$this->html .= json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . (!$finish ? "\n" : '');
+		}
+		elseif ($this->dataType === 'jsonp') {
+			try {
+				$this->header('Content-Type: text/plain');
+			} catch (RequestHeadersAlreadySent $e) {
+			}
+			$this->html .= json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . (!$finish ? "\n" : '');
+		}
+		if ($finish) {
+ 			++$this->jobDone;
+			$this->wakeup();
+		}
 	}
 
 	public function onFinish() {

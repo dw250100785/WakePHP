@@ -45,6 +45,7 @@ class Component {
 			$action = new $class;
 			$action->setAppInstance($this->appInstance);
 			$action->setRequest($this->req);
+			$action->setComponent($this);
 			$action->perform();
 		} else {
 			$this->req->setResult(array('errmsg' => 'Unknown controller.'));
