@@ -5,7 +5,7 @@ namespace WakePHP\Objects;
  * Class Account
  * @package WakePHP\Objects
  */
-class Account {
+class AccountNew {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 

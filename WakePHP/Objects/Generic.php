@@ -5,7 +5,7 @@ namespace WakePHP\Objects;
  * Class Generic
  * @package WakePHP\Objects
  */
-abstract class Generic {
+abstract class Generic implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
@@ -17,10 +17,18 @@ abstract class Generic {
 
 	protected $obj;
 
-	public function __construct($init, $orm) {
+	protected $cond;
+
+	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
-		if (is_array($init)) {
-			$this->obj = $init;
+		$this->cond = $cond;
+		if (is_array($init) && !isset($init[0])) {
+		}
+		elseif (is_callable($objOrCb)) {
+			$this->fetch($objOrCb);
+		}
+		if (is_array($objOrCb)) {
+			$this->obj = $objOrCb;
 			if (isset($init['_id'])) {
 				$this->_id = $init['_id'];
 			}
@@ -33,13 +41,7 @@ abstract class Generic {
 	/**
 	 *
 	 */
-	public function init($init) {
-		if (is_array($init)) {
-			$this->obj = $init;
-			if (isset($init['_id'])) {
-				$this->_id = $init['_id'];
-			}
-		}
+	public function init() {
 	}
 
 	/**
@@ -72,5 +74,43 @@ abstract class Generic {
 
 	}
 
+
+	/**
+	 * Checks if property exists
+	 * @param string Property name
+	 * @return boolean Exists?
+	 */
+
+	public function offsetExists($prop) {
+		return call_user_func([$this, 'get' . ucfirst($prop)]) !== null;
+	}
+
+	/**
+	 * Get property by name
+	 * @param string Property name
+	 * @return mixed
+	 */
+	public function offsetGet($prop) {
+		return call_user_func([$this, 'get' . ucfirst($prop)]);;
+	}
+
+	/**
+	 * Set property
+	 * @param string Property name
+	 * @param mixed  Value
+	 * @return void
+	 */
+	public function offsetSet($prop, $value) {
+		call_user_func([$this, 'set' . ucfirst($prop)], $value);
+	}
+
+	/**
+	 * Unset property
+	 * @param string Property name
+	 * @return void
+	 */
+	public function offsetUnset($prop) {
+		call_user_func([$this, 'unset' . ucfirst($prop)]);
+	}
 }
 

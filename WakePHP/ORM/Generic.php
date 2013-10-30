@@ -1,7 +1,9 @@
 <?php
 namespace WakePHP\ORM;
 use WakePHP\Core\WakePHP;
-
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 /**
  * Class ORM
  * @package WakePHP\Core
@@ -24,6 +26,7 @@ abstract class Generic {
 	}
 
 	public function getObject($type, $cond, $objOrCb = null) {
+		Daemon::log(Debug::dump(['getObject', $type, $cond]));
 		$class = '\\WakePHP\\Objects\\' . $type;
 		if (!class_exists($class)) {
 			Daemon::log(get_class($this) . ': undefined class: ' . $class);
@@ -42,7 +45,7 @@ abstract class Generic {
 	 * @return null|mixed
 	 */
 	public function __call($method, $args) {
-		if (substr($method, -3) === 'get') {
+		if (substr($method, 0, 3) === 'get') {
 			$type = substr($method, 3);
 			$cond = sizeof($args) ? $args[0] : null;
 			$objOrCb = sizeof($args) ? $args[1] : null;

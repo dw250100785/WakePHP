@@ -58,13 +58,13 @@ class JobWorker extends AppInstance {
 
 	public $mycb;
 	public function onReady() {
-		$this->mycb = CallbackWrapper::wrap(function($test) {
-			Daemon::log(Debug::dump($test));
-		}, 1e6);
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname      = $this->config->dbname->value;
 		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
 			$class         = strstr(basename($file), '.', true);
+			if ($class === 'Generic') {
+				continue;
+			}
 			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
 			$class         = '\\WakePHP\\ORM\\' . $class;
 			$this->{$prop} = &$a; // trick ;-)

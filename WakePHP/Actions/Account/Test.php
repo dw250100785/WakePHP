@@ -13,8 +13,10 @@ use PHPDaemon\Core\Debug;
 class Test extends Generic {
 
 	public function perform() {
-		$obj = $this->appInstance->accounts->getAccount($this->req->account['_id']);
-		Daemon::log(Debug::dump($obj));
+		$emptyState = $this->appInstance->accounts->getAccountNew($this->req->account['_id'], function($obj) {
+			Daemon::log(Debug::dump(['loadedObject', $obj]));
+		});
+		Daemon::log(Debug::dump(['emptyState', $emptyState]));
 		$this->req->setResult();
 	}
 }
