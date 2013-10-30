@@ -11,9 +11,9 @@ use WakePHP\ORM\Generic;
 class Accounts extends Generic {
 
 	/** @var \PHPDaemon\Clients\Mongo\Collection */
-	protected $accounts;
+	public $accounts;
 	/** @var \PHPDaemon\Clients\Mongo\Collection */
-	protected $aclgroups;
+	public $aclgroups;
 
 	public function init() {
 		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};

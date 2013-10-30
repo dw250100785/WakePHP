@@ -13,10 +13,9 @@ use PHPDaemon\Core\Debug;
 class Test extends Generic {
 
 	public function perform() {
-		$emptyState = $this->appInstance->accounts->getAccountNew($this->req->account['_id'], function($obj) {
-			Daemon::log(Debug::dump(['loadedObject', $obj]));
+		$this->appInstance->accounts->getAccountNew($this->req->account['_id'], function($account) {
+			$this->req->setResult($account['ip']);
 		});
-		Daemon::log(Debug::dump(['emptyState', $emptyState]));
-		$this->req->setResult();
+		
 	}
 }

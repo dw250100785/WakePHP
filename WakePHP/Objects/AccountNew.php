@@ -5,20 +5,17 @@ namespace WakePHP\Objects;
  * Class Account
  * @package WakePHP\Objects
  */
-class AccountNew {
-	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
-
+class AccountNew extends Generic {
 	
 	public function init() {
 
 	}
 
-	public function fetch($cb) {
-
+	protected function fetchObject($cb) {
+		$this->orm->accounts->findOne($cb, ['where' => $this->cond,]);
 	}
 
-	public function save($cb) {
+	protected function saveObject($cb) {
 
 	}
 

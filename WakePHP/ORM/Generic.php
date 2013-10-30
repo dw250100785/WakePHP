@@ -26,7 +26,6 @@ abstract class Generic {
 	}
 
 	public function getObject($type, $cond, $objOrCb = null) {
-		Daemon::log(Debug::dump(['getObject', $type, $cond]));
 		$class = '\\WakePHP\\Objects\\' . $type;
 		if (!class_exists($class)) {
 			Daemon::log(get_class($this) . ': undefined class: ' . $class);
