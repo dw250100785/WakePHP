@@ -65,7 +65,22 @@ class Profile extends Generic {
 						$update['subscription'] = Request::getString($_REQUEST['subscription'], ['', 'daily', 'thematic']);
 					}
 
+					// Language
+					if (isset($_REQUEST['language'])) {
+						$update['language'] = Request::getString($_REQUEST['language']);
+					}
 
+					// Phone
+					if (isset($_REQUEST['phone'])) {
+						$update['phone'] = Request::getString($_REQUEST['phone']);
+					}
+
+					// Session
+					if (isset($_REQUEST['autoclose'])) {
+						$update['autoclose'] = Request::getString($_REQUEST['autoclose']);
+					}
+
+					// Password
 					if (($password = Request::getString($_REQUEST['password'])) !== '') {
 						$update['password'] = $password;
 					}
