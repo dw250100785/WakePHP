@@ -16,7 +16,11 @@ class AccountNew extends Generic {
 	}
 
 	protected function saveObject($cb) {
-
+		if (!sizeof($this->update)) {
+			return;
+		}
+		$this->orm->accounts->upsertOne($this->cond, $this->update, $cb);
+		$this->update = [];
 	}
 
 }

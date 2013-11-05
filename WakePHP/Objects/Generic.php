@@ -55,19 +55,23 @@ abstract class Generic implements \ArrayAccess {
 
 	public function setProperty($prop, $value) {
 		$this->obj[$prop] = $value;
+		if (!isset($this->update['$set'])) {
+			$this->update['$set'] = [];
+		}
+		$this->update['$set'][$prop] = $value;
 	}
 
 	public function __get($prop) {
 		return call_user_func([$this, 'get' . ucfirst($prop)]);
 	}
 	public function __isset($prop) {
-		return call_user_func([$this, 'get' . ucfirst($prop)]) !== null;
+		return call_user_func([$this, 'isset' . ucfirst($prop)]);
 	}
 	public function __set($prop, $value) {
-		return call_user_func([$this, 'set' . ucfirst($prop)], $value);
+		call_user_func([$this, 'set' . ucfirst($prop)], $value);
 	}
 	public function __unset($prop) {
-		return call_user_func([$this, 'unset' . ucfirst($prop)]);
+		call_user_func([$this, 'unset' . ucfirst($prop)]);
 	}
 
 	/**
@@ -76,18 +80,18 @@ abstract class Generic implements \ArrayAccess {
 	 * @return null|mixed
 	 */
 	public function __call($method, $args) {
-		if (strncmp($method, 'get', 3)) {
-			$name = substr($method, 3);
+		if (strncmp($method, 'get', 3) === 0) {
+			$name = lcfirst(substr($method, 3));
 			return $this->getProperty($name);
 		}
-		if (strncmp($method, 'set', 3)) {
-			$name = substr($method, 3);
+		if (strncmp($method, 'set', 3) === 0) {
+			$name = lcfirst(substr($method, 3));
 			$value = sizeof($args) ? $args[0] : null;
 			$this->setProperty($name, $value);
 			return;
 		}
-		if (strncmp($method, 'unset', 5)) {
-			$name = substr($method, 5);
+		if (strncmp($method, 'unset', 5) === 0) {
+			$name = lcfirst(substr($method, 5));
 			$this->unsetProperty($name);
 			return;
 		}
