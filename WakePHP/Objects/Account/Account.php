@@ -1,6 +1,8 @@
 <?php
-namespace WakePHP\Objects;
+namespace WakePHP\Objects\Account;
 use PHPDaemon\Utils\Crypt;
+
+use WakePHP\Objects\Generic;
 
 /**
  * Class Account
