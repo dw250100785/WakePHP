@@ -2,6 +2,7 @@
 namespace WakePHP\ORM;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
 use WakePHP\ORM\Generic;
 
@@ -25,9 +26,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getAccountByName($username, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => array('username' => (string)$username),
-		));
+		$this->getObject('Account', ['username' => (string) $username], $cb);
 	}
 
 	/**
@@ -36,27 +35,6 @@ class Accounts extends Generic {
 	 */
 	public function findAccounts($cb, $cond = array()) {
 		$this->accounts->find($cb, $cond);
-	}
-
-	/**
-	 * @param callable $cb
-	 * @param array $cond
-	 */
-	public function countAccounts($cb, $cond = array()) {
-		$this->accounts->count($cb, $cond);
-	}
-
-	/**
-	 * @param array $cond
-	 * @param callable $cb
-	 */
-	public function deleteAccount($cond = array(), $cb = null) {
-		if (sizeof($cond)) {
-			if (isset($cond['_id']) && is_string($cond['_id'])) {
-				$cond['_id'] = new \MongoId($cond['_id']);
-			}
-			$this->accounts->remove($cond, $cb);
-		}
 	}
 
 	/**
@@ -74,9 +52,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getAccountByUnifiedName($username, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => array('unifiedusername' => $this->unifyUsername($username)),
-		));
+		$this->getObject('Account', ['unifiedusername' => $this->unifyUsername($username)], $cb);
 	}
 
 	/**
@@ -84,9 +60,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getAccountByUnifiedEmail($email, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => array('unifiedemail' => $this->unifyEmail($email)),
-		));
+		$this->getObject('Account', ['unifiedemail' => $this->unifyEmail($email)], $cb);
 	}
 
 	/**
@@ -94,9 +68,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getAccountByEmail($email, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => array('email' => $email),
-		));
+		$this->getObject('Account', ['email' => $email], $cb);
 	}
 
 	/**
@@ -104,19 +76,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getAccountById($id, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => array('_id' => $id),
-		));
-	}
-
-	/**
-	 * @param array $find
-	 * @param callable $cb
-	 */
-	public function getAccount($find, $cb) {
-		$this->accounts->findOne($cb, array(
-			'where' => $find,
-		));
+		$this->getObject('Account', $id, $cb, $id);
 	}
 
 	/**
@@ -187,8 +147,8 @@ class Accounts extends Generic {
 	 * @param $account
 	 * @param callable $cb
 	 */
-	public function confirmAccount($account, $cb = null) {
-		$this->accounts->update($account, array('$unset' => array('confirmationcode' => 1)), 0, $cb);
+	public function confirmAccount($conf, $cb = null) {
+		$this->getObject('Account', $account)->confirm()->save($cb);
 	}
 
 	/**
@@ -222,59 +182,6 @@ class Accounts extends Generic {
 			$find = $account;
 		}
 		$this->accounts->updateOne($find, ['$push' => ['credentials' => $credentials]], $cb);
-	}
-
-	/**
-	 * @param $account
-	 * @param $update
-	 * @param callable $cb
-	 */
-	public function updateAccount($account, $update, $cb = null) {
-		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new \MongoId($account['_id']);
-		}
-		$this->accounts->updateOne($account, $update, $cb);
-	}
-
-	/**
-	 * @param $account
-	 * @param callable $cb
-	 * @param bool $update
-	 */
-	public function saveAccount($account, $cb = null, $update = false) {
-		if (isset($account['password'])) {
-			$account['salt']     = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $account['email']);
-			$account['password'] = Crypt::hash($account['password'], $account['salt'] . $this->appInstance->config->cryptsaltextra->value);
-		}
-		if (isset($account['username'])) {
-			$account['unifiedusername'] = $this->unifyUsername($account['username']);
-		}
-		if (isset($account['regdate']) && is_string($account['regdate'])) {
-			$account['regdate'] = \WakePHP\Utils\Strtotime::parse($account['regdate']);
-		}
-		if (isset($account['aclgroups']) && is_string($account['aclgroups'])) {
-			$account['aclgroups'] = array_filter(preg_split('~\s*[,;]\s*~s', $account['aclgroups']), 'strlen');
-		}
-		if (isset($account['email'])) {
-			$account['unifiedemail'] = $this->unifyEmail($account['email']);
-		}
-
-		if (isset($account['_id'])) {
-			if (is_string($account['_id'])) {
-				$account['_id'] = new \MongoId($account['_id']);
-			}
-			$cond = array('_id' => $account['_id']);
-		}
-		else {
-			$cond = array('email' => $account['email']);
-		}
-		if ($update) {
-			unset($account['_id']);
-			$this->accounts->updateOne($cond, array('$set' => $account), $cb);
-		}
-		else {
-			$this->accounts->upsertOne($cond, $account, $cb);
-		}
 	}
 
 	/**
