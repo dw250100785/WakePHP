@@ -135,8 +135,8 @@ class Accounts extends Generic {
 	 * @param $account
 	 * @param callable $cb
 	 */
-	public function confirmAccount($conf, $cb = null) {
-		$this->getObject('Account', $account)->confirm()->save($cb);
+	public function confirmAccount($account, $cb = null) {
+		$this->getObject('Account')->extractCondFrom($account)->confirm()->save($cb);
 	}
 
 	/**
@@ -145,13 +145,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function addACLgroupToAccount($account, $group, $cb = null) {
-		if (isset($account['_id']) && is_string($account['_id'])) {
-			$account['_id'] = new \MongoId($account['_id']);
-		}
-		if (!is_string($group)) {
-			return;
-		}
-		$this->accounts->updateOne($account, array('$addToSet' => array('aclgroups' => $group)), $cb);
+		$this->getObject('Account')->extractCondFrom($account)->addACLgroup($group)->save($cb);
 	}
 
 	/**
@@ -160,16 +154,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function addCredentialsToAccount($account, $credentials, $cb = null) {
-		if (isset($account['_id'])) {
-			$find = ['_id' => is_string($account['_id']) ? new \MongoId($account['_id']) : $account['_id']];
-		}
-		elseif (isset($account['email'])) {
-			$find = ['email' => $account['email']];
-		}
-		else {
-			$find = $account;
-		}
-		$this->accounts->updateOne($find, ['$push' => ['credentials' => $credentials]], $cb);
+		$this->getObject('Account')->extractCondFrom($account)->addCredentials($credentials)->save($cb);
 	}
 
 	/**
@@ -202,8 +187,8 @@ class Accounts extends Generic {
 	/**
 	 * @param $group
 	 */
-	public function saveACLgroup($group) {
-		$this->aclgroups->upsert(array('name' => $group['name']), array('$set' => $group));
+	public function saveACLgroup($group, $cb = null) {
+		$this->getObject('ACLGroup', ['name' => $group['name']], $group)->save($cb);
 	}
 
 }

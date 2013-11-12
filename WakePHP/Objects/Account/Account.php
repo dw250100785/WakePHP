@@ -23,6 +23,18 @@ class Account extends Generic {
 		return $this;
 	}
 
+	public function extractCondFrom($obj) {
+		if (isset($obj['_id'])) {
+			$this->cond = ['_id' => $obj['_id']];
+			if (is_string($this->cond['_id'])) {
+				$this->cond['_id'] = new \MongoId($this->cond['_id']);
+			}
+		}
+		elseif (isset($obj['email'])) {
+			$this->cond = ['email' => $obj['email']];
+		}
+	}
+
 	/**
 	 * @param string $password
 	 * @return bool
@@ -57,6 +69,29 @@ class Account extends Generic {
 		}
 		$this->update['$unset']['confirmationcode'] = 1;
 		return $this;
+	}
+
+	public function addACLgroup($group) {
+		if (!is_string($group)) {
+			return;
+		}
+		if (!isset($this->update['$addToSet'])) {
+			$this->update['$addToSet'] = [];
+		}
+		if (!isset($this->update['$addToSet']['aclgroups']['$each'])) {
+			$this->update['$addToSet']['aclgroups'] = ['$each' => []];
+		}
+		$this->update['$addToSet']['aclgroups']['$each'][] = $group;
+	}
+
+	public function addCredentials($credentials) {
+		if (!isset($this->update['$push'])) {
+			$this->update['$push'] = [];
+		}
+		if (!isset($this->update['$push']['credentials']['$each'])) {
+			$this->update['$push']['credentials'] = ['$each' => []];
+		}
+		$this->update['$push']['credentials']['$each'][] = $credentials;
 	}
 
 	protected function removeObject($cb) {

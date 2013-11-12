@@ -29,7 +29,7 @@ abstract class Generic {
 		$this->init();
 	}
 
-	public function getObject($type, $cond, $objOrCb = null) {
+	public function getObject($type, $cond = null, $objOrCb = null) {
 		$class = ClassFinder::find($type, $this->name, 'WakePHP\\Objects');
 		if (!class_exists($class)) {
 			Daemon::log(get_class($this) . ': undefined class: ' . $class);
