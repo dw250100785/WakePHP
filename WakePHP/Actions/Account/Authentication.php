@@ -40,23 +40,23 @@ class Authentication extends Generic {
 								'username' => 'Unrecognized username.',
 							]
 						]);
+						return;
 					}
-					elseif ($this->appInstance->accounts->checkPassword($account, Request::getString($_REQUEST['password']))) {
-						$this->cmp->loginAs($account);
-						$r = ['success' => true];
-						if (isset($account['confirmationcode'])) {
-							$r['needConfirm'] = true;
-						}
-						$this->req->setResult($r);
-					}
-					else {
+					if (!$account->checkPassword(Request::getString($_REQUEST['password']))) {
 						$this->req->setResult([
 							'success' => false,
 							'errors'  => [
 								'password' => 'Invalid password.',
 							]
 						]);
+						return;
 					}
+					$this->cmp->loginAs($account);
+					$r = ['success' => true];
+					if (isset($account['confirmationcode'])) {
+						$r['needConfirm'] = true;
+					}
+					$this->req->setResult($r);
 				});
 		});
 	}

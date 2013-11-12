@@ -84,21 +84,7 @@ class Accounts extends Generic {
 	 * @param callable $cb
 	 */
 	public function getACLgroup($name, $cb) {
-		$this->aclgroups->findOne($cb, array(
-			'where' => array('name' => $name),
-		));
-	}
-
-	/**
-	 * @param array $account
-	 * @param string $password
-	 * @return bool
-	 */
-	public function checkPassword($account, $password) {
-		if ($account && !isset($account['password'])) {
-			return false;
-		}
-		return Crypt::compareStrings($account['password'], Crypt::hash($password, $account['salt'] . $this->appInstance->config->cryptsaltextra->value));
+		$this->getObject('ACLGroup', ['name' => $name], $cb);
 	}
 
 	/**

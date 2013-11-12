@@ -144,6 +144,10 @@ abstract class Generic implements \ArrayAccess {
 	public function fetch($cb) {
 		$this->fetchObject(function($obj) use ($cb) {
 			$this->obj = $obj;
+			if ($obj === false) {
+				call_user_func($cb, false);
+				return;
+			}
 			$this->new = false;
 			if (!$this->inited) {
 				$this->inited = true;
@@ -151,6 +155,10 @@ abstract class Generic implements \ArrayAccess {
 			}
 			call_user_func($cb, $this);
 		});
+	}
+
+	public function exists() {
+		return is_array($this->obj) ? true : ($this->obj === null ? null : false);
 	}
 
 	abstract protected function fetchObject($cb);

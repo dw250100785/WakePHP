@@ -1,5 +1,6 @@
 <?php
 namespace WakePHP\Objects;
+use PHPDaemon\Utils\Crypt;
 
 /**
  * Class Account
@@ -19,6 +20,18 @@ class Account extends Generic {
 		$this->setProperty('password', Crypt::hash($value, $this['salt'] . $this->appInstance->config->cryptsaltextra->value));
 		return $this;
 	}
+
+	/**
+	 * @param string $password
+	 * @return bool
+	 */
+	public function checkPassword($password) {
+		if ($this['password'] === null) {
+			return false;
+		}
+		return Crypt::compareStrings($this['password'], Crypt::hash($password, $this['salt'] . $this->appInstance->config->cryptsaltextra->value));
+	}
+
 	public function setUsername($value) {
 		$this->setProperty('unifiedusername', $this->orm->unifyUsername($value));
 		$this->setProperty('username', $value);
