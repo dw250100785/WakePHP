@@ -25,8 +25,8 @@ abstract class Generic {
 	 */
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
-		$this->init();
 		$this->name = ClassFinder::getClassBasename($this);
+		$this->init();
 	}
 
 	public function getObject($type, $cond, $objOrCb = null) {

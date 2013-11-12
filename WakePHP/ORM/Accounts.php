@@ -16,9 +16,11 @@ class Accounts extends Generic {
 	/** @var \PHPDaemon\Clients\Mongo\Collection */
 	public $aclgroups;
 
+
 	public function init() {
 		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
 		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
+		$this->name = 'Account';
 	}
 
 	/**
