@@ -179,22 +179,7 @@ class Account extends Generic {
 	}
 
 	protected function saveObject($cb) {
-		if ($this->new) {
-			if ($this->cond === null) {
-				$this->extractCondFrom($this->obj);
-			}
-			$this->orm->accounts->upsertOne($this->cond, $this->obj, $cb);
-		} else {
-			if (!sizeof($this->update)) {
-				if ($cb !== null) {
-					call_user_func($cb, true);
-				}
-				return;
-			}
-			Daemon::log(Debug::dump($this->update));
-			$this->orm->accounts->upsertOne($this->cond, $this->update, $cb);
-			$this->update = [];
-		}
+		$this->orm->accounts->upsertOne($this->cond, $this->new ? $this->obj : $this->update, $cb);
 	}
 
 }

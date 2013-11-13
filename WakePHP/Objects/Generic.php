@@ -25,6 +25,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $appInstance;
 
+	protected $lastError;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
@@ -39,8 +41,12 @@ abstract class Generic implements \ArrayAccess {
 			$this->create($objOrCb);
 		}
 	}
+	
+	public function getLastError() {
+		return $this->lastError;
+	}
 
-	public function set($k, $v) {
+	protected function set($k, $v) {
 		$this->obj[$k] = $v;
 		if ($this->new) {
 			return;
@@ -51,7 +57,8 @@ abstract class Generic implements \ArrayAccess {
 		$this->update['$set'][$k] = $v;
 		return $this;
 	}
-	public function inc($k, $v = 1) {
+
+	protected function inc($k, $v = 1) {
 		if (!isset($this->obj[$k])) {
 			$this->obj[$k] = $v;
 		} else {
@@ -70,7 +77,8 @@ abstract class Generic implements \ArrayAccess {
 			}
 		}
 	}
-	public function push($k, $v) {
+
+	protected function push($k, $v) {
 		if (isset($v['$each'])) {
 			if (!isset($this->obj[$k])) {
 				$this->obj[$k] = [];
@@ -95,9 +103,10 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 
-	public function create($obj = []) {
+	protected function create($obj = []) {
 		$this->new = true;
 		$this->obj = [];
+		Daemon::log(Debug::dump($obj));
 		$this->attr($obj);
 		if (!isset($this->obj['_id'])) {
 			$this->obj['_id'] = new \MongoId;
@@ -106,7 +115,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->init();
 	}
 
-	public function cond() {
+	protected function cond() {
 		if (!func_num_args()) {
 			return $this->cond;
 		}
@@ -126,7 +135,7 @@ abstract class Generic implements \ArrayAccess {
 		} elseif ($c === 2) {
 			$this[$m] = $n;
 		} else {
-			return $this->obj;
+			return null;
 		}
 	}
 
@@ -153,22 +162,23 @@ abstract class Generic implements \ArrayAccess {
 	protected function init() {
 	}
 
-	public function getProperty($k) {
+	protected function getProperty($k) {
 		return isset($this->obj[$k]) ? $this->obj[$k] : null;
 	}
 
-	public function unsetProperty($k) {
+	protected function unsetProperty($k) {
 		unset($this->obj[$k]);
 		if ($this->new) {
-			return;
+			return $this;
 		}
 		if (!isset($this->update['$unset'])) {
 			$this->update['$unset'] = [$k => 1];
 		}
 		$this->update['$unset'][$k] = 1;
+		return $this;
 	}
 
-	public function setProperty($k, $v) {
+	protected function setProperty($k, $v) {
 		$this->obj[$k] = $v;
 		if ($this->new) {
 			return;
@@ -206,13 +216,11 @@ abstract class Generic implements \ArrayAccess {
 		if (strncmp($method, 'set', 3) === 0) {
 			$name = lcfirst(substr($method, 3));
 			$v = sizeof($args) ? $args[0] : null;
-			$this->setProperty($name, $v);
-			return;
+			return $this->setProperty($name, $v);
 		}
 		if (strncmp($method, 'unset', 5) === 0) {
 			$name = lcfirst(substr($method, 5));
-			$this->unsetProperty($name);
-			return;
+			return $this->unsetProperty($name);
 		}
 		throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 	}
@@ -265,17 +273,33 @@ abstract class Generic implements \ArrayAccess {
 	abstract protected function removeObject($cb);
 
 	public function save($cb) {
-		if (!$this->new && !sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
+		$this->lastError = [];
+		if ($this->cond === null) {
+			$this->extractCondFrom($this->obj);
 		}
-		$this->saveObject($cb);
+		if (!$this->new) {
+			if (!sizeof($this->cond)) {
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+				return;
+			}
+			if (!sizeof($this->update)) {
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+				return;
+			}
+		}
+		$this->saveObject(function($lastError) use ($cb) {
+			$this->lastError = $lastError;
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+
+		});
+		$this->update = [];
 		$this->new = false;
-		/*function($r) {
-			call_user_func($cb, $r);
-		}*/
 	}
 
 	abstract protected function saveObject($cb);

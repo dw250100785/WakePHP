@@ -50,9 +50,9 @@ class SMSClient extends Component {
 			$this->req->setResult($result);
 		});
 	}
-	public function send($phones, $text, $cb) {
+	public function send($phones, $text, $cb, $id = null) {
 		$cb = CallbackWrapper::wrap($cb);
-		$this->appInstance->httpclient->get([
+		$this->appInstance->httpclient->get($params = [
 			'http://smsc.ru/sys/send.php',
 			'login' => $this->config->login->value,
 			'psw' => $this->config->password->value,
@@ -61,8 +61,8 @@ class SMSClient extends Component {
 			'mes' => $text,
 			'fmt' => 3,
 			'charset' => 'utf-8',
-		], function ($conn, $success) use ($cb) {
-			call_user_func($cb, json_decode($conn->body));
+		] + ($id !== null ? ['id' => $id] : []), function ($conn, $success) use ($cb) {
+			call_user_func($cb, json_decode($conn->body, true));
 		});
 	}
 	public function status($phone, $id, $cb, $all = 0) {
@@ -76,7 +76,7 @@ class SMSClient extends Component {
 			'fmt' => 3,
 			'all' => $all,
 		], function ($conn, $success) use ($cb) {
-			call_user_func($cb, json_decode($conn->body));
+			call_user_func($cb, json_decode($conn->body, true));
 		});
 	}
 }

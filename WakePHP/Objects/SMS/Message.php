@@ -24,6 +24,13 @@ class Message extends Generic {
 		$this->orm->messages->findOne($cb, ['where' => $this->cond,]);
 	}
 
+	public function genId($cb) {
+		$this->orm->messages->autoincrement(function($seq) use ($cb) {
+			$this->setId($seq);
+			call_user_func($cb, $this);
+		}, true);
+	}
+
 	protected function removeObject($cb) {
 		if (!sizeof($this->cond)) {
 			if ($cb !== null) {
@@ -46,45 +53,57 @@ class Message extends Generic {
 
 	public function extractCondFrom($obj) {
 		$this->cond = [
-			'_id'	=> $obj['id'],
+			'_id'	=> $obj['_id'],
 			'phone' => $obj['phone'],
 		];
 
 	}
+
+	public function setId($v) {
+		$this->set('_id', $v);
+		$this->set('idText', sprintf('%04d', (($v - 1) % 10000) + 1));
+		$this->set('code', Crypt::randomString(5, '1234567890'));
+		$this->set('ts', microtime());
+	}
+
+	public function getCode() {
+		return '*SECRET*';
+	}
+
+	public function setMTAN($tpl) {
+		$this->setText(sprintf($tpl, $this['idText'], $this->obj['code']));
+		return $this;
+	}
+	public function checkCode($code) {
+		return Crypt::compareStrings($this->obj['code'], trim($code));
+	}
+
 	public function setPhone($phone) {
 		if (!preg_match('~^\+?\d+$~', $phone)) {
-			throw Exception('Wrong phone number.');
+			throw new \Exception('Wrong phone number.');
 		}
 		$this->set('phone', $phone);
+		return $this;
 	}
 
 	public function send($cb) {
-		$this->orm->appInstance->components->SMSClient->send($this['phone'], $this['text'], function($res) use ($cb) {
-			if (isset($res['id'])) {
-				$this['_id'] = $res['id'];
-				call_user_func($cb, $this, true);
-			} else {
-				call_user_func($cb, $this, false);
-			}
+		$this->save(function() use ($cb) {
+			$this->orm->appInstance->components->SMSClient->send($this['phone'], $this['text'], function($res) use ($cb) {
+				if (isset($res['id'])) {
+					call_user_func($cb, $this, true);
+				} else {
+					call_user_func($cb, $this, false);
+				}
+			}, $this['_id']);
+			return $this;
 		});
 	}
 	
 	protected function saveObject($cb) {
 		if ($this->new) {
-			$set = $this->obj;
-			unset($set['_id']);
-			if ($this->cond === null) {
-				$this->extractCondFrom($this->obj);
-			}
-			if (!sizeof($this->cond)) {
-				if ($cb !== null) {
-					call_user_func($cb, false);
-				}
-				return;
-			}
-			$this->orm->accounts->upsertOne($this->cond, ['$set' => $set], $cb);
+			$this->orm->messages->insertOne($this->obj, $cb);
 		} else {
-			$this->orm->accounts->upsertOne($this->cond, $this->update, $cb);
+			$this->orm->messages->upsertOne($this->cond, $this->update, $cb);
 		}
 	}
 

@@ -101,6 +101,9 @@ class Account extends Component {
 		if ($this->req->controller === 'Test') {
 			return true;
 		}
+		if ($this->req->controller === 'ChangePhone') {
+			return true;
+		}
 		if ($this->req->controller === 'UsernameAvailablityCheck') {
 			return true;
 		}
