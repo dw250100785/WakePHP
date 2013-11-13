@@ -26,11 +26,25 @@ class ChangePhone extends Generic {
 				return;
 			}
 			try {
+				if (isset($_REQUEST['idText'])) {
+					$this->appInstance->sms->getMessage()
+					->setPhone(Request::getString($_REQUEST['phone']))
+					->setIdText(Request::getString($_REQUEST['idText']))
+					->checkCode(Request::getString($_REQUEST['code']), function($msg, $success, $tries) {
+						if ($success) {
+							$this->req->setResult(['success' => true]);
+						} else {
+							$this->req->setResult(['success' => false, 'tries' => $tries]);
+						}
+					});
+					return;
+				}
 				$this->appInstance->sms->newMessage()
 					->setPhone(Request::getString($_REQUEST['phone']))
 					->genId(function ($msg) {
 						$msg
 						->setMTAN('#%s Account binding request code: %s. Please ignore this message if unexpected.')
+						->attr('user', $this->req->account['_id'])
 						->send(function($msg, $success) {
 							$this->req->setResult($success ? [
 								'success' => true,

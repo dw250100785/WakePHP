@@ -103,11 +103,12 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 
-	protected function create($obj = []) {
+	public function create($obj = []) {
 		$this->new = true;
 		$this->obj = [];
-		Daemon::log(Debug::dump($obj));
-		$this->attr($obj);
+		if ($obj !== null) {
+			$this->attr($obj);
+		}
 		if (!isset($this->obj['_id'])) {
 			$this->obj['_id'] = new \MongoId;
 		}
@@ -134,9 +135,8 @@ abstract class Generic implements \ArrayAccess {
 			return $this[$m];
 		} elseif ($c === 2) {
 			$this[$m] = $n;
-		} else {
-			return null;
 		}
+		return $this;
 	}
 
 	public function extractCondFrom($obj) {

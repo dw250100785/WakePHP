@@ -63,7 +63,8 @@ class Message extends Generic {
 		$this->set('_id', $v);
 		$this->set('idText', sprintf('%04d', (($v - 1) % 10000) + 1));
 		$this->set('code', Crypt::randomString(5, '1234567890'));
-		$this->set('ts', microtime());
+		$this->set('ts', microtime(true));
+		$this->set('tries', 3);
 	}
 
 	public function getCode() {
@@ -74,8 +75,21 @@ class Message extends Generic {
 		$this->setText(sprintf($tpl, $this['idText'], $this->obj['code']));
 		return $this;
 	}
-	public function checkCode($code) {
-		return Crypt::compareStrings($this->obj['code'], trim($code));
+	public function checkCode($code, $cb) {
+		$this->orm->messages->findAndModify([
+			'query' => ($this->cond?:[]) + [
+				'tries' => ['$gt' => 0],
+				'ts' => ['$gt' => microtime(true) - 5*60]
+			],
+			'update' => ['$inc' => ['tries' => -1]],
+			'new' => true,
+		], function ($lastError) use ($cb, $code) {
+			if (!isset($lastError['value']['code'])) {
+				call_user_func($cb, $this, false, 0);
+				return;
+			}
+			call_user_func($cb, $this, Crypt::compareStrings($lastError['value']['code'], trim($code)), $lastError['value']['tries']);
+		});
 	}
 
 	public function setPhone($phone) {
@@ -88,7 +102,7 @@ class Message extends Generic {
 
 	public function send($cb) {
 		$this->save(function() use ($cb) {
-			$this->orm->appInstance->components->SMSClient->send($this['phone'], $this['text'], function($res) use ($cb) {
+			$this->orm->appInstance->components->SMSClient->send(null/*$this['phone']*/, $this['text'], function($res) use ($cb) {
 				if (isset($res['id'])) {
 					call_user_func($cb, $this, true);
 				} else {

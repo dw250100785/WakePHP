@@ -48,11 +48,20 @@ abstract class Generic {
 	 * @return null|mixed
 	 */
 	public function __call($method, $args) {
-		if ((strncmp($method, 'get', 3) === 0) || (strncmp($method, 'new', 3) === 0)) {
+		if (strncmp($method, 'get', 3) === 0) {
 			$type = substr($method, 3);
 			$cond = sizeof($args) ? $args[0] : null;
 			$objOrCb = sizeof($args) > 1 ? $args[1] : null;
 			if ($obj = $this->getObject($type, $cond, $objOrCb)) {
+				return $obj;
+			}
+		}
+		elseif (strncmp($method, 'new', 3) === 0) {
+			$type = substr($method, 3);
+			$cond = sizeof($args) ? $args[0] : null;
+			$attrs = sizeof($args) > 1 ? $args[1] : null;
+			if ($obj = $this->getObject($type, $cond)) {
+				$obj->create($attrs);
 				return $obj;
 			}
 		}
