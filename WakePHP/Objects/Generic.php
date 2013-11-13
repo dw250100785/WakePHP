@@ -42,7 +42,19 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 	
-	public function getLastError() {
+	public function getLastError($bool = false) {
+		if ($bool) {
+			if (isset($this->lastError['updatedExisting'])) {
+				return $this->lastError['updatedExisting'];
+			}
+			if (isset($this->lastError['ok'])) {
+				return $this->lastError['ok'];
+			}
+			if (isset($this->lastError['$ok'])) {
+				return $this->lastError['$ok'];
+			}
+			return false;
+		}
 		return $this->lastError;
 	}
 

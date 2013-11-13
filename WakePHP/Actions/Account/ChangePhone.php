@@ -30,7 +30,8 @@ class ChangePhone extends Generic {
 					$this->appInstance->sms->getMessage()
 					->setPhone(Request::getString($_REQUEST['phone']))
 					->setIdText(Request::getString($_REQUEST['idText']))
-					->checkCode(Request::getString($_REQUEST['code']), function($msg, $success, $tries) {
+					->attr('user', $this->req->account['_id'])
+					->checkCode(Request::getString($_REQUEST['code']), function($msg, $success, $tries = null) {
 						if ($success) {
 							$this->req->setResult(['success' => true]);
 						} else {
@@ -45,14 +46,25 @@ class ChangePhone extends Generic {
 						$msg
 						->setMTAN('#%s Account binding request code: %s. Please ignore this message if unexpected.')
 						->attr('user', $this->req->account['_id'])
-						->send(function($msg, $success) {
-							$this->req->setResult($success ? [
-								'success' => true,
-								'idText' => $msg['idText'],
-							] : [
-								'success' => false,
-								'error' => 'SMS gateway error '
-							]);
+						->antiflood(function($msg, $flood) {
+							if ($flood) {
+								$this->req->setResult([
+									'success' => false,
+									'errcode' => 'TOO_FAST',
+									'error' => 'Too fast',
+								]);
+								return;
+							}
+							$msg->send(function($msg, $success) {
+								$this->req->setResult($success ? [
+									'success' => true,
+									'idText' => $msg['idText'],
+								] : [
+									'success' => false,
+									'errcode' => 'SMSGATE_ERR',
+									'error' => 'SMS gateway error',
+								]);
+							});
 						});
 					});
 			} catch (Exception $e) {

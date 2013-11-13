@@ -17,7 +17,7 @@ class Message extends Generic {
 
 	public static function ormInit($orm) {
 		$orm->messages  = $orm->appInstance->db->{$orm->appInstance->dbname . '.smsmessages'};
-		$orm->messages->ensureIndex(['code' => 1]);
+		$orm->messages->ensureIndex(['phone' => 1]);
 	}
 
 	protected function fetchObject($cb) {
@@ -52,11 +52,25 @@ class Message extends Generic {
 	}
 
 	public function extractCondFrom($obj) {
-		$this->cond = [
-			'_id'	=> $obj['_id'],
-			'phone' => $obj['phone'],
-		];
+		$this->cond = [];
+		if (isset($obj['phone'])) {
+			$this->cond['phone'] = $obj['phone'];
+		}
+		if (isset($obj['_id'])) {
+			$this->cond['_id'] = $obj['_id'];
+		} elseif (isset($obj['idText'])) {
+			$this->cond['idText'] = $obj['idText'];
+		}
 
+	}
+	
+	public function antiflood($cb) {
+		$this->orm->messages->count(function($res) use ($cb) {
+			call_user_func($cb, $this, $res['n'] > 5);
+		}, [ 'where' => [
+			'user' => $this['user'],
+			'ts' => ['$gt' => microtime(true) - 15*60,]
+		]]);
 	}
 
 	public function setId($v) {
@@ -64,7 +78,7 @@ class Message extends Generic {
 		$this->set('idText', sprintf('%04d', (($v - 1) % 10000) + 1));
 		$this->set('code', Crypt::randomString(5, '1234567890'));
 		$this->set('ts', microtime(true));
-		$this->set('tries', 3);
+		$this->set('tries', 10);
 	}
 
 	public function getCode() {
@@ -76,10 +90,14 @@ class Message extends Generic {
 		return $this;
 	}
 	public function checkCode($code, $cb) {
+		if ($this->cond === null) {
+			$this->extractCondFrom($this->obj);
+		}
 		$this->orm->messages->findAndModify([
-			'query' => ($this->cond?:[]) + [
+			'query' => $this->cond + [
 				'tries' => ['$gt' => 0],
-				'ts' => ['$gt' => microtime(true) - 5*60]
+				'ts' => ['$gt' => microtime(true) - 5*60],
+				'success' => null,
 			],
 			'update' => ['$inc' => ['tries' => -1]],
 			'new' => true,
@@ -88,7 +106,17 @@ class Message extends Generic {
 				call_user_func($cb, $this, false, 0);
 				return;
 			}
-			call_user_func($cb, $this, Crypt::compareStrings($lastError['value']['code'], trim($code)), $lastError['value']['tries']);
+			if (!Crypt::compareStrings($lastError['value']['code'], trim($code))) {
+				call_user_func($cb, $this, false, $lastError['value']['tries']);
+			}
+			$this->set('success', true);
+			$this->save(function() use ($cb) {
+				if ($this->getLastError(true)) {
+					call_user_func($cb, $this, true);
+				} else {
+					call_user_func($cb, $this, false, 0);
+				}
+			});
 		});
 	}
 
@@ -102,7 +130,7 @@ class Message extends Generic {
 
 	public function send($cb) {
 		$this->save(function() use ($cb) {
-			$this->orm->appInstance->components->SMSClient->send(null/*$this['phone']*/, $this['text'], function($res) use ($cb) {
+			$this->orm->appInstance->components->SMSClient->send($this['phone'], $this['text'], function($res) use ($cb) {
 				if (isset($res['id'])) {
 					call_user_func($cb, $this, true);
 				} else {
