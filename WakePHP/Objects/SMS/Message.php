@@ -18,6 +18,7 @@ class Message extends Generic {
 	public static function ormInit($orm) {
 		$orm->messages  = $orm->appInstance->db->{$orm->appInstance->dbname . '.smsmessages'};
 		$orm->messages->ensureIndex(['phone' => 1]);
+		$orm->messages->ensureIndex(['accountId' => 1]);
 	}
 
 	protected function fetchObject($cb) {
@@ -68,7 +69,7 @@ class Message extends Generic {
 		$this->orm->messages->count(function($res) use ($cb) {
 			call_user_func($cb, $this, $res['n'] > 5);
 		}, [ 'where' => [
-			'user' => $this['user'],
+			'accountId' => $this['accountId'],
 			'ts' => ['$gt' => microtime(true) - 15*60,]
 		]]);
 	}

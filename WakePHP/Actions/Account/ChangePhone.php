@@ -30,7 +30,7 @@ class ChangePhone extends Generic {
 					$this->appInstance->sms->getMessage()
 					->setPhone(Request::getString($_REQUEST['phone']))
 					->setIdText(Request::getString($_REQUEST['idText']))
-					->attr('user', $this->req->account['_id'])
+					->attr('accountId', $this->req->account['_id'])
 					->checkCode(Request::getString($_REQUEST['code']), function($msg, $success, $tries = null) {
 						if ($success) {
 							$this->req->setResult(['success' => true]);
@@ -45,7 +45,7 @@ class ChangePhone extends Generic {
 					->genId(function ($msg) {
 						$msg
 						->setMTAN('#%s Account binding request code: %s. Please ignore this message if unexpected.')
-						->attr('user', $this->req->account['_id'])
+						->attr('accountId', $this->req->account['_id'])
 						->antiflood(function($msg, $flood) {
 							if ($flood) {
 								$this->req->setResult([

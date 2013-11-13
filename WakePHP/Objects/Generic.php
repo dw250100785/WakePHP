@@ -158,6 +158,7 @@ abstract class Generic implements \ArrayAccess {
 				$this->cond['_id'] = new \MongoId($this->cond['_id']);
 			}
 		}
+		return $this;
 	}
 
 	public function getObject() {
@@ -284,7 +285,7 @@ abstract class Generic implements \ArrayAccess {
 
 	abstract protected function removeObject($cb);
 
-	public function save($cb) {
+	public function save($cb = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
 			$this->extractCondFrom($this->obj);

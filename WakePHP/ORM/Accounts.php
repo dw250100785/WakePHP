@@ -17,6 +17,8 @@ class Accounts extends Generic {
 	/** @var \PHPDaemon\Clients\Mongo\Collection */
 	public $aclgroups;
 
+	public $recoverysequence;
+
 
 	public function init() {
 		Objects\Account::ormInit($this);

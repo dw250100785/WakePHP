@@ -17,6 +17,8 @@ class Account extends Generic {
 
 	public static function ormInit($orm) {
 		$orm->accounts  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accounts'};
+		$orm->recoverysequence  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accountrecoverysequence'};
+		$orm->recoverysequence->ensureIndex(['seq' => 1, 'accountId' => 1, 'item' => 1], ['unique' => true]);
 	}
 
 	protected function fetchObject($cb) {
@@ -69,6 +71,7 @@ class Account extends Generic {
 		elseif (isset($obj['email'])) {
 			$this->cond = ['email' => $obj['email']];
 		}
+		return $this;
 	}
 
 	/**
@@ -135,6 +138,48 @@ class Account extends Generic {
 			$this->update['$push']['credentials'] = ['$each' => []];
 		}
 		$this->update['$push']['credentials']['$each'][] = $credentials;
+	}
+
+
+	public function pushToRecoverySequence($seq, $accountId, $item, $cb = null) {
+		$this->orm->recoverysequence->upsertOne([
+			'accountId' => $accountId,
+			'seq' => $seq,
+			'item' => $item,
+		], [
+			'$set' => [
+				'accountId' => $account,
+				'seq' => $seq,
+				'item' => $item,
+				'ts' => $ts = microtime(true),
+				'last' => true,
+			],
+		], function($lastError) use ($ts, $cb) {
+			if (!isset($lastError['n']) || !$lastError['n']) {
+				call_user_func($cb, $this, false);
+				return;
+			}
+			$this->orm->recoverysequence->findAndModify([
+				'query' => [
+					'accountId' => $accountId,
+					'seq' => $seq,
+					'item' => $item,
+					'last' => true,
+					'ts' => ['$lt' => $ts],
+				],
+				'sort' => [
+					'ts' => -1
+				],
+				'update' => [
+					'$set' => [
+						'last' => false,
+						'ts' => $ts,
+					]
+				]
+			], function($lastError) use ($cb) {
+				call_user_func($cb, $this, true);
+			});
+		});
 	}
 
 	protected function removeObject($cb) {
