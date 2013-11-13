@@ -61,12 +61,12 @@ abstract class Generic {
 			if (!sizeof($args)) {
 				return;
 			}
-			$obj = $args[0];
+			$data = $args[0];
 			$cb = isset($args[1]) ? $args[1] : null;
 			$cond = isset($args[2]) ? $args[2] : null;
-			if ($obj = $this->getObject($type, $cond, $obj)) {
+			if ($obj = $this->getObject($type, $cond, $data)) {
 				if ($cond === null) {
-					$this->extractCondFrom($obj);
+					$obj->extractCondFrom($data);
 				}
 				$obj->save($cb);
 				return $obj;

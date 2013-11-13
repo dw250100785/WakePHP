@@ -36,7 +36,7 @@ class Captcha extends Generic {
 				call_user_func($cb, false);
 				return;
 			}
-			$token = base64_encode(((string) $id). "\x00" . $rnd);
+			$token = base64_encode($id. "\x00" . $rnd);
 			$this->appInstance->JobManager->enqueue(function($result) use ($token, $text, $cb) {
 				if (!$result) {
 					call_user_func($cb, false);
@@ -125,7 +125,6 @@ class Captcha extends Generic {
 				}
 			}
 			$this->captcha->remove(['_id' => new \MongoId($id)], function($lastError) use ($t, $text, $cb) {
-				Daemon::log(Debug::dump($lastError));
 				if ($lastError['n'] !== 1) {
 					call_user_func($cb, 'expired');
 					return;	

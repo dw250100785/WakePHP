@@ -175,29 +175,4 @@ class Account extends Component {
 				});
 		});
 	}
-
-	/**
-	 * @param $password
-	 * @return bool|string
-	 */
-	public function checkPasswordFormat($password) {
-		if (strlen($password) < 4) {
-			return 'The chosen password is too short.';
-		}
-		return true;
-	}
-
-	/**
-	 * @param $username
-	 * @return bool|string
-	 */
-	public function checkUsernameFormat($username) {
-		if (preg_match('~^(?![\-_\x20])[A-Za-z\d_\-А-Яа-яёЁ\x20]{2,25}(?<![\-_\x20])$~u', $username) == 0) {
-			return 'Incorrect username format.';
-		}
-		elseif (preg_match('~(.)\1\1\1~', $username) > 0) {
-			return 'Username contains 4 identical symbols in a row.';
-		}
-		return true;
-	}
 }

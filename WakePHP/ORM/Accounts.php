@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
 use WakePHP\ORM\Generic;
+use WakePHP\Objects\Account as Objects;
 
 /**
  * Accounts
@@ -18,8 +19,8 @@ class Accounts extends Generic {
 
 
 	public function init() {
-		$this->accounts  = $this->appInstance->db->{$this->appInstance->dbname . '.accounts'};
-		$this->aclgroups = $this->appInstance->db->{$this->appInstance->dbname . '.aclgroups'};
+		Objects\Account::ormInit($this);
+		Objects\ACLGroup::ormInit($this);
 		$this->name = 'Account';
 	}
 

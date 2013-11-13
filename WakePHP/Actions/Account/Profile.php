@@ -3,6 +3,8 @@ namespace WakePHP\Actions\Account;
 
 use WakePHP\Actions\Generic;
 use PHPDaemon\Core\ComplexJob;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 
 /**
@@ -35,70 +37,29 @@ class Profile extends Generic {
 				/** @var WakePHPRequest $req */
 				if (sizeof($errors) === 0) {
 
-					$update = [
-						'email' => $this->req->account['email'],
-						'etime' => time(),
-					];
-
 					if (isset($_REQUEST['location'])) {
-						$update['location'] = $location = trim(Request::getString($_REQUEST['location']));
+						$this->req->account['location'] = trim(Request::getString($_REQUEST['location']));
 						if ($update['location'] === '') {
 							$update['locationCoords'] = null;
 						}
-					} else {
-						$location = '';
 					}
 
-					if (isset($_REQUEST['name'])) {
-						$update['name'] = Request::getString($_REQUEST['name']);
-					}
-
-					if (isset($_REQUEST['gender'])) {
-						$update['gender'] = Request::getString($_REQUEST['gender'], ['', 'm', 'f']);
-					}
-
-					if (isset($_REQUEST['birthdate'])) {
-						$update['birthdate'] = Request::getString($_REQUEST['birthdate']);
-					}
-
-					if (isset($_REQUEST['subscription'])) {
-						$update['subscription'] = Request::getString($_REQUEST['subscription'], ['', 'daily', 'thematic']);
-					}
-
-					// Language
-					if (isset($_REQUEST['language'])) {
-						$update['language'] = Request::getString($_REQUEST['language']);
-					}
-
-					// Phone
-					if (isset($_REQUEST['phone'])) {
-						$update['phone'] = Request::getString($_REQUEST['phone']);
-					}
-
-					// Session
-					if (isset($_REQUEST['autoclose'])) {
-						$update['autoclose'] = Request::getString($_REQUEST['autoclose']);
-					}
-
-					// Password
-					if (($password = Request::getString($_REQUEST['password'])) !== '') {
-						$update['password'] = $password;
-					}
-					$this->req->appInstance->accounts->saveAccount($update, function ($lastError) use ($password, $location) {
-						if ($location !== '') {
-
-							$this->req->components->GMAPS->geo($location, function ($geo) {
-
-								$this->appInstance->accounts->saveAccount([
-									'email'          => $this->req->account['email'],
-									'locationCoords' => isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null,
-								], null, true);
-
-							});
-
+					foreach ($_REQUEST as $k => $v) {
+						if (!is_string($v)) {
+							continue;
 						}
+						try {
+							$this->req->account->setPublicProperty($k, $v);
+						} catch (\Exception $e) {
+							$errors[$k] = $e->getMessage();
+						}
+					}
+				}
+
+				if (sizeof($errors) === 0) {
+					$this->req->account->save(function ($lastError) {
 						$this->req->setResult(['success' => true]);
-					}, true);
+					});
 				} else {
 					$this->req->setResult(['success' => false, 'errors' => $errors]);
 				}
@@ -114,14 +75,13 @@ class Profile extends Generic {
 					if (!$this->req->appInstance->accounts->checkPassword($this->req->account, $curpassword)) {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
-				}
-				if (($password = Request::getString($_REQUEST['password'])) !== '') {
+				} 
+				if (Request::getString($_REQUEST['password']) !== '') {
 					if (Request::getString($_REQUEST['currentpassword']) == '') {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
-					if (($r = $this->req->components->Account->checkPasswordFormat($password)) !== true) {
-						$errors['password'] = $r;
-					}
+				} else {
+					unset($_REQUEST['password']);
 				}
 				$job->setResult($jobname, $errors);
 			});

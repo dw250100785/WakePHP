@@ -1,6 +1,8 @@
 <?php
 namespace WakePHP\Objects\Account;
 use PHPDaemon\Utils\Crypt;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 use WakePHP\Objects\Generic;
 
@@ -11,13 +13,47 @@ use WakePHP\Objects\Generic;
 class Account extends Generic {
 	
 	public function init() {
+	}
 
+	public static function ormInit($orm) {
+		$orm->accounts  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accounts'};
 	}
 
 	protected function fetchObject($cb) {
 		$this->orm->accounts->findOne($cb, ['where' => $this->cond,]);
 	}
+
+
+	/**
+	 * @param $password
+	 * @return bool|string
+	 */
+	public static function checkPasswordFormat($password) {
+		if (strlen($password) < 4) {
+			return 'The chosen password is too short.';
+		}
+		return true;
+	}
+
+	/**
+	 * @param $username
+	 * @return bool|string
+	 */
+	public static function checkUsernameFormat($username) {
+		if (preg_match('~^(?![\-_\x20])[A-Za-z\d_\-А-Яа-яёЁ\x20]{2,25}(?<![\-_\x20])$~u', $username) == 0) {
+			return 'Incorrect username format.';
+		}
+		elseif (preg_match('~(.)\1\1\1~', $username) > 0) {
+			return 'Username contains 4 identical symbols in a row.';
+		}
+		return true;
+	}
+
+
 	public function setPassword($value) {
+		if (($r = static::checkPasswordFormat($value)) !== true) {
+			throw new \Exception($r);
+		}
 		$this->setProperty('salt', $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $this['email']));
 		$this->setProperty('password', Crypt::hash($value, $this['salt'] . $this->appInstance->config->cryptsaltextra->value));
 		return $this;
@@ -47,29 +83,31 @@ class Account extends Generic {
 	}
 
 	public function setUsername($value) {
-		$this->setProperty('unifiedusername', $this->orm->unifyUsername($value));
-		$this->setProperty('username', $value);
+		if (($r = static::checkUsernameFormat($value)) !== true) {
+			throw new \Exception($r);
+		}
+		$this->set('unifiedusername', $this->orm->unifyUsername($value));
+		$this->set('username', $value);
 		return $this;
 	}
 	public function setEmail($value) {
-		$this->setProperty('email', $this->orm->unifyEmail($value));
+		$this->set('email', $value);
+		$this->set('unifiedemail', $this->orm->unifyEmail($value));
 		return $this;
 	}
 	public function setAclgroups($value) {
-		 $this->setProperty('aclgroups', array_filter(preg_split('~\s*[,;]\s*~s', $account['aclgroups']), 'strlen'));
-		 return $this;
+		$this->set('aclgroups', array_filter(is_string($value) ? preg_split('~\s*[,;]\s*~s', $value) : $value, 'strlen'));
+		return $this;
 	}
 	public function setRegdate($value) {
-		$this->setProperty('regdate',  \WakePHP\Utils\Strtotime::parse($value));
+		$this->set('regdate',  \WakePHP\Utils\Strtotime::parse($value));
 		return $this;
 	}
 	public function confirm() {
-		if (!isset($this->update['$unset'])) {
-			$this->update['$unset'] = [];
-		}
-		$this->update['$unset']['confirmationcode'] = 1;
+		$this->unsetProperty('confirmationcode');
 		return $this;
 	}
+
 
 	public function addACLgroup($group) {
 		if (!is_string($group)) {
@@ -113,18 +151,41 @@ class Account extends Generic {
 		}
 		$this->orm->accounts->count($this->cond);
 	}
+	public function setGender($gender) {
+		if ($gender !== 'm' && $gender !== 'f') {
+			$gender = '';
+		}
+		$this->set('gender', $gender);
+	}
 
+	public function setPublicProperty($k, $v) {
+		if (!in_array($k, ['name', 'birthdate', 'gender', 'subscription', 'language', 'autoclose', 'password'])) {
+			return;
+		}
+		$this[$k] = $v;
+	}
+	
+	protected function updateGeolocation($cb = null) {
+		$this->req->components->GMAPS->geo($this['location'], function ($geo)  use ($cb) {
+			$this['locationCoords'] = isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null;
+			$this->save($cb);
+		});
+	}
 	protected function saveObject($cb) {
 		if ($this->new) {
-			$this->orm->accounts->upsertOne(['email' => $this->getEmail()], ['$set' => $this->obj], $cb);
+			if ($this->cond === null) {
+				$this->extractCondFrom($this->obj);
+			}
+			$this->orm->accounts->upsertOne($this->cond, $this->obj, $cb);
 		} else {
 			if (!sizeof($this->update)) {
 				if ($cb !== null) {
-					call_user_func($cb, false);
+					call_user_func($cb, true);
 				}
 				return;
 			}
 			$this->orm->accounts->upsertOne($this->cond, $this->update, $cb);
+			$this->update = [];
 		}
 	}
 

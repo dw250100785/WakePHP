@@ -29,22 +29,90 @@ abstract class Generic implements \ArrayAccess {
 		$this->appInstance = $orm->appInstance;
 		$this->cond = $cond instanceof \MongoId ? ['_id' => $cond] : $cond;
 		if (is_array($objOrCb) && !isset($objOrCb[0])) {
+			$this->create($objOrCb);
 		}
 		elseif (is_callable($objOrCb)) {
 			$this->fetch($objOrCb);
 		}
 		elseif (is_array($objOrCb)) {
-			$this->new = true;
-			$this->obj = $objOrCb;
-			if (!isset($this->obj['_id'])) {
-				$this->obj['_id'] = new MongoId;
-			}
-			$this->inited = true;
-			$this->init();
+			$this->create($objOrCb);
 		}
 	}
 
-	public function attr($m, $n) {
+	public function set($k, $v) {
+		$this->obj[$k] = $v;
+		if ($this->new) {
+			return;
+		}
+		if (!isset($this->update['$set'])) {
+			$this->update['$set'] = [];
+		}
+		$this->update['$set'][$k] = $v;
+		return $this;
+	}
+	public function inc($k, $v = 1) {
+		if (!isset($this->obj[$k])) {
+			$this->obj[$k] = $v;
+		} else {
+			$this->obj[$k] += $v;
+		}
+		if ($this->new) {
+			return;
+		}
+		if (!isset($this->update['$inc'])) {
+			$this->update['$inc'] = [$k => $v];
+		} else {
+			if (!isset($this->update['$inc'][$k])) {
+				$this->update['$inc'][$k] = $v;
+			} else {
+				$this->update['$inc'][$k] += $v;
+			}
+		}
+	}
+	public function push($k, $v) {
+		if (isset($v['$each'])) {
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = [];
+			}
+			foreach ($v['$each'] as $e) {
+				$this->obj[$k][] = $e;
+			}
+		} else {
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = [$v];
+			} else {
+				$this->obj[$k][] = $v;
+			}
+		}
+		if ($this->new) {
+			return;
+		}
+		if (!isset($this->update['$push'])) {
+			$this->update['$push'] = [$k => $v];
+		} else {
+			$this->update['$push'][$k] = $v;
+		}
+	}
+
+	public function create($obj = []) {
+		$this->new = true;
+		$this->obj = [];
+		$this->attr($obj);
+		if (!isset($this->obj['_id'])) {
+			$this->obj['_id'] = new \MongoId;
+		}
+		$this->inited = true;
+		$this->init();
+	}
+
+	public function cond() {
+		if (!func_num_args()) {
+			return $this->cond;
+		}
+		return $this->cond = func_get_arg(0);
+	}
+
+	public function attr($m, $n = null) {
 		$c = func_num_args();
 		if ($c === 1) {
 			if (is_array($m)) {
@@ -84,37 +152,44 @@ abstract class Generic implements \ArrayAccess {
 	protected function init() {
 	}
 
-	public function getProperty($prop) {
-		return isset($this->obj[$prop]) ? $this->obj[$prop] : null;
+	public function getProperty($k) {
+		return isset($this->obj[$k]) ? $this->obj[$k] : null;
 	}
 
-	public function unsetProperty($prop) {
-		unset($this->obj[$prop]);
+	public function unsetProperty($k) {
+		unset($this->obj[$k]);
+		if ($this->new) {
+			return;
+		}
+		if (!isset($this->update['$unset'])) {
+			$this->update['$unset'] = [$k => 1];
+		}
+		$this->update['$unset'][$k] = 1;
 	}
 
-	public function setProperty($prop, $value) {
-		$this->obj[$prop] = $value;
+	public function setProperty($k, $v) {
+		$this->obj[$k] = $v;
 		if ($this->new) {
 			return;
 		}
 		if (!isset($this->update['$set'])) {
 			$this->update['$set'] = [];
 		}
-		$this->update['$set'][$prop] = $value;
+		$this->update['$set'][$k] = $v;
 		return $this;
 	}
 
-	public function __get($prop) {
-		return call_user_func([$this, 'get' . ucfirst($prop)]);
+	public function __get($k) {
+		return call_user_func([$this, 'get' . ucfirst($k)]);
 	}
-	public function __isset($prop) {
-		return call_user_func([$this, 'isset' . ucfirst($prop)]);
+	public function __isset($k) {
+		return call_user_func([$this, 'isset' . ucfirst($k)]);
 	}
-	public function __set($prop, $value) {
-		call_user_func([$this, 'set' . ucfirst($prop)], $value);
+	public function __set($k, $v) {
+		call_user_func([$this, 'set' . ucfirst($k)], $v);
 	}
-	public function __unset($prop) {
-		call_user_func([$this, 'unset' . ucfirst($prop)]);
+	public function __unset($k) {
+		call_user_func([$this, 'unset' . ucfirst($k)]);
 	}
 
 	/**
@@ -129,8 +204,8 @@ abstract class Generic implements \ArrayAccess {
 		}
 		if (strncmp($method, 'set', 3) === 0) {
 			$name = lcfirst(substr($method, 3));
-			$value = sizeof($args) ? $args[0] : null;
-			$this->setProperty($name, $value);
+			$v = sizeof($args) ? $args[0] : null;
+			$this->setProperty($name, $v);
 			return;
 		}
 		if (strncmp($method, 'unset', 5) === 0) {
@@ -164,21 +239,42 @@ abstract class Generic implements \ArrayAccess {
 	abstract protected function fetchObject($cb);
 
 	public function count($cb) {
+		if ($this->cond === null) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
 		$this->countObject($cb);
 	}
 
 	abstract protected function countObject($cb);
 
 	public function remove($cb) {
-		$this->new = true;
+		if (!sizeof($this->cond)) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
 		$this->removeObject($cb);
+		$this->new = true;
 	}
 
 	abstract protected function removeObject($cb);
 
 	public function save($cb) {
-		$this->new = false;
+		if (!$this->new && !sizeof($this->cond)) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
 		$this->saveObject($cb);
+		$this->new = false;
+		/*function($r) {
+			call_user_func($cb, $r);
+		}*/
 	}
 
 	abstract protected function saveObject($cb);
@@ -190,8 +286,8 @@ abstract class Generic implements \ArrayAccess {
 	 * @return boolean Exists?
 	 */
 
-	public function offsetExists($prop) {
-		return call_user_func([$this, 'get' . ucfirst($prop)]) !== null;
+	public function offsetExists($k) {
+		return call_user_func([$this, 'get' . ucfirst($k)]) !== null;
 	}
 
 	/**
@@ -199,8 +295,8 @@ abstract class Generic implements \ArrayAccess {
 	 * @param string Property name
 	 * @return mixed
 	 */
-	public function offsetGet($prop) {
-		return call_user_func([$this, 'get' . ucfirst($prop)]);;
+	public function offsetGet($k) {
+		return call_user_func([$this, 'get' . ucfirst($k)]);;
 	}
 
 	/**
@@ -209,8 +305,8 @@ abstract class Generic implements \ArrayAccess {
 	 * @param mixed  Value
 	 * @return void
 	 */
-	public function offsetSet($prop, $value) {
-		call_user_func([$this, 'set' . ucfirst($prop)], $value);
+	public function offsetSet($k, $v) {
+		call_user_func([$this, 'set' . ucfirst($k)], $v);
 	}
 
 	/**
@@ -218,8 +314,8 @@ abstract class Generic implements \ArrayAccess {
 	 * @param string Property name
 	 * @return void
 	 */
-	public function offsetUnset($prop) {
-		call_user_func([$this, 'unset' . ucfirst($prop)]);
+	public function offsetUnset($k) {
+		call_user_func([$this, 'unset' . ucfirst($k)]);
 	}
 }
 

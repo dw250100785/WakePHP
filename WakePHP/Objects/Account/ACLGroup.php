@@ -13,6 +13,10 @@ class ACLGroup extends Generic {
 
 	}
 
+	public static function ormInit($orm) {
+		$orm->aclgroups = $orm->appInstance->db->{$orm->appInstance->dbname . '.aclgroups'};
+	}
+
 	protected function fetchObject($cb) {
 		$this->orm->aclgroups->findOne($cb, ['where' => $this->cond,]);
 	}

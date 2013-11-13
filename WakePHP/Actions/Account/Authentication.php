@@ -2,6 +2,8 @@
 namespace WakePHP\Actions\Account;
 
 use WakePHP\Actions\Generic;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\Generic as Request;
 
 /**
