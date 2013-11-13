@@ -10,7 +10,8 @@ use PHPDaemon\Core\Debug;
  */
 abstract class Generic implements \ArrayAccess {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
-	public $orm;
+	
+	protected $orm;
 
 	protected $update = [];
 

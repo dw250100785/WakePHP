@@ -54,8 +54,8 @@ class Account extends Generic {
 		if (($r = static::checkPasswordFormat($value)) !== true) {
 			throw new \Exception($r);
 		}
-		$this->setProperty('salt', $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $this['email']));
-		$this->setProperty('password', Crypt::hash($value, $this['salt'] . $this->appInstance->config->cryptsaltextra->value));
+		$this->setProperty('salt', $salt = $this->appInstance->config->cryptsalt->value . Crypt::hash(Daemon::uniqid() . "\x00" . $this['email']));
+		$this->setProperty('password', Crypt::hash($value, $salt . $this->appInstance->config->cryptsaltextra->value));
 		return $this;
 	}
 
@@ -76,10 +76,15 @@ class Account extends Generic {
 	 * @return bool
 	 */
 	public function checkPassword($password) {
-		if ($this['password'] === null) {
-			return false;
-		}
-		return Crypt::compareStrings($this['password'], Crypt::hash($password, $this['salt'] . $this->appInstance->config->cryptsaltextra->value));
+		return !isset($this->obj['password']) ? false : Crypt::compareStrings($this->obj['password'], Crypt::hash($password, $this->obj['salt'] . $this->appInstance->config->cryptsaltextra->value));
+	}
+
+	public function getPassword() {
+		return '*SECRET*';
+	}
+
+	public function getSalt() {
+		return '*SECRET*';
 	}
 
 	public function setUsername($value) {
@@ -164,13 +169,15 @@ class Account extends Generic {
 		}
 		$this[$k] = $v;
 	}
-	
-	protected function updateGeolocation($cb = null) {
-		$this->req->components->GMAPS->geo($this['location'], function ($geo)  use ($cb) {
+
+	public function setLocation($value) {
+		$this->set('location', $value);
+		$this->req->components->GMAPS->geo($value, function ($geo)  use ($cb) {
 			$this['locationCoords'] = isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null;
 			$this->save($cb);
-		});
+		});	
 	}
+
 	protected function saveObject($cb) {
 		if ($this->new) {
 			if ($this->cond === null) {
@@ -184,6 +191,7 @@ class Account extends Generic {
 				}
 				return;
 			}
+			Daemon::log(Debug::dump($this->update));
 			$this->orm->accounts->upsertOne($this->cond, $this->update, $cb);
 			$this->update = [];
 		}

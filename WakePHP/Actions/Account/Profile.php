@@ -43,7 +43,6 @@ class Profile extends Generic {
 							$update['locationCoords'] = null;
 						}
 					}
-
 					foreach ($_REQUEST as $k => $v) {
 						if (!is_string($v)) {
 							continue;
@@ -72,7 +71,7 @@ class Profile extends Generic {
 				/** @var WakePHPRequest $job->req */
 				/** @var WakePHPRequest $req */
 				if (($curpassword = Request::getString($_REQUEST['currentpassword'])) !== '') {
-					if (!$this->req->appInstance->accounts->checkPassword($this->req->account, $curpassword)) {
+					if (!$this->req->account->checkPassword($curpassword)) {
 						$errors['currentpassword'] = 'Incorrect current password.';
 					}
 				} 

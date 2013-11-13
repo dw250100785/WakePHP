@@ -25,6 +25,8 @@ class ChangePhone extends Generic {
 				$this->req->setResult(['success' => false, 'goLoginPage' => true]);
 				return;
 			}
+
+			
 		});
 	}
 }

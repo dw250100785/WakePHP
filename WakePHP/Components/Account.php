@@ -34,7 +34,6 @@ class Account extends Component {
 				$cb = function ($account) use ($authEvent) {
 					if ($account) {
 						$account['logged'] = $account['username'] !== 'Guest';
-						unset($account['password'], $account['salt']);
 					}
 					$this->req->account = $account;
 					$this->req->propertyUpdated('account');
