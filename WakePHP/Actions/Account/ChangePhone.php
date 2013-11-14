@@ -33,7 +33,17 @@ class ChangePhone extends Generic {
 					->attr('accountId', $this->req->account['_id'])
 					->checkCode(Request::getString($_REQUEST['code']), function($msg, $success, $tries = null) {
 						if ($success) {
-							$this->req->setResult(['success' => true]);
+							$this->req->account
+							->setPhone($msg['phone'])
+							->pushToRecoverySequence('phone', $this->req->account['phone'], function($account, $success) {
+								if (!$success) {
+									$this->req->setResult(['success' => false]);
+									return;
+								}
+							 	$account->save(function() {
+							 		$this->req->setResult(['success' => true]);
+								});
+							});
 						} else {
 							$this->req->setResult(['success' => false, 'tries' => $tries]);
 						}
@@ -67,7 +77,7 @@ class ChangePhone extends Generic {
 							});
 						});
 					});
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				$this->req->setResult(['success' => false, 'error' => $e->getMessage()]);
 			}
 		});

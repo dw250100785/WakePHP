@@ -17,7 +17,7 @@ class Account extends Generic {
 
 	public static function ormInit($orm) {
 		$orm->accounts  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accounts'};
-		$orm->recoverysequence  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accountrecoverysequence'};
+		$orm->recoverysequence  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accountRecoverySequence'};
 		$orm->recoverysequence->ensureIndex(['seq' => 1, 'accountId' => 1, 'item' => 1], ['unique' => true]);
 	}
 
@@ -141,45 +141,40 @@ class Account extends Generic {
 	}
 
 
-	public function pushToRecoverySequence($seq, $accountId, $item, $cb = null) {
+	public function pushToRecoverySequence($seq, $item, $cb = null) {
+		$accountId = $this->getId();
 		$this->orm->recoverysequence->upsertOne([
 			'accountId' => $accountId,
 			'seq' => $seq,
 			'item' => $item,
 		], [
 			'$set' => [
-				'accountId' => $account,
+				'accountId' => $accountId,
 				'seq' => $seq,
 				'item' => $item,
 				'ts' => $ts = microtime(true),
 				'last' => true,
 			],
-		], function($lastError) use ($ts, $cb) {
+		], function($lastError) use ($ts, $seq, $item, $accountId, $cb) {
 			if (!isset($lastError['n']) || !$lastError['n']) {
 				call_user_func($cb, $this, false);
 				return;
 			}
-			$this->orm->recoverysequence->findAndModify([
-				'query' => [
-					'accountId' => $accountId,
-					'seq' => $seq,
-					'item' => $item,
-					'last' => true,
-					'ts' => ['$lt' => $ts],
-				],
-				'sort' => [
-					'ts' => -1
-				],
-				'update' => [
-					'$set' => [
-						'last' => false,
-						'ts' => $ts,
-					]
+			$this->orm->recoverysequence->updateMulti([
+				'accountId' => $accountId,
+				'seq' => $seq,
+				'item' => ['$ne' => $item],
+				'last' => true,
+			], [
+				'$set' => [
+					'last' => false,
+					'ts' => $ts,
 				]
 			], function($lastError) use ($cb) {
 				call_user_func($cb, $this, true);
 			});
 		});
+		return $this;
 	}
 
 	protected function removeObject($cb) {
@@ -206,6 +201,7 @@ class Account extends Generic {
 			$gender = '';
 		}
 		$this->set('gender', $gender);
+		return $this;
 	}
 
 	public function setPublicProperty($k, $v) {
@@ -213,6 +209,7 @@ class Account extends Generic {
 			return;
 		}
 		$this[$k] = $v;
+		return $this;
 	}
 
 	public function setLocation($value) {
@@ -220,7 +217,8 @@ class Account extends Generic {
 		$this->req->components->GMAPS->geo($value, function ($geo)  use ($cb) {
 			$this['locationCoords'] = isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null;
 			$this->save($cb);
-		});	
+		});
+		return $this;
 	}
 
 	protected function saveObject($cb) {

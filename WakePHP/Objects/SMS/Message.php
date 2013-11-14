@@ -100,7 +100,7 @@ class Message extends Generic {
 				'ts' => ['$gt' => microtime(true) - 5*60],
 				'success' => null,
 			],
-			'update' => ['$inc' => ['tries' => -1]],
+			'update' => ['$inc' => ['tries' => -11]],
 			'new' => true,
 		], function ($lastError) use ($cb, $code) {
 			if (!isset($lastError['value']['code'])) {
