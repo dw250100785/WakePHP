@@ -75,17 +75,19 @@ class JobWorker extends AppInstance {
 		$this->components = new Components($this->fakeRequest());
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
+			$event->timeout(5e6);
 			if (!$this->resultCursor) {
 				$types = array_merge($this->jobs, [null]);
 				Daemon::log('find start: '.Debug::dump($types));
-				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) {
+				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) use ($event) {
 					if ($cursor->isDead()) {
+						Daemon::log('dead!');
 						$cursor->destroy();
 						$this->resultCursor = null;
 						return;
 					}
+					$event->timeout(1e6 * 0.05);
 					$this->resultCursor = $cursor;
-					$this->resultCursor->getMore(1);
 					foreach ($cursor->items as $k => $job) {
 						Daemon::log('find: ' . json_encode($job));
 						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
@@ -113,11 +115,11 @@ class JobWorker extends AppInstance {
 						   'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
 					   ]
 				   ]);
-				$this->log('inited cursor');
 				$event->timeout(1e6);
 				return;
+			} else {
+				$this->resultCursor->getMore(1);
 			}
-			$event->timeout(0.02e6);
 		}, 1);
 	}
 

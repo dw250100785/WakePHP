@@ -131,7 +131,7 @@ class Message extends Generic {
 
 	public function send($cb) {
 		$this->save(function() use ($cb) {
-			$this->orm->appInstance->components->SMSClient->send($this['phone'], $this['text'], function($res) use ($cb) {
+			$this->orm->appInstance->components->SMS->send($this['phone'], $this['text'], function($res) use ($cb) {
 				if (isset($res['id'])) {
 					call_user_func($cb, $this, true);
 				} else {
