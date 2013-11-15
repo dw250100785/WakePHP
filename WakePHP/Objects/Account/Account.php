@@ -184,7 +184,7 @@ class Account extends Generic {
 			}
 			return;
 		}
-		$this->orm->accounts->remove($this->cond);
+		$this->orm->accounts->remove($this->cond, $cb);
 	}
 
 	protected function countObject($cb) {
