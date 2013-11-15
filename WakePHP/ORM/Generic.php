@@ -102,7 +102,7 @@ abstract class Generic {
 			$cb = isset($args[2]) ? $args[2] : null;
 			if ($obj = $this->getObject($type, $cond)) {
 				$obj->attr($update);
-				$obj->save($cb);
+				$obj->update($cb);
 				return $obj;
 			}
 		}

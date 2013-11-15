@@ -41,6 +41,15 @@ abstract class Generic implements \ArrayAccess {
 			$this->create($objOrCb);
 		}
 	}
+
+	public function toArray() {
+		return;
+	}
+
+	public function fromArray($arr) {
+		return $this->create($arr);
+
+	}
 	
 	public function getLastError($bool = false) {
 		if ($bool) {
@@ -242,7 +251,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->fetchObject(function($obj) use ($cb) {
 			$this->obj = $obj;
 			if ($obj === false) {
-				call_user_func($cb, false);
+				call_user_func($cb, $this);
 				return;
 			}
 			$this->new = false;
@@ -284,6 +293,36 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	abstract protected function removeObject($cb);
+
+	public function update($cb = null) {
+		$this->lastError = [];
+		if ($this->cond === null) {
+			$this->extractCondFrom($this->obj);
+		}
+		$this->new = false;
+		if (!$this->new) {
+			if (!sizeof($this->cond)) {
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+				return;
+			}
+			if (!sizeof($this->update)) {
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+				return;
+			}
+		}
+		$this->saveObject(function($lastError) use ($cb) {
+			$this->lastError = $lastError;
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+
+		});
+		$this->update = [];
+	}
 
 	public function save($cb = null) {
 		$this->lastError = [];
