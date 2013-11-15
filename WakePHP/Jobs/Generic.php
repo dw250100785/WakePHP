@@ -1,6 +1,9 @@
 <?php
 namespace WakePHP\Jobs;
 
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+
 /**
  * Class Generic
  * @package WakePHP\Jobs

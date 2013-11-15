@@ -42,6 +42,16 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 
+	public function debug($point = null) {
+		$msg = "\n--------------------------\n";
+		$msg .= "TYPE: " . get_class($this) . "\n";
+		$msg .= "NEW: " . ($this->new ? 'YES' : 'NO') . "\n";
+		$msg .= "POINT: ".Debug::dump($point) . "\n";
+		$msg .= "COND: ".Debug::dump($this->cond) . "\n";
+		$msg .= "UPDATE: ".Debug::dump($this->update) . "\n";
+		$msg .= "--------------------------";
+		Daemon::log($msg);
+	}
 	public function toArray() {
 		return;
 	}
@@ -73,9 +83,10 @@ abstract class Generic implements \ArrayAccess {
 			return;
 		}
 		if (!isset($this->update['$set'])) {
-			$this->update['$set'] = [];
+			$this->update['$set'] = [$k => $v];
+		} else {
+			$this->update['$set'][$k] = $v;
 		}
-		$this->update['$set'][$k] = $v;
 		return $this;
 	}
 
