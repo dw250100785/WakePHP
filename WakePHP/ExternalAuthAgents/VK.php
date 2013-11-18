@@ -2,6 +2,8 @@
 namespace WakePHP\ExternalAuthAgents;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
 use WakePHP\Core\Request;
 
 class VK extends Generic {
@@ -27,17 +29,23 @@ class VK extends Generic {
 			return;
 		}
 		$this->appInstance->httpclient->get(
-			['https://oauth.vk.com/access_token',
+			$get = ['https://api.vk.com/oauth/access_token',
 				'client_id'     => $this->cmp->config->vk_app_key->value,
-				'redirect_uri'  => $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?agent=VK',
+				'redirect_uri'  => HTTPClient::buildUrl([
+					$this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json',
+					'agent' => 'VK',
+					'backurl' => $this->getBackurl(true)
+				]),
 				'client_secret' => $this->cmp->config->vk_app_secret->value,
 				'code'          => $code],
-			function ($conn, $success) {
+			function ($conn, $success) use (&$get) {
 				if (!$success) {
 					$this->req->status(400);
 					$this->req->setResult(['error' => 'request declined']);
 					return;
 				}
+				Daemon::log(Debug::dump($get));
+				Daemon::log(Debug::dump($conn->body));
 				$response     = json_decode(rtrim($conn->body), true);
 				$user_id      = isset($response['user_id']) ? (int)$response['user_id'] : 0;
 				$access_token = Request::getString($response['access_token']);

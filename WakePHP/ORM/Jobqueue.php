@@ -10,6 +10,9 @@ class Jobqueue extends Generic {
 
 	protected $jobqueue;
 
+	public function getCollection() {
+		return $this->jobqueue;
+	}
 	public function init() {
 		$this->jobqueue = $this->appInstance->db->{$this->appInstance->dbname . '.jobqueue'};
 	}

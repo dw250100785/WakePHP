@@ -93,14 +93,17 @@ class JobWorker extends AppInstance {
 						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
 							break;
 						}
-						$this->jobqueue->update(
-							['_id' => $job['_id'], 'status' => 'v'],
-							['$set' => ['status' => 'a']],
-							0, function ($lastError) use ($job) {
-								if ($lastError['updatedExisting']) {
-									$job['status'] = 'a';
-									$this->startJob($job);
+						$this->jobqueue->getCollection()->findAndModify([
+							'query' => ['_id' => $job['_id'], 'status' => 'v'],
+							'update' => ['$set' => ['status' => 'a']],
+							'new' => true,
+							], function ($ret) {
+								$job = isset($ret['value']) ? $ret['value']: false;
+								if (!$job) {
+									return;
 								}
+								$job['status'] = 'a';
+								$this->startJob($job);
 							}
 						);
 						unset($cursor->items[$k]);

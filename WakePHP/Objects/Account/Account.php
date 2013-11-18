@@ -11,20 +11,20 @@ use WakePHP\Objects\Generic;
  * @package WakePHP\Objects
  */
 class Account extends Generic {
-	
-	public function init() {
-	}
 
 	public static function ormInit($orm) {
 		$orm->accounts  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accounts'};
+		$orm->accounts->ensureIndex(array('email' => 1), array('unique' => true));
+		$orm->accounts->ensureIndex(array('unifiedemail' => 1), array('unique' => true));
+		$orm->accounts->ensureIndex(array('username' => 1));
+		$orm->accounts->ensureIndex(array('unifiedusername' => 1));
 		$orm->recoverysequence  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accountRecoverySequence'};
 		$orm->recoverysequence->ensureIndex(['seq' => 1, 'accountId' => 1, 'item' => 1], ['unique' => true]);
 	}
 
-	protected function fetchObject($cb) {
-		$this->orm->accounts->findOne($cb, ['where' => $this->cond,]);
+	protected function construct() {
+		$this->col = $this->orm->accounts;
 	}
-
 
 	/**
 	 * @param $password
@@ -50,7 +50,6 @@ class Account extends Generic {
 		}
 		return true;
 	}
-
 
 	public function setPassword($value) {
 		if (($r = static::checkPasswordFormat($value)) !== true) {
@@ -119,27 +118,14 @@ class Account extends Generic {
 
 	public function addACLgroup($group) {
 		if (!is_string($group)) {
-			return;
+			throw new Exception('addACLGroup: non-string group');
 		}
-		if (!isset($this->update['$addToSet'])) {
-			$this->update['$addToSet'] = [];
-		}
-		if (!isset($this->update['$addToSet']['aclgroups']['$each'])) {
-			$this->update['$addToSet']['aclgroups'] = ['$each' => []];
-		}
-		$this->update['$addToSet']['aclgroups']['$each'][] = $group;
+		return $this->addToSet('aclgroups', $group);
 	}
 
 	public function addCredentials($credentials) {
-		if (!isset($this->update['$push'])) {
-			$this->update['$push'] = [];
-		}
-		if (!isset($this->update['$push']['credentials']['$each'])) {
-			$this->update['$push']['credentials'] = ['$each' => []];
-		}
-		$this->update['$push']['credentials']['$each'][] = $credentials;
+		return $this->push('credentials', $credentials);
 	}
-
 
 	public function pushToRecoverySequence($seq, $item, $cb = null) {
 		$accountId = $this->getId();
@@ -177,25 +163,7 @@ class Account extends Generic {
 		return $this;
 	}
 
-	protected function removeObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->accounts->remove($this->cond, $cb);
-	}
 
-	protected function countObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->accounts->count($this->cond);
-	}
 	public function setGender($gender) {
 		if ($gender !== 'm' && $gender !== 'f') {
 			$gender = '';
@@ -212,17 +180,12 @@ class Account extends Generic {
 		return $this;
 	}
 
-	public function setLocation($value) {
+	public function setLocation($value, $cb = null) {
 		$this->set('location', $value);
-		$this->req->components->GMAPS->geo($value, function ($geo)  use ($cb) {
+		Daemon::$context->components->GMAPS->geo($value, function ($geo)  use ($cb) {
 			$this['locationCoords'] = isset($geo['Placemark'][0]['Point']['coordinates']) ? $geo['Placemark'][0]['Point']['coordinates'] : null;
 			$this->save($cb);
 		});
 		return $this;
 	}
-
-	protected function saveObject($cb) {
-		$this->orm->accounts->upsertOne($this->cond, $this->new ? $this->obj : $this->update, $cb);
-	}
-
 }

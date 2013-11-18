@@ -38,10 +38,6 @@ abstract class Generic {
 		return new $class($cond, $objOrCb, $this);
 	}
 
-	public function getDummy($init) {
-		return $this->getObject('Dummy', $init);
-	}
-
 	/**
 	 * @param string $method
 	 * @param array $args

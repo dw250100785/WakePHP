@@ -75,10 +75,9 @@ class Facebook extends Generic {
 						if (isset($_REQUEST['external_token'])) {
 							$data['external_token'] = Request::getString($_REQUEST['external_token']);
 						}
-						$this->req->components->account->acceptUserAuthentication('facebook', $id, $data,
-							function () {
-								$this->finalRedirect();
-							});
+						$this->req->components->account->acceptUserAuthentication('facebook', $id, $data, function () {
+							$this->finalRedirect();
+						});
 					});
 			}
 		);

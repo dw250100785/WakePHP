@@ -12,7 +12,8 @@ use WakePHP\Objects\Generic;
  */
 class Message extends Generic {
 	
-	public function init() {
+	protected function construct() {
+		$this->col = $this->orm->messages;
 	}
 
 	public static function ormInit($orm) {
@@ -21,35 +22,11 @@ class Message extends Generic {
 		$orm->messages->ensureIndex(['accountId' => 1]);
 	}
 
-	protected function fetchObject($cb) {
-		$this->orm->messages->findOne($cb, ['where' => $this->cond,]);
-	}
-
 	public function genId($cb) {
-		$this->orm->messages->autoincrement(function($seq) use ($cb) {
+		$this->col->autoincrement(function($seq) use ($cb) {
 			$this->setId($seq);
 			call_user_func($cb, $this);
 		}, true);
-	}
-
-	protected function removeObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->accounts->remove($this->cond);
-	}
-
-	protected function countObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->accounts->count($this->cond);
 	}
 
 	public function extractCondFrom($obj) {
@@ -66,7 +43,7 @@ class Message extends Generic {
 	}
 	
 	public function antiflood($cb) {
-		$this->orm->messages->count(function($res) use ($cb) {
+		$this->col->count(function($res) use ($cb) {
 			call_user_func($cb, $this, $res['n'] > 5);
 		}, [ 'where' => [
 			'accountId' => $this['accountId'],
@@ -141,13 +118,4 @@ class Message extends Generic {
 			return $this;
 		});
 	}
-	
-	protected function saveObject($cb) {
-		if ($this->new) {
-			$this->orm->messages->insertOne($this->obj, $cb);
-		} else {
-			$this->orm->messages->upsertOne($this->cond, $this->update, $cb);
-		}
-	}
-
 }

@@ -4,11 +4,7 @@ include __DIR__.'/../generic.php';
 
 /* accounts */ 
 $accounts = $db->selectCollection('accounts');
-$accounts->drop();
-$accounts->ensureIndex(array('email' => 1), array('unique' => true));
-$accounts->ensureIndex(array('unifiedemail' => 1), array('unique' => true));
-$accounts->ensureIndex(array('username' => 1));
-$accounts->ensureIndex(array('unifiedusername' => 1));
+//$accounts->drop();
 $app->saveAccount(array(
 				'username' => 'Guest',
 				'email' => 'guest@guest.tld',

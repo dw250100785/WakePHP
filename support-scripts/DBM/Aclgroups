@@ -4,8 +4,7 @@ include __DIR__.'/../generic.php';
 
 /* aclgroups */ 
 $aclgroups = $db->selectCollection('aclgroups');
-$aclgroups->drop();
-$aclgroups->ensureIndex(array('name' => 1),array('unique' => true));
+//$aclgroups->drop();
 $app->saveACLgroup(array(
 				'name' => 'Superusers',
 				'acl' => array('global' => array('all','grant')),

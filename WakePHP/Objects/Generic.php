@@ -27,10 +27,13 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $lastError;
 
+	protected $col;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
 		$this->cond = $cond instanceof \MongoId ? ['_id' => $cond] : $cond;
+		$this->construct();
 		if (is_array($objOrCb) && !isset($objOrCb[0])) {
 			$this->create($objOrCb);
 		}
@@ -41,6 +44,8 @@ abstract class Generic implements \ArrayAccess {
 			$this->create($objOrCb);
 		}
 	}
+
+	protected function construct() {}
 
 	public function debug($point = null) {
 		$msg = "\n--------------------------\n";
@@ -53,7 +58,7 @@ abstract class Generic implements \ArrayAccess {
 		Daemon::log($msg);
 	}
 	public function toArray() {
-		return;
+		return $this->obj;
 	}
 
 	public function fromArray($arr) {
@@ -80,7 +85,7 @@ abstract class Generic implements \ArrayAccess {
 	protected function set($k, $v) {
 		$this->obj[$k] = $v;
 		if ($this->new) {
-			return;
+			return $this;
 		}
 		if (!isset($this->update['$set'])) {
 			$this->update['$set'] = [$k => $v];
@@ -97,7 +102,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->obj[$k] += $v;
 		}
 		if ($this->new) {
-			return;
+			return $this;
 		}
 		if (!isset($this->update['$inc'])) {
 			$this->update['$inc'] = [$k => $v];
@@ -108,31 +113,89 @@ abstract class Generic implements \ArrayAccess {
 				$this->update['$inc'][$k] += $v;
 			}
 		}
+		return $this;
+	}
+
+	protected function dec($k, $v = 1) {
+		if (!isset($this->obj[$k])) {
+			$this->obj[$k] = -$v;
+		} else {
+			$this->obj[$k] -= $v;
+		}
+		if ($this->new) {
+			return $this;
+		}
+		if (!isset($this->update['$inc'])) {
+			$this->update['$inc'] = [$k => -$v];
+		} else {
+			if (!isset($this->update['$inc'][$k])) {
+				$this->update['$inc'][$k] = -$v;
+			} else {
+				$this->update['$inc'][$k] -= $v;
+			}
+		}
+		return $this;
 	}
 
 	protected function push($k, $v) {
 		if (isset($v['$each'])) {
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = [];
+			foreach ($v['$each'] as $vv) {
+				$this->push($k, $vv);
 			}
-			foreach ($v['$each'] as $e) {
-				$this->obj[$k][] = $e;
-			}
+			return $this;
+		}
+		if (!isset($this->obj[$k])) {
+			$this->obj[$k] = [$v];
 		} else {
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = [$v];
-			} else {
-				$this->obj[$k][] = $v;
-			}
+			$this->obj[$k][] = $v;
 		}
 		if ($this->new) {
-			return;
+			return $this;
 		}
-		if (!isset($this->update['$push'])) {
-			$this->update['$push'] = [$k => $v];
+		if (!isset($this->update['$push'][$k]['$each'])) {
+			if (!isset($this->update['$push'])) {
+				$this->update['$push'] = [$k => ['$each' => [$v]]];
+			}
+			else {
+				$this->update['$push'][$k] = ['$each' => [$v]];
+			}
+			$this->update['$push'][$k] ['$each'] = [$v];
 		} else {
-			$this->update['$push'][$k] = $v;
+			$this->update['$push'][$k]['$each'][] = $v;
 		}
+		return $this;
+	}
+
+	protected function addToSet($k, $v) {
+		if (isset($v['$each'])) {
+			foreach ($v['$each'] as $vv) {
+				$this->addToSet($k, $vv);
+			}
+			return $this;
+		}
+		if (!isset($this->obj[$k])) {
+			$this->obj[$k] = [$v];
+		} else {
+			if (in_array($v, $this->obj[$k], true)) {
+				return $this;
+			}
+			$this->obj[$k][] = $v;
+		}
+		if ($this->new) {
+			return $this;
+		}
+		if (!isset($this->update['$addToSet'][$k]['$each'])) {
+			if (!isset($this->update['$addToSet'])) {
+				$this->update['$addToSet'] = [$k => ['$addToSet' => [$v]]];
+			}
+			else {
+				$this->update['$addToSet'][$k] = ['$addToSet' => [$v]];
+			}
+			$this->update['$addToSet'][$k] ['$each'] = [$v];
+		} else {
+			$this->update['$addToSet'][$k]['$each'][] = $v;
+		}
+		return $this;
 	}
 
 	public function create($obj = []) {
@@ -278,7 +341,12 @@ abstract class Generic implements \ArrayAccess {
 		return is_array($this->obj) ? true : ($this->obj === null ? null : false);
 	}
 
-	abstract protected function fetchObject($cb);
+	protected function fetchObject($cb) {
+		if ($this->col === null) {
+			Daemon::log(get_class($this). Debug::backtrace());
+		}
+		$this->col->findOne($cb, ['where' => $this->cond,]);
+	}
 
 	public function count($cb) {
 		if ($this->cond === null) {
@@ -290,7 +358,15 @@ abstract class Generic implements \ArrayAccess {
 		$this->countObject($cb);
 	}
 
-	abstract protected function countObject($cb);
+	protected function countObject($cb) {
+		if (!sizeof($this->cond)) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
+		$this->col->count($cb, ['where' => $this->cond]);
+	}
 
 	public function remove($cb) {
 		if (!sizeof($this->cond)) {
@@ -303,7 +379,15 @@ abstract class Generic implements \ArrayAccess {
 		$this->new = true;
 	}
 
-	abstract protected function removeObject($cb);
+	protected function removeObject($cb) {
+		if (!sizeof($this->cond)) {
+			if ($cb !== null) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
+		$this->col->remove($this->cond, $cb);
+	}
 
 	public function update($cb = null) {
 		$this->lastError = [];
@@ -365,7 +449,13 @@ abstract class Generic implements \ArrayAccess {
 		$this->new = false;
 	}
 
-	abstract protected function saveObject($cb);
+	protected function saveObject($cb) {
+		if ($this->new) {
+			$this->col->insertOne($this->obj, $cb);
+		} else {
+			$this->col->upsertOne($this->cond, $this->update, $cb);
+		}
+	}
 
 
 	/**

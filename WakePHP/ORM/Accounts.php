@@ -167,9 +167,7 @@ class Accounts extends Generic {
 	public function getAccountBase($req) {
 		return [
 			'email'            => '',
-			'username'         => '',
 			'location'         => '',
-			'password'         => '',
 			'ukey'			   => Crypt::randomString(16),
 			'confirmationcode' => substr(md5($req->attrs->server['REMOTE_ADDR'] . "\x00"
 											 . Daemon::uniqid() . "\x00"

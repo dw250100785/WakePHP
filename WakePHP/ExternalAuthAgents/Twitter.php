@@ -60,31 +60,29 @@ class Twitter extends Generic {
 			return;
 		}
 		$url = 'https://api.twitter.com/oauth/access_token';
-		$this->appInstance->httpclient->post(
-			$url,
-			['oauth_verifier' => Request::getString($_GET['oauth_verifier'])],
+		$this->appInstance->httpclient->post($url,	['oauth_verifier' => Request::getString($_GET['oauth_verifier'])],
 			['headers'  => ['Authorization: ' . $this->getAuthorizationHeader($url, ['oauth_token' => Request::getString($_GET['oauth_token'])])],
-			 'resultcb' => function ($conn, $success) {
-				 if (!$success) {
-					 $this->req->status(403);
-					 $this->req->setResult(['error' => 'request declined']);
-					 return;
-				 }
-				 parse_str($conn->body, $response);
-				 $user_id = Request::getString($response['user_id']);
-				 if ($user_id === '') {
-					 $this->req->status(400);
-					 $this->req->setResult(['error' => 'no user_id']);
-					 return;
-				 }
-				 $data = [];
-				 if (isset($response['screen_name'])) {
-					 $data['username'] = Request::getString($response['screen_name']);
-				 }
-
-				 $this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data, [$this, 'finalRedirect']);
+			'resultcb' => function ($conn, $success) {
+				if (!$success) {
+					$this->req->status(403);
+					$this->req->setResult(['error' => 'request declined']);
+					return;
+				}
+				parse_str($conn->body, $response);
+				$user_id = Request::getString($response['user_id']);
+				if ($user_id === '') {
+					$this->req->status(400);
+					$this->req->setResult(['error' => 'no user_id']);
+					return;
+				}
+				$data = [];
+				if (isset($response['screen_name'])) {
+					$data['username'] = Request::getString($response['screen_name']);
+				}
+				$this->req->components->account->acceptUserAuthentication('twitter', $user_id, $data, function () {
+					$this->finalRedirect();
+				});
 			 }
-			]
-		);
+		]);
 	}
 }

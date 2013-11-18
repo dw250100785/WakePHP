@@ -13,7 +13,7 @@ use WakePHP\ExternalAuthAgents\Generic as ExternalAuthAgents;
 class ExternalAuthRedirect extends Generic {
 
 	public function perform() {
-		if (!($AuthAgent = ExternalAuthAgents::getAgent(Request::getString($this->req->attrs->get['agent']), $this))) {
+		if (!($AuthAgent = ExternalAuthAgents::getAgent(Request::getString($this->req->attrs->get['agent']), $this->cmp))) {
 			$this->req->setResult(['error' => true, 'errmsg' => 'Unrecognized external auth agent']);
 			return;
 		}

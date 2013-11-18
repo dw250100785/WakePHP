@@ -9,46 +9,13 @@ use WakePHP\Objects\Generic;
  */
 class ACLGroup extends Generic {
 
-	public function init() {
+	protected function construct() {
+		$this->col = $this->orm->aclgroups;
 
 	}
 
 	public static function ormInit($orm) {
 		$orm->aclgroups = $orm->appInstance->db->{$orm->appInstance->dbname . '.aclgroups'};
-	}
-
-	protected function fetchObject($cb) {
-		$this->orm->aclgroups->findOne($cb, ['where' => $this->cond,]);
-	}
-
-	protected function saveObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->aclgroups->upsertOne($this->cond, $this->update, $cb);
-		$this->update = [];
-	}
-
-	protected function countObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->aclgroups->count($this->cond);
-	}
-
-	protected function removeObject($cb) {
-		if (!sizeof($this->cond)) {
-			if ($cb !== null) {
-				call_user_func($cb, false);
-			}
-			return;
-		}
-		$this->orm->aclgroups->remove($this->cond);
+		$orm->aclgroups->ensureIndex(array('name' => 1),array('unique' => true));
 	}
 }

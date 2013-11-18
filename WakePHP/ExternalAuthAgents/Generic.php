@@ -42,21 +42,27 @@ abstract class Generic {
 	}
 
 	public function getCallbackURL() {
-		$redirect_data = ['agent' => ClassFinder::getClassBasename($this)];
+		$params = ['agent' => ClassFinder::getClassBasename($this)];
 		if (isset($_GET['external_token'])) {
-			$redirect_data['external_token'] = Request::getString($_GET['external_token']);
+			$params['external_token'] = Request::getString($_GET['external_token']);
 		}
 		if (isset($this->backUrl)) {
-			$redirect_data['backurl'] = $this->backUrl;
+			$params['backurl'] = $this->backUrl;
 		}
-		return $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?' . http_build_query($redirect_data);
+		return $this->req->getBaseUrl() . '/component/Account/ExternalAuthRedirect/json?' . http_build_query($params);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getBackUrl() {
-		return strlen($this->backUrl) ? $this->backUrl : $this->req->getBaseUrl() . '/' . $this->req->locale . '/';
+	public function getBackUrl($empty = false) {
+		if (strlen($this->backUrl)) {
+			return $this->backUrl;	
+		}
+		if ($empty) {
+			return '';
+		}
+		return $this->req->getBaseUrl() . '/' . $this->req->locale . '/';
 	}
 
 	/**
@@ -66,7 +72,7 @@ abstract class Generic {
 		$this->backUrl = $backUrl;
 	}
 
-	protected function finalRedirect() {
+	public function finalRedirect() {
 		$this->req->redirectTo($this->getBackUrl());
 		$this->req = null;
 	}

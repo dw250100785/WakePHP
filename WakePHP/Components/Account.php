@@ -136,9 +136,10 @@ class Account extends Component {
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
 		$this->req->onSessionStart(function () use ($ns, $id, $add, $cb) {
 			$crd = ['ns' => $ns, 'id' => $id];
+			Daemon::log(Debug::dump($crd));
 			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => $crd]],
 				function ($account) use ($ns, $id, $cb, $crd, $add) {
-					if ($account) {
+					if ($account->exists()) {
 						$this->loginAs($account, $cb);
 						return;
 					}
@@ -150,7 +151,7 @@ class Account extends Component {
 						return;
 					}
 					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add, $cb) {
-							if ($account) {
+							if ($account->exists()) {
 								$this->appInstance->accounts->addCredentialsToAccount($account, $crd, function () use ($account, $cb) {
 									$this->loginAs($account, $cb);
 								});
