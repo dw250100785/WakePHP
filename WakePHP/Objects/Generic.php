@@ -15,6 +15,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $update = [];
 
+	protected $insert;
+
 	protected $obj;
 
 	protected $cond;
@@ -28,6 +30,14 @@ abstract class Generic implements \ArrayAccess {
 	protected $lastError;
 
 	protected $col;
+
+	protected $multi = false;
+
+	protected $limit = null;
+
+	protected $offset = 0;
+
+	protected $protectedCall;
 
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
@@ -45,6 +55,45 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 
+	public function multi() {
+		$this->multi = true;
+		return $this;
+	}
+
+	public function sort($sort) {
+		$this->sort = $sort;
+		return $this;
+	}
+
+    public function toJSON($flags = null) {
+    	if ($flags === null) {
+    		$flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+    	}
+    	return json_encode($this->toArray(), $flags);
+
+    }
+
+	public function limit($limit, $offset = null) {
+		$this->limit = $limit;
+		if ($offset !== null) {
+			$this->offset = $offset;
+		}
+		return $this;
+	}
+
+	public function offset($offset) {
+		$this->offset = $offset;
+		return $this;
+	}
+
+	protected function protectedCall() {
+		$this->protectedCall = true;
+		$args = func_get_args();
+		call_user_func([$this, array_shift($args)], $args);
+		$this->protectedCall = false;
+
+	}
+	
 	protected function construct() {}
 
 	public function debug($point = null) {
@@ -65,6 +114,13 @@ abstract class Generic implements \ArrayAccess {
 		return $this->create($arr);
 
 	}
+
+	public function listSet($k, $v) {
+		if (is_string($v)) {
+			$v = array_filter(function($i) {return $i === '';}, preg_split('~\s*,\s*~', $v));
+		}
+		$this->set($k, $v);
+	} 
 	
 	public function getLastError($bool = false) {
 		if ($bool) {
@@ -211,6 +267,14 @@ abstract class Generic implements \ArrayAccess {
 		$this->init();
 	}
 
+	public function wrap($obj) {
+		$this->obj = $obj;
+		$this->extractCondFrom($obj);
+		$this->inited = true;
+		$this->init();
+		return $this;
+	}
+
 	protected function cond() {
 		if (!func_num_args()) {
 			return $this->cond;
@@ -277,7 +341,7 @@ abstract class Generic implements \ArrayAccess {
 	protected function setProperty($k, $v) {
 		$this->obj[$k] = $v;
 		if ($this->new) {
-			return;
+			return $this;
 		}
 		if (!isset($this->update['$set'])) {
 			$this->update['$set'] = [];
@@ -314,6 +378,10 @@ abstract class Generic implements \ArrayAccess {
 			$v = sizeof($args) ? $args[0] : null;
 			return $this->setProperty($name, $v);
 		}
+		if (strncmp($method, 'is', 2) === 0) {
+			$name = lcfirst(substr($method, 2));
+			return (bool) $this->getProperty($name);
+		}
 		if (strncmp($method, 'unset', 5) === 0) {
 			$name = lcfirst(substr($method, 5));
 			return $this->unsetProperty($name);
@@ -322,7 +390,10 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function fetch($cb) {
-		$this->fetchObject(function($obj) use ($cb) {
+		$iterator = new GenericIterator($this, $cb, $this->orm);
+		$this->fetchObject($this->multi ? function($cursor) use ($iterator) {
+			$iterator->_cursor($cursor);
+		} : function($obj) use ($cb) {
 			$this->obj = $obj;
 			if ($obj === false) {
 				call_user_func($cb, $this);
@@ -335,6 +406,7 @@ abstract class Generic implements \ArrayAccess {
 			}
 			call_user_func($cb, $this);
 		});
+		return $this;
 	}
 
 	public function exists() {
@@ -345,7 +417,18 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->col === null) {
 			Daemon::log(get_class($this). Debug::backtrace());
 		}
-		$this->col->findOne($cb, ['where' => $this->cond,]);
+		if ($this->multi) {
+			$this->col->find($cb, [
+				'where' => $this->cond,
+				'sort' => $this->sort,
+				'offset' => $this->offset,
+				'limit' => $this->limit,
+			]);
+		} else {
+			$this->col->findOne($cb, [
+				'where' => $this->cond,
+			]);
+		}
 	}
 
 	public function count($cb) {
@@ -425,7 +508,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->extractCondFrom($this->obj);
 		}
 		if (!$this->new) {
-			if (!sizeof($this->cond)) {
+			if ($this->cond === null) {
 				if ($cb !== null) {
 					call_user_func($cb, $this);
 				}
@@ -453,7 +536,11 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->new) {
 			$this->col->insertOne($this->obj, $cb);
 		} else {
-			$this->col->upsertOne($this->cond, $this->update, $cb);
+			if ($this->multi) {
+				$this->col->upsertMulti($this->cond, $this->update, $cb);
+			} else {
+				$this->col->upsertOne($this->cond, $this->update, $cb);
+			}
 		}
 	}
 

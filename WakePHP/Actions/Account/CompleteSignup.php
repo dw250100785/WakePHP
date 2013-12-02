@@ -6,11 +6,11 @@ use PHPDaemon\Request\Generic as Request;
 use PHPDaemon\Utils\Encoding;
 
 /**
- * Class finishSignup
+ * Class CompleteSignup
  * @package WakePHP\Actions\Account
  * @dynamic_fields
  */
-class finishSignup extends Generic {
+class CompleteSignup extends Generic {
 
 	public function perform() {
 		$this->req->onSessionRead(function () {
@@ -45,7 +45,7 @@ class finishSignup extends Generic {
 								                       'errors'  => ['email' => 'Sorry, internal error.']]);
 								return;
 							}
-							$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
+							$this->req->appInstance->Sendmail->mailTemplate('mailAccountCompleteSignup', $email, [
 								'email'  => $email,
 								'code'   => $code,
 								'locale' => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),
@@ -56,7 +56,7 @@ class finishSignup extends Generic {
 				}
 				else {
 					if ('' === ($user_code = Request::getString($_REQUEST['code']))) {
-						$this->req->appInstance->Sendmail->mailTemplate('mailAccountFinishSignup', $email, [
+						$this->req->appInstance->Sendmail->mailTemplate('mailAccountCompleteSignup', $email, [
 							'email'  => $email,
 							'code'   => $request['code'],
 							'locale' => $this->req->appInstance->getLocaleName(Request::getString($_REQUEST['LC'])),

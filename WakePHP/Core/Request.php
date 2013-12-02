@@ -209,26 +209,31 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			}
 			return;
 		}
-		$this->locale = $e[0];
-		$this->path   = '/' . (isset($e[1]) ? $e[1] : '');
-		$this->pjax = isset($_SERVER['HTTP_X_PJAX']);
-		if (!in_array($this->locale, $this->appInstance->locales, true)) {
+		if (strlen($e[0]) > 2) {
 			$this->locale = $this->appInstance->config->defaultlocale->value;
-			if ($this->path !== '/') {
-				try {$this->redirectTo('/' . $this->locale . $this->path);} catch (RequestHeadersAlreadySent $e) {}
-				return;
+			// @TODO
+			$this->path = $_SERVER['DOCUMENT_URI'];
+		} else {
+			$this->locale = $e[0];
+			$this->path   = '/' . (isset($e[1]) ? $e[1] : '');
+			if (!in_array($this->locale, $this->appInstance->locales, true)) {
+				$this->locale = $this->appInstance->config->defaultlocale->value;
+				if ($this->path !== '/') {
+					try {$this->redirectTo('/' . $this->locale . $this->path);} catch (RequestHeadersAlreadySent $e) {}
+					return;
+				}
 			}
 		}
-		$req        = $this;
-		$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) use ($req) {
+		$this->pjax = isset($_SERVER['HTTP_X_PJAX']);
+		$this->path = preg_replace_callback('~/([a-z\d]{24})(?=/|$)~', function ($m) {
 			$type  = '';
 			$value = null;
 			if (isset($m[1]) && $m[1] !== '') {
 				$type  = 'id';
 				$value = $m[1];
 			}
-			$req->pathArgType[] = $type;
-			$req->pathArg[]     = $value;
+			$this->pathArgType[] = $type;
+			$this->pathArg[]     = $value;
 			return '/%' . $type;
 		}, $this->path);
 
