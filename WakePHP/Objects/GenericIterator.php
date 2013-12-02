@@ -51,6 +51,14 @@ class GenericIterator implements \Iterator {
 		return $o;
 	}
 
+	public function finished() {
+		return $this->cursor->isFinished();
+	}
+
+	public function toArray() {
+		return $this->cursor->grab();
+	}
+
 	public function key() {
 		return $this->cursor->key();
 	}

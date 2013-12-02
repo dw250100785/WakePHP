@@ -34,6 +34,8 @@ abstract class Generic implements \ArrayAccess {
 	protected $multi = false;
 
 	protected $limit = null;
+	
+	protected $sort;
 
 	protected $offset = 0;
 
@@ -65,6 +67,43 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
+	public function sortMixed($mixed, $fields = null, $multi = true) {
+		$this->sort = [];
+		if (!is_array($mixed)) {
+			$mixed = explode(',', $mixed);
+		}
+		if (isset($mixed[0])) {
+			foreach ($mixed as $i) {
+				$i = trim($i);
+				$order = 1;
+				if (strncmp($i, '>', 1)) {
+					$i = substr($i, 1);
+					$order = -1;
+				} elseif (strncmp($i, '<', 1)) {
+					$i = substr($i, 1);
+				}
+				if ($fields !== null) {
+					if (!in_array($i, $fields, true)) {
+						continue;
+					}
+				}
+				$this->sort[$i] = $order;
+			}
+		} else {
+			foreach ($mixed as $i => $order) {
+				$order = $order ? 1 : -1;
+				if ($fields !== null) {
+					if (!in_array($i, $fields, true)) {
+						continue;
+					}
+				}
+				$this->sort[$i] = $order;
+			}
+		}
+		Daemon::log(Debug::dump($this->sort));
+		return $this;
+	}
+
     public function toJSON($flags = null) {
     	if ($flags === null) {
     		$flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
@@ -89,7 +128,7 @@ abstract class Generic implements \ArrayAccess {
 	protected function protectedCall() {
 		$this->protectedCall = true;
 		$args = func_get_args();
-		call_user_func([$this, array_shift($args)], $args);
+		call_user_func_array([$this, array_shift($args)], $args);
 		$this->protectedCall = false;
 
 	}
@@ -286,10 +325,13 @@ abstract class Generic implements \ArrayAccess {
 		$c = func_num_args();
 		if ($c === 1) {
 			if (is_array($m)) {
+				Daemon::log(Debug::dump(['obj before' => $this->obj]));
+				Daemon::log(Debug::dump(['m' => $m]));
 				foreach ($m as $k => $v) {
 					$this[$k] = $v;
 				}
-				return;
+				Daemon::log(Debug::dump(['obj' => $this->obj]));
+				return $this;
 			}
 			return $this[$m];
 		} elseif ($c === 2) {
@@ -418,7 +460,7 @@ abstract class Generic implements \ArrayAccess {
 			Daemon::log(get_class($this). Debug::backtrace());
 		}
 		if ($this->multi) {
-			$this->col->find($cb, [
+			$this->col->find($cb, $params = [
 				'where' => $this->cond,
 				'sort' => $this->sort,
 				'offset' => $this->offset,

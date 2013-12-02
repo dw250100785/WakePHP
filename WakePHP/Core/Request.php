@@ -248,6 +248,26 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 											 ), array($this, 'loadPage'));
 	}
 
+	public function setResultObj($result, $multi = false) {
+		static::resultMap($result);
+		$this->setResult($result, $multi);
+	}
+
+	public static function resultMap(&$m) {
+		if (is_array($m)) {
+			foreach ($m as &$v) {
+				static::resultMap($v);
+			}
+		} else {
+			if ($m instanceof \MongoBinData) {
+				$m = base64_encode($m->bin);
+			}
+			elseif ($m instanceof \MongoId) {
+				$m = (string )$m;
+			}
+		}
+	}	
+
 	public function setResult($result = null, $multi = false) {
 		if ($this->dataType === 'json') {
 			try {
