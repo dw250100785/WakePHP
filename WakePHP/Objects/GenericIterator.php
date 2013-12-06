@@ -21,9 +21,13 @@ class GenericIterator implements \Iterator {
 		$this->orm = $orm;
 	}
 
-	public function _cursor($cursor) {
+	public function _cursor($cursor, $all = true) {
 		if ($this->cursor === null) {
 			$this->cursor = $cursor;
+		}
+		if ($all && !$this->finished()) {
+			$this->more();
+			return;
 		}
 		call_user_func($this->cb, $this);
 	}
@@ -56,7 +60,11 @@ class GenericIterator implements \Iterator {
 	}
 
 	public function toArray() {
-		return $this->cursor->grab();
+		$arr = [];
+		foreach ($this as $item) {
+			$arr[] = $item->toArray();
+		}
+		return $arr;
 	}
 
 	public function key() {

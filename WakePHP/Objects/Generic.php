@@ -1,6 +1,7 @@
 <?php
 namespace WakePHP\Objects;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
+use WakePHP\Exceptions\WrongCondition;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
@@ -57,6 +58,26 @@ abstract class Generic implements \ArrayAccess {
 		}
 	}
 
+	protected function log($m) {
+		Daemon::log(get_class($this).': ' . $m);
+	}
+
+	public function condSet($k, $v) {
+		$this->cond[$k] = $v;
+	}
+
+	public function condSetId($id) {
+		if ($id instanceof \MongoId) {
+			$this->cond['_id'] = $id;
+			return $this;
+		}
+		if (is_string($id) && ctype_xdigit($id)) {
+			$this->cond['_id'] = new \MongoId($id);
+			return $this;
+		}
+		throw new WrongCondition('condSetId: wrong value');
+	}
+
 	public function multi() {
 		$this->multi = true;
 		return $this;
@@ -100,7 +121,6 @@ abstract class Generic implements \ArrayAccess {
 				$this->sort[$i] = $order;
 			}
 		}
-		Daemon::log(Debug::dump($this->sort));
 		return $this;
 	}
 
@@ -161,7 +181,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->set($k, $v);
 	} 
 	
-	public function getLastError($bool = false) {
+	public function lastError($bool = false) {
 		if ($bool) {
 			if (isset($this->lastError['updatedExisting'])) {
 				return $this->lastError['updatedExisting'];
@@ -325,12 +345,9 @@ abstract class Generic implements \ArrayAccess {
 		$c = func_num_args();
 		if ($c === 1) {
 			if (is_array($m)) {
-				Daemon::log(Debug::dump(['obj before' => $this->obj]));
-				Daemon::log(Debug::dump(['m' => $m]));
 				foreach ($m as $k => $v) {
 					$this[$k] = $v;
 				}
-				Daemon::log(Debug::dump(['obj' => $this->obj]));
 				return $this;
 			}
 			return $this[$m];
@@ -431,10 +448,10 @@ abstract class Generic implements \ArrayAccess {
 		throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 	}
 
-	public function fetch($cb) {
-		$iterator = new GenericIterator($this, $cb, $this->orm);
-		$this->fetchObject($this->multi ? function($cursor) use ($iterator) {
-			$iterator->_cursor($cursor);
+	public function fetch($cb, $all = true) {
+		$list = new GenericIterator($this, $cb, $this->orm);
+		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
+			$list->_cursor($cursor, $all);
 		} : function($obj) use ($cb) {
 			$this->obj = $obj;
 			if ($obj === false) {
@@ -476,15 +493,17 @@ abstract class Generic implements \ArrayAccess {
 	public function count($cb) {
 		if ($this->cond === null) {
 			if ($cb !== null) {
-				call_user_func($cb, false);
+				call_user_func($cb, $this, false);
 			}
 			return;
 		}
-		$this->countObject($cb);
+		$this->countObject(function ($res) use ($cb) {
+			call_user_func($cb, $this, isset($res['n']) ? $res['n'] : false);
+		});
 	}
 
 	protected function countObject($cb) {
-		if (!sizeof($this->cond)) {
+		if ($this->cond === null) {
 			if ($cb !== null) {
 				call_user_func($cb, false);
 			}
@@ -494,11 +513,18 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function remove($cb) {
-		if (!sizeof($this->cond)) {
+		if ($this->cond === null) {
 			if ($cb !== null) {
 				call_user_func($cb, false);
 			}
 			return;
+		}
+		if ($this->safeMode) {
+			if (!sizeof($this->cond)) {
+				$this->log('safe-mode: attempt to remove() with empty conditions');
+				call_user_func($cb, false);	
+				return;
+			}
 		}
 		$this->removeObject($cb);
 		$this->new = true;

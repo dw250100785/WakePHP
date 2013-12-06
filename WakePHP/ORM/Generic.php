@@ -82,7 +82,7 @@ abstract class Generic {
 				return;
 			}
 			$cb = $args[0];
-			$cond = isset($args[1]) ? $args[1] : null;
+			$cond = isset($args[1]) ? $args[1] : [];
 			if ($obj = $this->getObject($type, $cond)) {
 				$obj->count($cb);
 				return $obj;

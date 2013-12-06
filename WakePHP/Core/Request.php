@@ -138,6 +138,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				'code' => $e->getCode(),
 				'msg' => $e->getMessage()]
 			]);
+			$this->finish();
 			Daemon::log('Debug: '.$e->getTraceAsString());
 			return true;
 		}
@@ -274,14 +275,14 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				$this->header('Content-Type: text/json');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ($multi ? "\n" : '');
+			$this->out(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ($multi ? "\n" : ''));
 		}
 		elseif ($this->dataType === 'jsonp') {
 			try {
 				$this->header('Content-Type: text/plain');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . ($multi ? "\n" : '');
+			$this->out(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . ($multi ? "\n" : ''));
 		}
 		elseif ($this->dataType === 'xml') {
 			$converter = new Array2XML();
@@ -290,29 +291,28 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				$this->header('Content-Type: text/xml');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = $converter->convert($result);
+			$this->out($converter->convert($result));
 		}
 		elseif ($this->dataType === 'bson') {
 			try {
 				$this->header('Content-Type: application/octet-stream');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = bson_encode($result);
+			$this->out(bson_encode($result));
 		}
 		elseif ($this->dataType === 'dump') {
 			try {
 				$this->header('Content-Type: text/plain');
 			} catch (RequestHeadersAlreadySent $e) {
 			}
-			$this->html = Debug::dump($result);
+			$this->out(Debug::dump($result));
 		}
 		else {
 			$this->header('Content-Type: application/x-javascript');
-			$this->html = json_encode(['errmsg' => 'Unsupported data-type.']);
+			$this->out(json_encode(['errmsg' => 'Unsupported data-type.']));
 		}
 		if (!$multi) {
-			++$this->jobDone;
-			$this->wakeup();
+			$this->finish();
 		}
 	}
 
@@ -352,7 +352,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->tpl->assign('req', null);
 			$this->tpl = null;
 		}
-		Daemon::log('onFinish -- ' . $_SERVER['REQUEST_URI']);
+		//Daemon::log('onFinish -- ' . $_SERVER['REQUEST_URI']);
 	}
 
 	public function __destruct() {

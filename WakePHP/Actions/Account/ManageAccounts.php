@@ -4,6 +4,8 @@ namespace WakePHP\Actions\Account;
 use WakePHP\Actions\Generic;
 use PHPDaemon\Request\Generic as Request;
 use PHPDaemon\Core\ComplexJob;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Clients\Mongo\Cursor;
 use WakePHP\Core\Request as WakePHPRequest;
 
@@ -49,17 +51,18 @@ class ManageAccounts extends Generic {
 				}
 
 				/** @noinspection PhpIllegalArrayKeyTypeInspection */
-				$this->req->appInstance->accounts->saveAccount([
-					'_id'   => Request::getString($_REQUEST['id']),
-					$column => $value = Request::getString($_REQUEST['value'])
-				], function ($lastError) use ($value) {
-					if ($lastError['updatedExisting']) {
+				$this->req->appInstance->accounts
+				->getAccount(['_id' => Request::getString($_REQUEST['id'])])
+				->attr($column, $value = Request::getString($_REQUEST['value']))
+				->save(function ($o) use ($value) {
+					Daemon::log(Debug::dump($o->lastError()));
+					if ($o->lastError(true)) {
 						$this->req->setResult(['success' => true, 'value' => $value]);
 					}
 					else {
 						$this->req->setResult(['success' => false, 'error' => 'Account not found.']);
 					}
-				}, true);
+				});
 
 				return;
 			}
@@ -93,19 +96,19 @@ class ManageAccounts extends Generic {
 			});
 
 			$job('countTotal', function ($jobname, $job) {
-				$this->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname) {
+				$this->req->appInstance->accounts->countAccount(function ($o, $n) use ($job, $jobname) {
 					/** @var ComplexJob $job */
-					$job->setResult($jobname, $result['n']);
+					$job->setResult($jobname, $n);
 				});
 			});
 
 			$job('countFiltered', function ($jobname, $job) use ($where, $limit) {
 				/** @var ComplexJob $job */
 				/** @var WakePHPRequest $job->req */
-				$this->req->appInstance->accounts->countAccounts(function ($result) use ($job, $jobname, $where) {
+				$this->req->appInstance->accounts->countAccount(function ($o, $n) use ($job, $jobname, $where) {
 					/** @var ComplexJob $job */
-					$job->setResult($jobname, $result['n']);
-				}, ['where' => $where]);
+					$job->setResult($jobname, $n);
+				}, $where);
 			});
 
 			$job('find', function ($jobname, $job) use ($where, $sort, $fields, $fieldNames, $field, $offset, $limit) {

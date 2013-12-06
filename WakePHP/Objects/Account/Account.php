@@ -26,6 +26,14 @@ class Account extends Generic {
 		$this->col = $this->orm->accounts;
 	}
 
+	public function delete() {
+		$this->set('deleted');
+	}
+	
+	public function undelete() {
+		$this->unsetProperty('deleted');
+	}
+
 	/**
 	 * @param $password
 	 * @return bool|string

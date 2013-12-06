@@ -89,7 +89,7 @@ class Message extends Generic {
 			}
 			$this->set('success', true);
 			$this->save(function() use ($cb) {
-				if ($this->getLastError(true)) {
+				if ($this->lastError(true)) {
 					call_user_func($cb, $this, true);
 				} else {
 					call_user_func($cb, $this, false, 0);
