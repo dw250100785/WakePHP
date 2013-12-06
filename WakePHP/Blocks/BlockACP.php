@@ -1,5 +1,7 @@
 <?php
 namespace WakePHP\Blocks;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 class BlockACP extends Block {
 

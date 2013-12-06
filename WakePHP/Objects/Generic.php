@@ -42,6 +42,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $protectedCall;
 
+	protected $safeMode = true;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
@@ -56,6 +58,11 @@ abstract class Generic implements \ArrayAccess {
 		elseif (is_array($objOrCb)) {
 			$this->create($objOrCb);
 		}
+	}
+
+	protected function safeMode($mode) {
+		$this->safeMode = (bool) $mode;
+		return $this;
 	}
 
 	protected function log($m) {
@@ -164,6 +171,7 @@ abstract class Generic implements \ArrayAccess {
 		$msg .= "UPDATE: ".Debug::dump($this->update) . "\n";
 		$msg .= "--------------------------";
 		Daemon::log($msg);
+		return $this;
 	}
 	public function toArray() {
 		return $this->obj;
@@ -522,16 +530,21 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->safeMode) {
 			if (!sizeof($this->cond)) {
 				$this->log('safe-mode: attempt to remove() with empty conditions');
-				call_user_func($cb, false);	
+				call_user_func($cb, $this, false);	
 				return;
 			}
 		}
-		$this->removeObject($cb);
+		$this->removeObject($cb === null ? null : function($lastError) use ($cb) {
+			$this->lastError = $lastError;
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+		});
 		$this->new = true;
 	}
 
 	protected function removeObject($cb) {
-		if (!sizeof($this->cond)) {
+		if ($this->cond === null) {
 			if ($cb !== null) {
 				call_user_func($cb, false);
 			}
@@ -560,12 +573,12 @@ abstract class Generic implements \ArrayAccess {
 				return;
 			}
 		}
-		$this->saveObject(function($lastError) use ($cb) {
+		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if ($cb !== null) {
 				call_user_func($cb, $this);
 			}
-
+			$this->lastError = [];
 		});
 		$this->update = [];
 	}
@@ -589,12 +602,12 @@ abstract class Generic implements \ArrayAccess {
 				return;
 			}
 		}
-		$this->saveObject(function($lastError) use ($cb) {
+		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if ($cb !== null) {
 				call_user_func($cb, $this);
 			}
-
+			$this->lastError = [];
 		});
 		$this->update = [];
 		$this->new = false;
@@ -605,9 +618,9 @@ abstract class Generic implements \ArrayAccess {
 			$this->col->insertOne($this->obj, $cb);
 		} else {
 			if ($this->multi) {
-				$this->col->upsertMulti($this->cond, $this->update, $cb);
+				$this->col->updateMulti($this->cond, $this->update, $cb);
 			} else {
-				$this->col->upsertOne($this->cond, $this->update, $cb);
+				$this->col->updateOne($this->cond, $this->update, $cb);
 			}
 		}
 	}

@@ -41,7 +41,7 @@ class Account extends Component {
 				};
 				if (isset($_SESSION['accountId'])) {
 					$this->appInstance->accounts->getAccountById($_SESSION['accountId'], function ($account) use ($authEvent, $cb) {
-						if (!$account) {
+						if (!$account->exists()) {
 							$this->appInstance->accounts->getAccountByName('Guest', $cb);
 							return;
 						}

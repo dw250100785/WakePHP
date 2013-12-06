@@ -27,11 +27,13 @@ class Account extends Generic {
 	}
 
 	public function delete() {
-		$this->set('deleted');
+		$this->set('deleted', true);
+		return $this;
 	}
 	
 	public function undelete() {
 		$this->unsetProperty('deleted');
+		return $this;
 	}
 
 	/**

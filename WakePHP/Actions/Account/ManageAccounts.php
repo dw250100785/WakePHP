@@ -52,7 +52,7 @@ class ManageAccounts extends Generic {
 
 				/** @noinspection PhpIllegalArrayKeyTypeInspection */
 				$this->req->appInstance->accounts
-				->getAccount(['_id' => Request::getString($_REQUEST['id'])])
+				->getAccount()->condSetId(Request::getString($_REQUEST['id']))
 				->attr($column, $value = Request::getString($_REQUEST['value']))
 				->save(function ($o) use ($value) {
 					Daemon::log(Debug::dump($o->lastError()));
@@ -116,7 +116,7 @@ class ManageAccounts extends Generic {
 					/** @var Cursor $cursor */
 					/** @var ComplexJob $job */
 					$accounts = [];
-					foreach ($cursor->items as $item) {
+					foreach ($cursor as $item) {
 						$account = [];
 						foreach ($fieldNames as $k) {
 							if (!isset($item[$k])) {
