@@ -6,10 +6,18 @@ use PHPDaemon\Core\Debug;
 use WakePHP\Core\Request;
 
 /**
- * Class WrongCondition
+ * Class WrongField
  * @package WakePHP\Actions
  * @dynamic_fields
  */
-class WrongCondition extends Generic {
+class WrongField extends Generic {
+	public $field;
 	public $silent = true;
+	public function field($f) {
+		$this->field = $f;
+		return $this;
+	}
+	public function toArray() {
+		return parent::toArray() + ['field' => $this->field];
+	}
 }

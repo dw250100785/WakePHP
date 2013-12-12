@@ -3,7 +3,7 @@ namespace WakePHP\Exceptions;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
-use WakePHP\Core\Request;
+use PHPDaemon\Core\ClassFinder;
 
 /**
  * Class Generic
@@ -11,5 +11,12 @@ use WakePHP\Core\Request;
  * @dynamic_fields
  */
 class Generic extends \Exception {
-	
+	protected $silent = false;
+	public function toArray() {
+		return [
+			'type' => ClassFinder::getClassBasename($this),
+			'code' => $this->getCode(),
+			'msg' => $this->getMessage(),
+		];
+	}
 }

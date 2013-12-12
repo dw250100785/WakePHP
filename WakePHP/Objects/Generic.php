@@ -74,12 +74,19 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function condSetId($id) {
+		if (func_num_args() === 2) {
+			$k = func_get_arg(0);
+			$id = func_get_arg(1);
+		} else {
+			$k = '_id';
+		}
+
 		if ($id instanceof \MongoId) {
-			$this->cond['_id'] = $id;
+			$this->cond[$k] = $id;
 			return $this;
 		}
-		if (is_string($id) && ctype_xdigit($id)) {
-			$this->cond['_id'] = new \MongoId($id);
+		if (is_string($id) && ctype_xdigit($id) && strlen($id) === 24) {
+			$this->cond[$k] = new \MongoId($id);
 			return $this;
 		}
 		throw new WrongCondition('condSetId: wrong value');

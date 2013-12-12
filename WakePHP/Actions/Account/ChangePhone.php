@@ -16,9 +16,8 @@ class ChangePhone extends Generic {
 
 	public function perform() {
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-			//$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
-			//return;
-
+			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			return;
 		}
 		$this->cmp->onAuth(function ($result) {
 			if (!$this->req->account['logged']) {

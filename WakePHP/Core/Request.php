@@ -133,13 +133,15 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function handleException($e) {
 		if ($this->cmpName !== null) {
-			$this->setResult(['exception' => [
+			$this->setResult(['exception' => is_callable([$e, 'toArray']) ? $e->toArray() : [
 				'type' => ClassFinder::getClassBasename($e),
 				'code' => $e->getCode(),
 				'msg' => $e->getMessage()]
 			]);
 			$this->finish();
-			Daemon::log('Debug: '.$e->getTraceAsString());
+			if (!isset($e->silent) || !$e->silent) {
+				Daemon::log('Debug: '.$e->getTraceAsString());
+			}
 			return true;
 		}
 	}
