@@ -19,8 +19,9 @@ class ManageAccountsDelete extends Generic {
 				$this->req->setResult(['success' => false, 'goLoginPage' => true]);
 				return;
 			}
-			$this->req->appInstance->accounts->getAccount()->condSetId(Request::getString($_REQUEST['id']))
-			->delete()->debug()->remove(function ($o) {
+			$this->req->appInstance->accounts->getAccount()
+			->condSetId(Request::getString($_REQUEST['id']))
+			->delete()->remove(function ($o) {
 				if ($o->lastError(true)) {
 					$this->req->setResult(['success' => true]);
 				}

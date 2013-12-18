@@ -30,6 +30,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $lastError;
 
+	protected $fields;
+
 	protected $col;
 
 	protected $multi = false;
@@ -71,6 +73,11 @@ abstract class Generic implements \ArrayAccess {
 
 	public function condSet($k, $v) {
 		$this->cond[$k] = $v;
+	}
+
+	public function fields($fields) {
+		$this->fields = $fields;
+		return $this;
 	}
 
 	public function condSetId($id) {
@@ -497,10 +504,12 @@ abstract class Generic implements \ArrayAccess {
 				'sort' => $this->sort,
 				'offset' => $this->offset,
 				'limit' => $this->limit,
+				'fields' => $this->fields,
 			]);
 		} else {
 			$this->col->findOne($cb, [
 				'where' => $this->cond,
+				'fields' => $this->fields,
 			]);
 		}
 	}

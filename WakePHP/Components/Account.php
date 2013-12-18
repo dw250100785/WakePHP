@@ -83,6 +83,7 @@ class Account extends Component {
 	 * @return bool
 	 */
 	public function checkReferer() {
+		return true;
 		if ($this->req->controller === 'ExternalAuthRedirect') {
 			return true;
 		}
