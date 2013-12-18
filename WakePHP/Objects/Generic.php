@@ -220,7 +220,9 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function set($k, $v) {
-		$this->obj[$k] = $v;
+		if ($this->obj !== null) {
+			$this->obj[$k] = $v;
+		}
 		if ($this->new) {
 			return $this;
 		}
@@ -233,10 +235,12 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function inc($k, $v = 1) {
-		if (!isset($this->obj[$k])) {
-			$this->obj[$k] = $v;
-		} else {
-			$this->obj[$k] += $v;
+		if ($this->obj !== null) {
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = $v;
+			} else {
+				$this->obj[$k] += $v;
+			}
 		}
 		if ($this->new) {
 			return $this;
@@ -254,10 +258,12 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function dec($k, $v = 1) {
-		if (!isset($this->obj[$k])) {
-			$this->obj[$k] = -$v;
-		} else {
-			$this->obj[$k] -= $v;
+		if ($this->obj !== null) {
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = -$v;
+			} else {
+				$this->obj[$k] -= $v;
+			}
 		}
 		if ($this->new) {
 			return $this;
@@ -275,16 +281,18 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function push($k, $v) {
-		if (isset($v['$each'])) {
-			foreach ($v['$each'] as $vv) {
-				$this->push($k, $vv);
+		if ($this->obj !== null) {
+			if (isset($v['$each'])) {
+				foreach ($v['$each'] as $vv) {
+					$this->push($k, $vv);
+				}
+				return $this;
 			}
-			return $this;
-		}
-		if (!isset($this->obj[$k])) {
-			$this->obj[$k] = [$v];
-		} else {
-			$this->obj[$k][] = $v;
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = [$v];
+			} else {
+				$this->obj[$k][] = $v;
+			}
 		}
 		if ($this->new) {
 			return $this;
@@ -304,19 +312,21 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function addToSet($k, $v) {
-		if (isset($v['$each'])) {
-			foreach ($v['$each'] as $vv) {
-				$this->addToSet($k, $vv);
-			}
-			return $this;
-		}
-		if (!isset($this->obj[$k])) {
-			$this->obj[$k] = [$v];
-		} else {
-			if (in_array($v, $this->obj[$k], true)) {
+		if ($this->obj !== null) {
+			if (isset($v['$each'])) {
+				foreach ($v['$each'] as $vv) {
+					$this->addToSet($k, $vv);
+				}
 				return $this;
 			}
-			$this->obj[$k][] = $v;
+			if (!isset($this->obj[$k])) {
+				$this->obj[$k] = [$v];
+			} else {
+				if (in_array($v, $this->obj[$k], true)) {
+					return $this;
+				}
+				$this->obj[$k][] = $v;
+			}
 		}
 		if ($this->new) {
 			return $this;
@@ -519,11 +529,12 @@ abstract class Generic implements \ArrayAccess {
 			if ($cb !== null) {
 				call_user_func($cb, $this, false);
 			}
-			return;
+			return $this;
 		}
 		$this->countObject(function ($res) use ($cb) {
 			call_user_func($cb, $this, isset($res['n']) ? $res['n'] : false);
 		});
+		return $this;
 	}
 
 	protected function countObject($cb) {
@@ -609,13 +620,13 @@ abstract class Generic implements \ArrayAccess {
 				if ($cb !== null) {
 					call_user_func($cb, $this);
 				}
-				return;
+				return $this;
 			}
 			if (!sizeof($this->update)) {
 				if ($cb !== null) {
 					call_user_func($cb, $this);
 				}
-				return;
+				return $this;
 			}
 		}
 		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
@@ -627,6 +638,7 @@ abstract class Generic implements \ArrayAccess {
 		});
 		$this->update = [];
 		$this->new = false;
+		return $this;
 	}
 
 	protected function saveObject($cb) {
