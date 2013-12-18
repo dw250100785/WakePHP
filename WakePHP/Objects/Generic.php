@@ -67,6 +67,10 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
+	public function beenUpdated() {
+		return sizeof($this->update) > 0;
+	}
+
 	protected function log($m) {
 		Daemon::log(get_class($this).': ' . $m);
 	}
@@ -173,7 +177,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->protectedCall = false;
 
 	}
-	
+
 	protected function construct() {}
 
 	public function debug($point = null) {
@@ -198,10 +202,17 @@ abstract class Generic implements \ArrayAccess {
 
 	public function listSet($k, $v) {
 		if (is_string($v)) {
-			$v = array_filter(function($i) {return $i === '';}, preg_split('~\s*,\s*~', $v));
+			$v = preg_split('~\s*,\s*~', $v);
 		}
-		$this->set($k, $v);
-	} 
+		return $this->set($k, array_filter($v, function($i) {return $i !== '';}));
+	}
+
+	public function uniqListSet($k, $v) {
+		if (is_string($v)) {
+			$v = preg_split('~\s*,\s*~', $v);
+		}
+		return $this->set($k, array_unique(array_filter($v, function($i) {return $i !== '';})));
+	}
 	
 	public function lastError($bool = false) {
 		if ($bool) {
@@ -418,9 +429,11 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function unsetProperty($k) {
-		unset($this->obj[$k]);
-		if ($this->new) {
-			return $this;
+		if ($this->obj !== null) {
+			unset($this->obj[$k]);
+			if ($this->new) {
+				return $this;
+			}
 		}
 		if (!isset($this->update['$unset'])) {
 			$this->update['$unset'] = [$k => 1];
@@ -430,7 +443,9 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function setProperty($k, $v) {
-		$this->obj[$k] = $v;
+		if ($this->obj !== null) {
+			$this->obj[$k] = $v;
+		}
 		if ($this->new) {
 			return $this;
 		}
@@ -466,8 +481,7 @@ abstract class Generic implements \ArrayAccess {
 		}
 		if (strncmp($method, 'set', 3) === 0) {
 			$name = lcfirst(substr($method, 3));
-			$v = sizeof($args) ? $args[0] : null;
-			return $this->setProperty($name, $v);
+			return $this->setProperty($name, sizeof($args) ? $args[0] : null);
 		}
 		if (strncmp($method, 'is', 2) === 0) {
 			$name = lcfirst(substr($method, 2));
@@ -477,7 +491,35 @@ abstract class Generic implements \ArrayAccess {
 			$name = lcfirst(substr($method, 5));
 			return $this->unsetProperty($name);
 		}
+		if (strncmp($method, 'touch', 5) === 0) {
+			$name = lcfirst(substr($method, 5));
+			return $this->touch($name, sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
+		}
+		if (strncmp($method, 'microtouch', 10) === 0) {
+			$name = lcfirst(substr($method, 10));
+			return $this->microtouch($name, sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
+		}
 		throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
+	}
+
+	public function touch($k, $val = null, $ifUpdated = false ) {
+		if ($ifUpdated && !$this->beenUpdated()) {
+			return $this;
+		}
+		if ($val === null) {
+			$val = time();
+		}
+		return $this->set($k, $val);
+	}
+
+	public function microtouch($k, $val = null, $ifUpdated = false) {
+		if ($ifUpdated && !$this->beenUpdated()) {
+			return $this;
+		}
+		if ($val === null) {
+			$val = microtime(true);
+		}
+		return $this->set($k, $val);
 	}
 
 	public function fetch($cb, $all = true) {
