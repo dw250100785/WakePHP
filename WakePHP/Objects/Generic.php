@@ -49,6 +49,10 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $onSave;
 
+	protected $onBeforeSave;
+
+	protected $preventDefaut = false;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
@@ -72,6 +76,13 @@ abstract class Generic implements \ArrayAccess {
 		$this->onSave->push($cb);
 	}
 
+	protected function onBeforeSave($cb) {
+		if ($this->onBeforeSave === null) {
+			$this->onBeforeSave = new StackCallbacks;
+		}
+		$this->onBeforeSave->push($cb);
+	}
+
 	protected function safeMode($mode) {
 		$this->safeMode = (bool) $mode;
 		return $this;
@@ -92,6 +103,16 @@ abstract class Generic implements \ArrayAccess {
 	public function fields($fields) {
 		$this->fields = $fields;
 		return $this;
+	}
+
+	public function fetchUpdatedValue($param) {
+		if (isset($this->obj[$param])) {
+			return $this->obj[$param];
+		}
+		if (isset($this->update['$set'][$param])) {
+			return $this->update['$set'][$param];
+		}
+		return null;
 	}
 
 	public function condSetId($id) {
@@ -302,6 +323,7 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function push($k, $v) {
+		Daemon::log(Debug::dump([$k, $v]));
 		if ($this->obj !== null) {
 			if (isset($v['$each'])) {
 				foreach ($v['$each'] as $vv) {
@@ -325,7 +347,6 @@ abstract class Generic implements \ArrayAccess {
 			else {
 				$this->update['$push'][$k] = ['$each' => [$v]];
 			}
-			$this->update['$push'][$k] ['$each'] = [$v];
 		} else {
 			$this->update['$push'][$k]['$each'][] = $v;
 		}
@@ -343,10 +364,9 @@ abstract class Generic implements \ArrayAccess {
 			if (!isset($this->obj[$k])) {
 				$this->obj[$k] = [$v];
 			} else {
-				if (in_array($v, $this->obj[$k], true)) {
-					return $this;
+				if (!in_array($v, $this->obj[$k], true)) {
+					$this->obj[$k][] = $v;
 				}
-				$this->obj[$k][] = $v;
 			}
 		}
 		if ($this->new) {
@@ -354,12 +374,11 @@ abstract class Generic implements \ArrayAccess {
 		}
 		if (!isset($this->update['$addToSet'][$k]['$each'])) {
 			if (!isset($this->update['$addToSet'])) {
-				$this->update['$addToSet'] = [$k => ['$addToSet' => [$v]]];
+				$this->update['$addToSet'] = [$k => ['$each' => [$v]]];
 			}
 			else {
-				$this->update['$addToSet'][$k] = ['$addToSet' => [$v]];
+				$this->update['$addToSet'][$k] = ['$each' => [$v]];
 			}
-			$this->update['$addToSet'][$k] ['$each'] = [$v];
 		} else {
 			$this->update['$addToSet'][$k]['$each'][] = $v;
 		}
@@ -486,28 +505,28 @@ abstract class Generic implements \ArrayAccess {
 	 */
 	public function __call($method, $args) {
 		if (strncmp($method, 'get', 3) === 0) {
-			$name = lcfirst(substr($method, 3));
-			return $this->getProperty($name);
+			return $this->getProperty(lcfirst(substr($method, 3)));
 		}
 		if (strncmp($method, 'set', 3) === 0) {
-			$name = lcfirst(substr($method, 3));
-			return $this->setProperty($name, sizeof($args) ? $args[0] : null);
+			return $this->setProperty(lcfirst(substr($method, 3)), sizeof($args) ? $args[0] : null);
+		}
+		if (strncmp($method, 'push', 4) === 0) {
+			return $this->push(lcfirst(substr($method, 4)), sizeof($args) ? $args[0] : null);
+		}
+		if (strncmp($method, 'addToSet', 8) === 0) {
+			return $this->addToSet(lcfirst(substr($method, 8)), sizeof($args) ? $args[0] : null);
 		}
 		if (strncmp($method, 'is', 2) === 0) {
-			$name = lcfirst(substr($method, 2));
-			return (bool) $this->getProperty($name);
+			return (bool) $this->getProperty(lcfirst(substr($method, 2)));
 		}
 		if (strncmp($method, 'unset', 5) === 0) {
-			$name = lcfirst(substr($method, 5));
-			return $this->unsetProperty($name);
+			return $this->unsetProperty(lcfirst(substr($method, 5)));
 		}
 		if (strncmp($method, 'touch', 5) === 0) {
-			$name = lcfirst(substr($method, 5));
-			return $this->touch($name, sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
+			return $this->touch(lcfirst(substr($method, 5)), sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
 		}
 		if (strncmp($method, 'microtouch', 10) === 0) {
-			$name = lcfirst(substr($method, 10));
-			return $this->microtouch($name, sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
+			return $this->microtouch(lcfirst(substr($method, 10)), sizeof($args) ? $args[0] : null, sizeof($args) > 2 ? $args[1] : null);
 		}
 		throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 	}
@@ -662,6 +681,10 @@ abstract class Generic implements \ArrayAccess {
 		$this->update = [];
 	}
 
+	protected function preventDefault() {
+		$this->preventDefault = true;
+	}
+
 	public function save($cb = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
@@ -680,6 +703,16 @@ abstract class Generic implements \ArrayAccess {
 				}
 				return $this;
 			}
+		}
+		if ($this->onBeforeSave !== null) {
+			$this->onBeforeSave->executeAll($this);
+		}
+		if ($this->preventDefault) {
+			if ($cb !== null) {
+				$this->onSave($cb);
+			}
+			$this->preventDefault = false;
+			return $this;
 		}
 		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
