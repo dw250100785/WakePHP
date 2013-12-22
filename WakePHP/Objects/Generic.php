@@ -4,6 +4,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use WakePHP\Exceptions\WrongCondition;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Class Generic
@@ -46,6 +47,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $safeMode = true;
 
+	protected $onSave;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
@@ -60,6 +63,13 @@ abstract class Generic implements \ArrayAccess {
 		elseif (is_array($objOrCb)) {
 			$this->create($objOrCb);
 		}
+	}
+
+	protected function onSave($cb) {
+		if ($this->onSave === null) {
+			$this->onSave = new StackCallbacks;
+		}
+		$this->onSave->push($cb);
 	}
 
 	protected function safeMode($mode) {
@@ -676,6 +686,9 @@ abstract class Generic implements \ArrayAccess {
 			if ($cb !== null) {
 				call_user_func($cb, $this);
 			}
+			if ($this->onSave !== null) {
+				$this->onSave->executeAll($this);
+			}
 			$this->lastError = [];
 		});
 		$this->update = [];
@@ -685,7 +698,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function saveObject($cb) {
 		if ($this->new) {
-			$this->col->insertOne($this->obj, $cb);
+			$this->obj['_id'] = $this->col->insertOne($this->obj, $cb);
 		} else {
 			if ($this->multi) {
 				$this->col->updateMulti($this->cond, $this->update, $cb);
@@ -722,6 +735,9 @@ abstract class Generic implements \ArrayAccess {
 	 * @return void
 	 */
 	public function offsetSet($k, $v) {
+		if (strlen($k) === 3 && strtolower($k) === '_id') {
+			$k = 'id';
+		}
 		call_user_func([$this, 'set' . ucfirst($k)], $v);
 	}
 

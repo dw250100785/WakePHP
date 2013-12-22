@@ -27,6 +27,9 @@ abstract class Generic {
 	abstract function run();
 
 	public function updateProgress($progress, $cb = null) {
+		if ($this->progress === $progress) {
+			return;
+		}
 		$this->progress = $progress;
 		$this->parent->jobqueue->updateProgress($this->_id, $progress, $this->status, $cb);
 
