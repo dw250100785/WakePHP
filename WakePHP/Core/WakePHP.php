@@ -5,6 +5,7 @@ use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Core\ClassFinder;
 use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
 use WakePHP\ORM\ExternalAuthTokens;
@@ -171,6 +172,15 @@ class WakePHP extends AppInstance {
 			ob_end_clean();
 			$cb($r);
 		});
+	}
+
+	public function getObject($type, $cond = null, $objOrCb = null) {
+		$class = ClassFinder::find($type, null, 'WakePHP\\Objects');
+		if (!class_exists($class)) {
+			Daemon::log(get_class($this) . ': undefined class: ' . $class);
+			return false;
+		}
+		return new $class($cond, $objOrCb, $class::_getORM($this));
 	}
 
 	protected function fakeRequest() { // @TODO: refactor this shit

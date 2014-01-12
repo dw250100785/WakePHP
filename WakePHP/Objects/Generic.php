@@ -4,6 +4,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use WakePHP\Exceptions\WrongCondition;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**
@@ -14,6 +15,8 @@ abstract class Generic implements \ArrayAccess {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	
 	protected $orm;
+
+	protected static $ormName;
 
 	protected $update = [];
 
@@ -92,12 +95,21 @@ abstract class Generic implements \ArrayAccess {
 		return sizeof($this->update) > 0;
 	}
 
+	public static function _getORM($appInstance) {
+		$k = lcfirst(static::$ormName);
+		return isset($appInstance->{$k}) ? $appInstance->{$k} : null;
+	}
+
+	public static function ormInit($orm) {
+	}
+
 	protected function log($m) {
 		Daemon::log(get_class($this).': ' . $m);
 	}
 
 	public function condSet($k, $v) {
 		$this->cond[$k] = $v;
+		return $this;
 	}
 
 	public function fields($fields) {
@@ -188,7 +200,10 @@ abstract class Generic implements \ArrayAccess {
 
     }
 
-	public function limit($limit, $offset = null) {
+	public function limit($limit = null, $offset = null) {
+		if (func_num_args() === 0) {
+			return $this->limit;
+		}
 		$this->limit = $limit;
 		if ($offset !== null) {
 			$this->offset = $offset;
@@ -196,7 +211,10 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	public function offset($offset) {
+	public function offset($offset = 0) {
+		if (func_num_args() === 0) {
+			return $this->offset;
+		}
 		$this->offset = $offset;
 		return $this;
 	}
@@ -323,7 +341,6 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function push($k, $v) {
-		Daemon::log(Debug::dump([$k, $v]));
 		if ($this->obj !== null) {
 			if (isset($v['$each'])) {
 				foreach ($v['$each'] as $vv) {
@@ -349,6 +366,34 @@ abstract class Generic implements \ArrayAccess {
 			}
 		} else {
 			$this->update['$push'][$k]['$each'][] = $v;
+		}
+		return $this;
+	}
+
+	protected function pull($k, $v) {
+		if ($this->obj !== null) {
+			if (isset($v['$each'])) {
+				foreach ($v['$each'] as $vv) {
+					$this->pull($k, $vv);
+				}
+				return $this;
+			}
+			if (isset($this->obj[$k])) {
+				$this->obj[$k] = array_diff_key($v, [$vv => null]);
+			}
+		}
+		if ($this->new) {
+			return $this;
+		}
+		if (!isset($this->update['$pull'][$k]['$each'])) {
+			if (!isset($this->update['$pull'])) {
+				$this->update['$pull'] = [$k => ['$each' => [$v]]];
+			}
+			else {
+				$this->update['$pull'][$k] = ['$each' => [$v]];
+			}
+		} else {
+			$this->update['$pull'][$k]['$each'][] = $v;
 		}
 		return $this;
 	}
@@ -513,6 +558,9 @@ abstract class Generic implements \ArrayAccess {
 		if (strncmp($method, 'push', 4) === 0) {
 			return $this->push(lcfirst(substr($method, 4)), sizeof($args) ? $args[0] : null);
 		}
+		if (strncmp($method, 'pull', 4) === 0) {
+			return $this->pull(lcfirst(substr($method, 4)), sizeof($args) ? $args[0] : null);
+		}
 		if (strncmp($method, 'addToSet', 8) === 0) {
 			return $this->addToSet(lcfirst(substr($method, 8)), sizeof($args) ? $args[0] : null);
 		}
@@ -550,7 +598,9 @@ abstract class Generic implements \ArrayAccess {
 		}
 		return $this->set($k, $val);
 	}
-
+	public function fetchMulti($cb, $all = true) {
+		return $this->multi()->fetch($cb, $all);
+	}
 	public function fetch($cb, $all = true) {
 		$list = new GenericIterator($this, $cb, $this->orm);
 		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
@@ -580,13 +630,17 @@ abstract class Generic implements \ArrayAccess {
 			Daemon::log(get_class($this). Debug::backtrace());
 		}
 		if ($this->multi) {
-			$this->col->find($cb, $params = [
+			$params = [
 				'where' => $this->cond,
 				'sort' => $this->sort,
 				'offset' => $this->offset,
 				'limit' => $this->limit,
 				'fields' => $this->fields,
-			]);
+			];
+			if (!is_array($params['sort'])) {
+				unset($params['sort']);
+			}
+			$this->col->find($cb, $params);
 		} else {
 			$this->col->findOne($cb, [
 				'where' => $this->cond,
@@ -761,6 +815,10 @@ abstract class Generic implements \ArrayAccess {
 		return call_user_func([$this, 'get' . ucfirst($k)]);;
 	}
 
+	public function setId($v) {
+		return $this->set('_id', $v);
+	}
+
 	/**
 	 * Set property
 	 * @param string Property name
@@ -768,9 +826,6 @@ abstract class Generic implements \ArrayAccess {
 	 * @return void
 	 */
 	public function offsetSet($k, $v) {
-		if (strlen($k) === 3 && strtolower($k) === '_id') {
-			$k = 'id';
-		}
 		call_user_func([$this, 'set' . ucfirst($k)], $v);
 	}
 

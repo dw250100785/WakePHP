@@ -17,6 +17,7 @@ class Message extends Generic {
 	}
 
 	public static function ormInit($orm) {
+		parent::ormInit($orm);
 		$orm->messages  = $orm->appInstance->db->{$orm->appInstance->dbname . '.smsmessages'};
 		$orm->messages->ensureIndex(['phone' => 1]);
 		$orm->messages->ensureIndex(['accountId' => 1]);

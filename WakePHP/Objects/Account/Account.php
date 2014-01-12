@@ -13,6 +13,7 @@ use WakePHP\Objects\Generic;
 class Account extends Generic {
 
 	public static function ormInit($orm) {
+		parent::ormInit($orm);
 		$orm->accounts  = $orm->appInstance->db->{$orm->appInstance->dbname . '.accounts'};
 		$orm->accounts->ensureIndex(array('email' => 1), array('unique' => true));
 		$orm->accounts->ensureIndex(array('unifiedemail' => 1), array('unique' => true));
@@ -111,6 +112,9 @@ class Account extends Generic {
 		$this->set('email', $value);
 		$this->set('unifiedemail', $this->orm->unifyEmail($value));
 		return $this;
+	}
+	public function getAvailableSpace() {
+		return 1024*1024*1024*10;
 	}
 	public function setAclgroups($value) {
 		$this->set('aclgroups', array_filter(is_string($value) ? preg_split('~\s*[,;]\s*~s', $value) : $value, 'strlen'));
