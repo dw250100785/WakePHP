@@ -35,7 +35,7 @@ class Authentication extends Generic {
 						['unifiedemail' => $this->appInstance->accounts->unifyEmail($username)],
 					]
 				], function ($account) {
-					if (!$account) {
+					if (!$account->exists()) {
 						$this->req->setResult([
 							'success' => false,
 							'errors'  => [
@@ -53,12 +53,13 @@ class Authentication extends Generic {
 						]);
 						return;
 					}
-					$this->cmp->loginAs($account);
-					$r = ['success' => true];
-					if (isset($account['confirmationcode'])) {
-						$r['needConfirm'] = true;
-					}
-					$this->req->setResult($r);
+					$this->cmp->loginAs($account, function() use ($account) {
+						$r = ['success' => true];
+						if (isset($account['confirmationcode'])) {
+							$r['needConfirm'] = true;
+						}
+						$this->req->setResult($r);
+					});
 				});
 		});
 	}

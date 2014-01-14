@@ -489,7 +489,7 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function getId() {
-		return $this->obj['_id'];
+		return isset($this->obj['_id']) ? $this->obj['_id'] : null;
 	}
 
 	/**
@@ -644,6 +644,7 @@ abstract class Generic implements \ArrayAccess {
 		} else {
 			$this->col->findOne($cb, [
 				'where' => $this->cond,
+				'sort' => $this->sort,
 				'fields' => $this->fields,
 			]);
 		}

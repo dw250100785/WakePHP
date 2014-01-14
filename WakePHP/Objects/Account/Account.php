@@ -27,6 +27,10 @@ class Account extends Generic {
 		$this->col = $this->orm->accounts;
 	}
 
+	public function setLogged() {
+		return $this;
+	}
+
 	public function delete() {
 		$this->set('deleted', true);
 		return $this;

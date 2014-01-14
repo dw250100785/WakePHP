@@ -110,6 +110,7 @@ trait Sessions {
 				$this->attrs->session['expires'] = time() + $this->attrs->session['ttl'];
 			}
 			$this->appInstance->sessions->saveSession($this->attrs->session, $cb);
+			$this->updatedSession = false;
 		} else {
 			if ($cb !== null) {
 				call_user_func($cb);

@@ -45,11 +45,13 @@ class Account extends Component {
 							$this->appInstance->accounts->getAccountByName('Guest', $cb);
 							return;
 						}
-						if (isset($account['ttlSession']) && $_SESSION['ttl'] !== $account['ttlSession']) {
-							$_SESSION['ttl'] = $account['ttlSession'];
-							$this->req->updatedSession = true;
+						if (!isset($_SESSION['remember'])) {
+							if (isset($account['ttlSession']) && $_SESSION['ttl'] !== $account['ttlSession']) {
+								$_SESSION['ttl'] = $account['ttlSession'];
+								$this->req->updatedSession = true;
+							}
+							$this->req->sessionKeepalive();
 						}
-						$this->req->sessionKeepalive();
 						$cb($account);
 					});
 				}
@@ -115,17 +117,21 @@ class Account extends Component {
 	 * @param $account
 	 * @param null $cb
 	 */
-	public function loginAs($account, $cb = null) {
+	public function loginAs($account, $cb = null, $remember = true) {
 		if ($account) {
 			$_SESSION['accountId']     = $account['_id'];
 			$_SESSION['ltime'] = time();
+			if ($remember) {
+				$_SESSION['remember'] = true;
+				$_SESSION['ttl'] = 60*60*24*365;
+			} else {
+				unset($_SESSION['remember']);
+			}
 		} else {
-			unset($_SESSION['accountId'], $_SESSION['ltime']);
+			unset($_SESSION['accountId'], $_SESSION['ltime'], $_SESSION['remember']);
 		}
 		$this->req->updatedSession = true;
-		if ($cb !== null) {
-			call_user_func($cb);
-		}
+		$this->req->sessionCommit($cb);
 	}
 
 	/**
