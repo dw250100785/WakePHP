@@ -55,8 +55,12 @@ abstract class Generic {
 		elseif (strncmp($method, 'new', 3) === 0) {
 			$type = substr($method, 3);
 			$attrs = sizeof($args) ? $args[0] : null;
+			$cb = sizeof($args) > 1 ? $args[1] : null;
 			if ($obj = $this->getObject($type)) {
 				$obj->create($attrs);
+				if ($cb !== null) {
+					$obj->save($cb);
+				}
 				return $obj;
 			}
 		}

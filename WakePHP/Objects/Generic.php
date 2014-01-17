@@ -20,11 +20,13 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $update = [];
 
-	protected $insert;
+	protected $upsertMode = false;
 
 	protected $obj;
 
 	protected $cond;
+
+	protected $condDescr;
 
 	protected $new = false;
 
@@ -56,6 +58,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $preventDefaut = false;
 
+	protected $writeConcerns = null;
+
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
@@ -70,6 +74,16 @@ abstract class Generic implements \ArrayAccess {
 		elseif (is_array($objOrCb)) {
 			$this->create($objOrCb);
 		}
+	}
+	public function bulk() {
+		return new GenericBulk($this, $this->col);
+	}
+	public function condDescr($a = null) {
+		if (func_num_args() === 0) {
+			return $this->condDescr;
+		}
+		$this->condDescr = $a;
+		return $this;
 	}
 
 	protected function onSave($cb) {
@@ -283,7 +297,7 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->obj !== null) {
 			$this->obj[$k] = $v;
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$set'])) {
@@ -302,7 +316,7 @@ abstract class Generic implements \ArrayAccess {
 				$this->obj[$k] += $v;
 			}
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$inc'])) {
@@ -325,7 +339,7 @@ abstract class Generic implements \ArrayAccess {
 				$this->obj[$k] -= $v;
 			}
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$inc'])) {
@@ -354,7 +368,7 @@ abstract class Generic implements \ArrayAccess {
 				$this->obj[$k][] = $v;
 			}
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$push'][$k]['$each'])) {
@@ -382,7 +396,7 @@ abstract class Generic implements \ArrayAccess {
 				$this->obj[$k] = array_diff_key($v, [$vv => null]);
 			}
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$pull'][$k]['$each'])) {
@@ -414,7 +428,7 @@ abstract class Generic implements \ArrayAccess {
 				}
 			}
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$addToSet'][$k]['$each'])) {
@@ -505,7 +519,7 @@ abstract class Generic implements \ArrayAccess {
 	protected function unsetProperty($k) {
 		if ($this->obj !== null) {
 			unset($this->obj[$k]);
-			if ($this->new) {
+			if ($this->new && !$this->upsertMode) {
 				return $this;
 			}
 		}
@@ -520,7 +534,7 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->obj !== null) {
 			$this->obj[$k] = $v;
 		}
-		if ($this->new) {
+		if ($this->new && !$this->upsertMode) {
 			return $this;
 		}
 		if (!isset($this->update['$set'])) {
@@ -740,7 +754,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->preventDefault = true;
 	}
 
-	public function save($cb = null) {
+	public function save($cb = null, GenericBulk $bulk = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
 			$this->extractCondFrom($this->obj);
@@ -769,7 +783,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->preventDefault = false;
 			return $this;
 		}
-		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
+		$w = $cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if ($cb !== null) {
 				call_user_func($cb, $this);
@@ -778,20 +792,32 @@ abstract class Generic implements \ArrayAccess {
 				$this->onSave->executeAll($this);
 			}
 			$this->lastError = [];
-		});
+		};
+		if ($bulk !== null) {
+			$bulk->add($this->obj, $w);
+		} else {
+			$this->saveObject($w);
+		}
 		$this->update = [];
 		$this->new = false;
 		return $this;
 	}
-
 	protected function saveObject($cb) {
 		if ($this->new) {
-			$this->obj['_id'] = $this->col->insertOne($this->obj, $cb);
+			if ($this->upsertMode) {
+				$this->obj['_id'] = $this->col->upsertOne($this->cond, $this->update, $cb, $this->writeConcerns);
+			} else {
+				$this->obj['_id'] = $this->col->insertOne($this->obj, $cb, $this->writeConcerns);
+			}
 		} else {
 			if ($this->multi) {
-				$this->col->updateMulti($this->cond, $this->update, $cb);
+				$this->col->updateMulti($this->cond, $this->update, $cb, $this->writeConcerns);
 			} else {
-				$this->col->updateOne($this->cond, $this->update, $cb);
+				if ($this->upsertMode) {
+					$this->col->upsertOne($this->cond, $this->update, $cb, $this->writeConcerns);
+				} else {
+					$this->col->updateOne($this->cond, $this->update, $cb, $this->writeConcerns);
+				}
 			}
 		}
 	}
