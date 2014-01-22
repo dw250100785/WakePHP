@@ -356,7 +356,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function push($k, $v) {
 		if ($this->obj !== null) {
-			if (isset($v['$each'])) {
+			if (is_array($v) && isset($v['$each'])) {
 				foreach ($v['$each'] as $vv) {
 					$this->push($k, $vv);
 				}
@@ -386,7 +386,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function pull($k, $v) {
 		if ($this->obj !== null) {
-			if (isset($v['$each'])) {
+			if (is_array($v) && isset($v['$each'])) {
 				foreach ($v['$each'] as $vv) {
 					$this->pull($k, $vv);
 				}
@@ -414,7 +414,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function addToSet($k, $v) {
 		if ($this->obj !== null) {
-			if (isset($v['$each'])) {
+			if (is_array($v) && isset($v['$each'])) {
 				foreach ($v['$each'] as $vv) {
 					$this->addToSet($k, $vv);
 				}
@@ -503,7 +503,7 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function getId() {
-		return isset($this->obj['_id']) ? $this->obj['_id'] : null;
+		return isset($this->obj['_id']) ? $this->obj['_id'] : (isset($this->cond['_id']) ? $this->cond['_id'] : null);
 	}
 
 	/**
@@ -616,6 +616,9 @@ abstract class Generic implements \ArrayAccess {
 		return $this->multi()->fetch($cb, $all);
 	}
 	public function fetch($cb, $all = true) {
+		if ($cb === null) {
+			return $this;
+		}
 		$list = new GenericIterator($this, $cb, $this->orm);
 		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
 			$list->_cursor($cursor, $all);
@@ -794,7 +797,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->lastError = [];
 		};
 		if ($bulk !== null) {
-			$bulk->add($this->obj, $w);
+			$bulk->add($this->obj, $w, $this);
 		} else {
 			$this->saveObject($w);
 		}

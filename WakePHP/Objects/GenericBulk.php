@@ -5,7 +5,6 @@ use WakePHP\Exceptions\WrongCondition;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\ClassFinder;
-use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Class GenericBulk
@@ -14,6 +13,8 @@ use PHPDaemon\Structures\StackCallbacks;
 class GenericBulk {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	
+	protected $obj;
+
 	protected $col;
 
 	protected $bulk;
@@ -27,13 +28,13 @@ class GenericBulk {
 	public function __construct(Generic $obj, $col) {
 		$this->obj = $obj;
 		$this->col = $col;
-		$this->bulk = new SplStack;
-		$this->callbacks = new StackCallbacks;
+		$this->bulk = new \SplStack;
+		$this->callbacks = new \SplStack;
 	}
 
-	public function add($doc, $cb = null) {
+	public function add($doc, $cb = null, $obj = null) {
 		$this->bulk->push($doc);
-		$this->callbacks->push($cb);
+		$this->callbacks->push([$cb, $obj]);
 	}
 
 	public function count() {
@@ -51,10 +52,22 @@ class GenericBulk {
 			++$n;
 			$docs[] = $this->bulk->shift();
 		}
+		if (!$n) {
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+			return $n;
+		}
 		$this->col->insertMulti($docs, function($lastError) use ($n, $cb) {
 			$this->lastError = $lastError;
 			for ($i = 0; $i < $n; ++$i) {
-				$this->callbacks->executeOne($this);
+				if ($this->callbacks->isEmpty()) {
+					break;
+				}
+				list ($qcb, $obj) = $this->callbacks->shift();
+				if ($qcb !== null) {
+					call_user_func($qcb, $obj);
+				}
 			}
 			if ($cb !== null) {
 				call_user_func($cb, $this);
