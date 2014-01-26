@@ -2,6 +2,7 @@
 namespace WakePHP\Objects;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use WakePHP\Exceptions\WrongCondition;
+use WakePHP\Exceptions\WrongState;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\ClassFinder;
@@ -26,7 +27,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $cond;
 
-	protected $condDescr;
+	protected $describe = [];
 
 	protected $new = false;
 
@@ -56,7 +57,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $onBeforeSave;
 
-	protected $preventDefaut = false;
+	protected $preventDefault = false;
 
 	protected $writeConcerns = null;
 
@@ -78,12 +79,21 @@ abstract class Generic implements \ArrayAccess {
 	public function bulk() {
 		return new GenericBulk($this, $this->col);
 	}
-	public function condDescr($a = null) {
-		if (func_num_args() === 0) {
-			return $this->condDescr;
+	public function describe($m = null, $n = null) {
+		$c = func_num_args();
+		if ($c === 1) {
+			if (is_array($m)) {
+				foreach ($m as $k => $v) {
+					$this->describe[$k] = $v;
+				}
+				return $this;
+			}
+			return $this->describe[$m];
+		} elseif ($c === 2) {
+			$this->describe[$m] = $n;
+			return $this;
 		}
-		$this->condDescr = $a;
-		return $this;
+		return $this->describe;
 	}
 
 	protected function onSave($cb) {
@@ -121,8 +131,11 @@ abstract class Generic implements \ArrayAccess {
 		Daemon::log(get_class($this).': ' . $m);
 	}
 
-	public function condSet($k, $v) {
+	public function condSet($k, $v, $d = null) {
 		$this->cond[$k] = $v;
+		if ($d !== null) {
+			$this->describe[$k] = $d;
+		}
 		return $this;
 	}
 
@@ -219,8 +232,10 @@ abstract class Generic implements \ArrayAccess {
 			return $this->limit;
 		}
 		$this->limit = $limit;
+		$this->describe['limit'] = $limit;
 		if ($offset !== null) {
 			$this->offset = $offset;
+			$this->describe['offset'] = $offset;
 		}
 		return $this;
 	}
@@ -230,6 +245,7 @@ abstract class Generic implements \ArrayAccess {
 			return $this->offset;
 		}
 		$this->offset = $offset;
+		$this->describe['offset'] = $offset;
 		return $this;
 	}
 
@@ -544,17 +560,14 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	public function __get($k) {
-		return call_user_func([$this, 'get' . ucfirst($k)]);
+	public function _clone() {
+		$o = clone $this;
+		$o->_cloned();
 	}
-	public function __isset($k) {
-		return call_user_func([$this, 'isset' . ucfirst($k)]);
-	}
-	public function __set($k, $v) {
-		call_user_func([$this, 'set' . ucfirst($k)], $v);
-	}
-	public function __unset($k) {
-		call_user_func([$this, 'unset' . ucfirst($k)]);
+
+	public function _cloned() {
+		$this->new = true;
+		$this->obj['_id'] = new MongoId;
 	}
 
 	/**
@@ -563,6 +576,9 @@ abstract class Generic implements \ArrayAccess {
 	 * @return null|mixed
 	 */
 	public function __call($method, $args) {
+		if ($method === 'clone') {
+			return $this->_clone();
+		}
 		if (strncmp($method, 'get', 3) === 0) {
 			return $this->getProperty(lcfirst(substr($method, 3)));
 		}
@@ -615,11 +631,22 @@ abstract class Generic implements \ArrayAccess {
 	public function fetchMulti($cb, $all = true) {
 		return $this->multi()->fetch($cb, $all);
 	}
+	public function fetchOnce($cb, $all = true) {
+		if ($this->obj !== null) {
+			call_user_func($cb, $this);
+		} else {
+			$this->fetch($cb, $all);
+		}
+
+		return $this;
+	}
 	public function fetch($cb, $all = true) {
 		if ($cb === null) {
 			return $this;
 		}
-		$list = new GenericIterator($this, $cb, $this->orm);
+		if ($this->multi) {
+			$list = new GenericIterator($this, $cb, $this->orm);
+		}
 		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
 			$list->_cursor($cursor, $all);
 		} : function($obj) use ($cb) {
@@ -723,26 +750,32 @@ abstract class Generic implements \ArrayAccess {
 		$this->col->remove($this->cond, $cb);
 	}
 
-	public function update($cb = null) {
+	public function updateWithCond($addCond, $update, $cb = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
 			$this->extractCondFrom($this->obj);
 		}
-		$this->new = false;
-		if (!$this->new) {
-			if (!sizeof($this->cond)) {
-				if ($cb !== null) {
-					call_user_func($cb, $this);
-				}
-				return;
-			}
-			if (!sizeof($this->update)) {
-				if ($cb !== null) {
-					call_user_func($cb, $this);
-				}
-				return;
-			}
+		$oldCond = $this->cond;
+		if (is_array($this->cond) && is_array($addCond)) {
+			$this->cond += $addCond;
 		}
+		if ($this->new) {
+			throw new WrongState('unable to update new object');
+		}
+		if ($this->cond === null) {
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+			return $this;
+		}
+		if (!sizeof($update)) {
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+			return $this;
+		}
+		$oldUpdate = $this->update;
+		$this->update = $update;
 		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if ($cb !== null) {
@@ -750,7 +783,9 @@ abstract class Generic implements \ArrayAccess {
 			}
 			$this->lastError = [];
 		});
-		$this->update = [];
+		$this->update = $oldUpdate;
+		$this->cond = $oldCond;
+		return $this;
 	}
 
 	protected function preventDefault() {
