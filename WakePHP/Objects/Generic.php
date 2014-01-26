@@ -265,6 +265,7 @@ abstract class Generic implements \ArrayAccess {
 		$msg .= "NEW: " . ($this->new ? 'YES' : 'NO') . "\n";
 		$msg .= "POINT: ".Debug::dump($point) . "\n";
 		$msg .= "COND: ".Debug::dump($this->cond) . "\n";
+		$msg .= "OBJ: ".Debug::dump($this->obj) . "\n";
 		$msg .= "UPDATE: ".Debug::dump($this->update) . "\n";
 		$msg .= "--------------------------";
 		Daemon::log($msg);
@@ -309,9 +310,25 @@ abstract class Generic implements \ArrayAccess {
 		return $this->lastError;
 	}
 
+	protected function &_getObjEntry($k) {
+		$e =& $this->obj;
+		foreach (explode('.', $k) as &$kk) {
+			if ($kk === '$' || $k === '') {
+				return null;
+			}
+			$e =& $e[$kk];
+		}
+		return $e;
+	}
+
 	protected function set($k, $v) {
 		if ($this->obj !== null) {
-			$this->obj[$k] = $v;
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
+			} else {
+				$entry = &$this->obj[$k];
+			}
+			$entry = $v;
 		}
 		if ($this->new && !$this->upsertMode) {
 			return $this;
@@ -326,10 +343,15 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function inc($k, $v = 1) {
 		if ($this->obj !== null) {
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = $v;
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
 			} else {
-				$this->obj[$k] += $v;
+				$entry = &$this->obj[$k];
+			}
+			if ($entry === null) {
+				$entry = $v;
+			} else {
+				$entry += $v;
 			}
 		}
 		if ($this->new && !$this->upsertMode) {
@@ -349,10 +371,15 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function dec($k, $v = 1) {
 		if ($this->obj !== null) {
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = -$v;
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
 			} else {
-				$this->obj[$k] -= $v;
+				$entry = &$this->obj[$k];
+			}
+			if ($entry === null) {
+				$entry = -$v;
+			} else {
+				$entry -= $v;
 			}
 		}
 		if ($this->new && !$this->upsertMode) {
@@ -378,10 +405,15 @@ abstract class Generic implements \ArrayAccess {
 				}
 				return $this;
 			}
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = [$v];
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
 			} else {
-				$this->obj[$k][] = $v;
+				$entry = &$this->obj[$k];
+			}
+			if ($entry === null) {
+				$entry = [$v];
+			} else {
+				$entry[] = $v;
 			}
 		}
 		if ($this->new && !$this->upsertMode) {
@@ -408,8 +440,13 @@ abstract class Generic implements \ArrayAccess {
 				}
 				return $this;
 			}
-			if (isset($this->obj[$k])) {
-				$this->obj[$k] = array_diff_key($v, [$vv => null]);
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
+			} else {
+				$entry = &$this->obj[$k];
+			}
+			if ($entry !== null) {
+				$entry = array_diff_key($entry, [$v => null]);
 			}
 		}
 		if ($this->new && !$this->upsertMode) {
@@ -436,11 +473,16 @@ abstract class Generic implements \ArrayAccess {
 				}
 				return $this;
 			}
-			if (!isset($this->obj[$k])) {
-				$this->obj[$k] = [$v];
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
 			} else {
-				if (!in_array($v, $this->obj[$k], true)) {
-					$this->obj[$k][] = $v;
+				$entry = &$this->obj[$k];
+			}
+			if ($entry === null) {
+				$entry = [$v];
+			} else {
+				if (!in_array($v, $entry, true)) {
+					$entry[] = $v;
 				}
 			}
 		}
@@ -563,11 +605,12 @@ abstract class Generic implements \ArrayAccess {
 	public function _clone() {
 		$o = clone $this;
 		$o->_cloned();
+		return $o;
 	}
 
 	public function _cloned() {
 		$this->new = true;
-		$this->obj['_id'] = new MongoId;
+		$this->obj['_id'] = new \MongoId;
 	}
 
 	/**
