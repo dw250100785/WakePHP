@@ -523,11 +523,17 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	protected function cond() {
+	public function extractCond() {
+		$this->extractCondFrom($this->obj);
+		return $this;
+	}
+
+	protected function cond($cond = null) {
 		if (!func_num_args()) {
 			return $this->cond;
 		}
-		return $this->cond = func_get_arg(0);
+		$this->cond = $cond;
+		return $this;
 	}
 
 	public function attr($m, $n = null) {
