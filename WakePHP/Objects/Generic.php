@@ -3,6 +3,7 @@ namespace WakePHP\Objects;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use WakePHP\Exceptions\WrongCondition;
 use WakePHP\Exceptions\WrongState;
+use PHPDaemon\Clients\Mongo\MongoId;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\ClassFinder;
@@ -16,6 +17,8 @@ abstract class Generic implements \ArrayAccess {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	
 	protected $orm;
+
+	protected $iteratorClass = '\WakePHP\Objects\GenericIterator';
 
 	protected static $ormName;
 
@@ -161,16 +164,12 @@ abstract class Generic implements \ArrayAccess {
 		} else {
 			$k = '_id';
 		}
-
-		if ($id instanceof \MongoId) {
-			$this->cond[$k] = $id;
-			return $this;
+		$id = MongoId::import($s = $id);
+		if (!$id) {
+			throw new WrongCondition('condSetId: wrong value: '.$s);
 		}
-		if (is_string($id) && ctype_xdigit($id) && strlen($id) === 24) {
-			$this->cond[$k] = new \MongoId($id);
-			return $this;
-		}
-		throw new WrongCondition('condSetId: wrong value');
+		$this->cond[$k] = $id;
+		return $this;
 	}
 
 	public function multi() {
@@ -689,12 +688,17 @@ abstract class Generic implements \ArrayAccess {
 
 		return $this;
 	}
+	public function iterator() {
+		$class = $this->iteratorClass;
+		return new $class($this, $cb, $this->orm); // @TODO: check class
+	}
 	public function fetch($cb, $all = true) {
 		if ($cb === null) {
 			return $this;
 		}
 		if ($this->multi) {
-			$list = new GenericIterator($this, $cb, $this->orm);
+			$class = $this->iteratorClass;
+			$list = new $class($this, $cb, $this->orm); // @TODO: check class
 		}
 		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
 			$list->_cursor($cursor, $all);

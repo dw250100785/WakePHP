@@ -39,17 +39,29 @@ abstract class Generic {
 		if ($this->status === 's') {
 			$this->progress = 1;
 		}
-		$this->parent->jobqueue->update(
-			['_id' => $this->_id],
-			['$set' => ['status' => $this->status, 'progress' => $this->progress]]
-		);
-		$this->parent->jobresults->insert([
-					  '_id'      => $this->_id,
-					  'ts'       => microtime(true),
-					  'instance' => $this->instance,
-					  'status'   => $this->status,
-					  'result'   => $result
-		]);
+		$set = [
+				'status' => $this->status,
+				'progress' => $this->progress
+			];
+		if (isset($this->atmostonce)) {
+			$set['atmostonce'] = new \MongoId; // @TODO: wait for mongodb fix
+		}
+		$this->parent->jobqueue->getCollection()->findAndModify([
+			'query' => ['_id' => $this->_id],
+			'update' => ['$set' => $set],
+			'new' => true,
+		], function ($ret) use ($result) {
+			if (isset($ret['value'])) {
+				$this->instance = $ret['value']['instance'];
+			}
+			$this->parent->jobresults->insert([
+				'_id'      => $this->_id,
+				'ts'       => microtime(true),
+				'instance' => $this->instance,
+				'status'   => $this->status,
+				'result'   => $result
+			]);
+		});
 		$this->parent->unlinkJob($this->_id);
 	}
 }

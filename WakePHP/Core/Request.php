@@ -2,6 +2,7 @@
 namespace WakePHP\Core;
 
 use PHPDaemon\Clients\HTTP\Pool as HTTPClient;
+use PHPDaemon\Clients\Mongo\MongoId;
 use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Core\Daemon;
@@ -22,7 +23,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	use \WakePHP\Core\Traits\Datetime;
 	use \WakePHP\Core\Traits\Blocks;
 	use \WakePHP\Core\Traits\URLToolkit;
-
+	
 	public $locale;
 	public $path;
 	public $pathArg = array();
@@ -133,6 +134,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function handleException($e) {
 		if ($this->cmpName !== null) {
+			if ($this->triggerAndCount('exception', $e)) {
+				return true;
+			}
 			$this->setResult(['exception' => is_callable([$e, 'toArray']) ? $e->toArray() : [
 				'type' => ClassFinder::getClassBasename($e),
 				'code' => $e->getCode(),
@@ -145,9 +149,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			return true;
 		}
 	}
-
-
-
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
@@ -265,8 +266,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			if ($m instanceof \MongoBinData) {
 				$m = base64_encode($m->bin);
 			}
-			elseif ($m instanceof \MongoId) {
-				$m = (string )$m;
+			if ($m instanceof \MongoId) {
+				$m = (string) MongoId::import($m, true);
+			}
+			if ($m instanceof MongoId) {
+				$m = (string) $m;
 			}
 		}
 	}	

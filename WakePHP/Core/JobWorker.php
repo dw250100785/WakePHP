@@ -49,7 +49,9 @@ class JobWorker extends AppInstance {
 	 */
 	protected $maxRunningJobs = 100;
 
-	protected $jobs = [];
+	protected $jobs;
+	
+	protected $jobtypes = [];
 
 	public $httpclient;
 	/**
@@ -73,13 +75,18 @@ class JobWorker extends AppInstance {
 		}
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 		$this->components = new Components($this->fakeRequest());
+		$this->jobqueue = $this->db->{$this->config->dbname->value . '.jobqueue'};
+		$this->jobs = $this->db->{$this->config->dbname->value . '.jobs'};
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
 			$event->timeout(5e6);
+			if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
+				return;
+			}
 			if (!$this->resultCursor) {
-				$types = array_merge($this->jobs, [null]);
+				$types = array_merge($this->jobtypes, [null]);
 				Daemon::log('find start: '.Debug::dump($types));
-				$this->db->{$this->config->dbname->value . '.jobqueue'}->find(function ($cursor) use ($event) {
+				$this->jobqueue->find(function ($cursor) use ($event) {
 					if ($cursor->isDead()) {
 						Daemon::log('dead!');
 						$cursor->destroy();
@@ -90,12 +97,16 @@ class JobWorker extends AppInstance {
 					$this->resultCursor = $cursor;
 					foreach ($cursor->items as $k => $job) {
 						Daemon::log('find: ' . json_encode($job));
-						if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
-							break;
-						}
-						$this->jobqueue->getCollection()->findAndModify([
-							'query' => ['_id' => $job['_id'], 'status' => 'v'],
+						++$this->runningJobs;
+						$this->jobs->findAndModify([
+							'query' => [
+								'status' => 'v',
+								//'type' => ['$in' => $types],
+								'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
+						   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
+							],
 							'update' => ['$set' => ['status' => 'a']],
+							'sort' => ['priority' => -1],
 							'new' => true,
 							], function ($ret) {
 								$job = isset($ret['value']) ? $ret['value']: false;
@@ -112,10 +123,7 @@ class JobWorker extends AppInstance {
 					   'tailable' => true,
 					   'sort'     => ['$natural' => 1],
 					   'where'    => [
-						   //'type' => ['$in' => $types],
-						   'status'  => 'v',
-						   'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
-						   'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
+					   		'ts' => ['$gt' => microtime(true)]
 					   ]
 				   ]);
 				$event->timeout(1e6);

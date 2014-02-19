@@ -103,13 +103,12 @@ class JobManager {
 		if ($this->lastTs === null) {
 			$this->lastTs = $ts;
 		}
-		$jobId = $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($lastError) use ($cb, &$jobId) {
+		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($jobId) use ($cb) {
 			if ($cb !== NULL) {
 				$this->callbacks[(string)$jobId] = $cb;
 				Daemon::log('setTimeout!');
 				\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
 			}
 		});
-		return $jobId;
 	}
 }

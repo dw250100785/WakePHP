@@ -21,6 +21,14 @@ class GenericIterator implements \Iterator {
 		$this->orm = $orm;
 	}
 
+	public function iterator() {
+		return $this;
+	}
+	public function fetch($cb) {
+		call_user_func($cb, $this);
+		return $this;
+	}
+
 	public function _cursor($cursor, $all = true) {
 		if ($this->cursor === null) {
 			$this->cursor = $cursor;

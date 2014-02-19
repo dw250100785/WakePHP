@@ -6,6 +6,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\ClassFinder;
+use PHPDaemon\Clients\Mongo\MongoId;
 use WakePHP\ORM\AccountRecoveryRequests;
 use WakePHP\ORM\Accounts;
 use WakePHP\ORM\ExternalAuthTokens;
@@ -87,7 +88,7 @@ class WakePHP extends AppInstance {
 		ini_set('display_errors', 'On');
 		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname     = $this->config->dbname->value;
-		$this->ipcId      = sprintf('%x', crc32(Daemon::$process->getPid() . '-' . microtime(true) . '-' . mt_rand(0, mt_getrandmax())));
+		$this->ipcId      = (string) new MongoId;
 		$this->JobManager = new JobManager($this);
 		$this->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
