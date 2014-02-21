@@ -49,7 +49,9 @@ class JobWorker extends AppInstance {
 	 */
 	protected $maxRunningJobs = 100;
 
-	protected $jobs;
+	public $jobqueueCol;
+
+	public $jobs;
 	
 	protected $jobtypes = [];
 
@@ -59,6 +61,31 @@ class JobWorker extends AppInstance {
 	 */
 
 	public $mycb;
+
+	protected function tryToAcquire() {
+		$this->jobs->findAndModify([
+			'query' => [
+				'status' => 'v',
+				//'type' => ['$in' => $types],
+				'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
+		   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
+			],
+			'update' => ['$set' => ['status' => 'a']],
+			'sort' => ['priority' => -1],
+			'new' => true,
+			], function ($ret) {
+				Daemon::log(Debug::dump($ret));
+				$job = isset($ret['value']) ? $ret['value']: false;
+				if (!$job) {
+					return;
+				}
+				Daemon::log('Acquired job: ' . json_encode($job));
+				$this->startJob($job);
+				$this->tryToAcquire();
+			}
+		);
+	}
+
 	public function onReady() {
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname      = $this->config->dbname->value;
@@ -75,7 +102,7 @@ class JobWorker extends AppInstance {
 		}
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 		$this->components = new Components($this->fakeRequest());
-		$this->jobqueue = $this->db->{$this->config->dbname->value . '.jobqueue'};
+		$this->jobqueueCol = $this->db->{$this->config->dbname->value . '.jobqueue'};
 		$this->jobs = $this->db->{$this->config->dbname->value . '.jobs'};
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
@@ -86,38 +113,22 @@ class JobWorker extends AppInstance {
 			if (!$this->resultCursor) {
 				$types = array_merge($this->jobtypes, [null]);
 				Daemon::log('find start: '.Debug::dump($types));
-				$this->jobqueue->find(function ($cursor) use ($event) {
+				$this->jobqueueCol->find(function ($cursor) use ($event) {
 					if ($cursor->isDead()) {
 						Daemon::log('dead!');
 						$cursor->destroy();
 						$this->resultCursor = null;
 						return;
 					}
+					//Daemon::log('cursor: '.Debug::dump($cursor->items));
 					$event->timeout(1e6 * 0.05);
 					$this->resultCursor = $cursor;
-					foreach ($cursor->items as $k => $job) {
-						Daemon::log('find: ' . json_encode($job));
-						++$this->runningJobs;
-						$this->jobs->findAndModify([
-							'query' => [
-								'status' => 'v',
-								//'type' => ['$in' => $types],
-								'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
-						   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
-							],
-							'update' => ['$set' => ['status' => 'a']],
-							'sort' => ['priority' => -1],
-							'new' => true,
-							], function ($ret) {
-								$job = isset($ret['value']) ? $ret['value']: false;
-								if (!$job) {
-									return;
-								}
-								$job['status'] = 'a';
-								$this->startJob($job);
-							}
-						);
-						unset($cursor->items[$k]);
+					$f = false;
+					foreach ($cursor as $item) {
+						$f = true;
+					}
+					if ($f) {
+						$this->tryToAcquire();
 					}
 				}, [
 					   'tailable' => true,

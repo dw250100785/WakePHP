@@ -2,6 +2,7 @@
 namespace WakePHP\Core;
 
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
+use PHPDaemon\Clients\Mongo\MongoId;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
@@ -32,12 +33,15 @@ class JobManager {
 
 	protected $lastTs;
 
+	protected $jobresults;
+
 	/**
 	 * @param WakePHP $appInstance
 	 */
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
 		$this->init();
+		$this->jobresults = $this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobresults'};
 	}
 
 	/**
@@ -47,12 +51,13 @@ class JobManager {
 		$this->resultEvent = Timer::add(function ($event) {
 //Daemon::log('timer called');
 			if (!$this->resultCursor) {
-				$this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobresults'}->find(function ($cursor)  {
+				$this->jobresults->find(function ($cursor)  {
 					$this->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {
 						Daemon::log('items = ' . Debug::dump($cursor->items));
 					}
 					foreach ($cursor->items as $k => &$item) {
+						$item['_id'] = MongoId::import($item['_id']);
 						$jobId = (string)$item['_id'];
 						if (isset($this->callbacks[$jobId])) {
 							call_user_func($this->callbacks[$jobId], $item);
@@ -111,4 +116,13 @@ class JobManager {
 			}
 		});
 	}
+
+	/*public function __call($job, $args) {
+		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
+			$cb = array_pop($args);
+		} else {
+			$cb = null;
+		}
+		$this->enqueue($job, $args, $cb);
+	}*/
 }

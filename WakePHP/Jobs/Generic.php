@@ -46,7 +46,7 @@ abstract class Generic {
 		if (isset($this->atmostonce)) {
 			$set['atmostonce'] = new \MongoId; // @TODO: wait for mongodb fix
 		}
-		$this->parent->jobqueue->getCollection()->findAndModify([
+		$this->parent->jobs->findAndModify([
 			'query' => ['_id' => $this->_id],
 			'update' => ['$set' => $set],
 			'new' => true,

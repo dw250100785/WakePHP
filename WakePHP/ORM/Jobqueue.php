@@ -45,7 +45,7 @@ class Jobqueue extends Generic {
 		}
 		$this->appInstance->jobresults->findOne($cb, ['where' => ['_id' => $id]]);
 	}
-	public function push($type, $args, $ts, $add, $cb = null, $ins = false) {
+	public function push($type, $args, $ts, $add, $cb = null) {
 		$doc = [
 			'type'     => $type,
 			'args'     => $args,
@@ -53,25 +53,40 @@ class Jobqueue extends Generic {
 			'ts'       => $ts,
 			'progress' => (float) 0,
 		] + $add;
-		if (isset($add['atmostonce']) && !$ins) {
+		if (isset($add['atmostonce'])) {
 			$this->jobs->upsertOne(
 				['atmostonce' => $add['atmostonce']],
 				[
 					'$setOnInsert' => $doc,
-					'$addToSet' => ['instance' => $this->appInstance->ipcId],
-				], function($lastError) use ($type, $args, $ts, $add, $cb) {
-				if (!$lastError['updatedExisting']) {
-					$this->jobqueue->insert(['_id' => $lastError['upserted']]);
+					'$addToSet' => [
+						'instance' => $this->appInstance->ipcId
+					],
+					'$push' => ['trickyId' => $trickyId = new \MongoId],
+				], function($lastError) use ($cb, &$trickyId) {
+					if (!$lastError['updatedExisting']) {
+						$this->jobqueue->insert(['_id' => $lastError['upserted'], 'ts' => microtime(true)]);
+						$cb(MongoId::import($lastError['upserted']));
+					}
+					else {
+						$this->jobs->findOne(function($item) use ($trickyId, $cb) {
+							$cb(MongoId::import($item['_id']));
+							$this->jobs->updateOne(
+								['_id' => $item['_id']],
+								['$pull' => ['trickyId' => $trickyId]]
+							);
+						}, ['where' => ['trickyId' => $trickyId]]);
+					}
 				}
-			});
+			);
 			return;
 		}
-		$id = new \MongoId;
-		return $this->jobs->insert([
-			'_id'	   => $id,
-			'instance' => [$this->appInstance->ipcId],
-		] + $add, function ($lastError) use ($type, $args, $ts, $add, $cb, $id) {
-			$this->jobqueue->insert(['_id' => $id]);
+		$doc['_id'] = $id = new MongoId;
+		$this->jobs->insert($doc, function ($lastError) use (&$id, $cb) {
+			$this->jobqueue->insert(['_id' => $id, 'ts' => microtime(true)]);
+			if ($cb !== null) {
+				call_user_func($cb, $id);
+			}
 		});
+		return $id;
 	}
 }
