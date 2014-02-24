@@ -35,8 +35,10 @@ class Account extends Component {
 					if ($account) {
 						$account['logged'] = $account['username'] !== 'Guest';
 					}
-					$this->req->account = $account;
-					$this->req->propertyUpdated('account');
+					if ($this->req !== null) {
+						$this->req->account = $account;
+						$this->req->propertyUpdated('account');
+					}
 					$authEvent->setResult();
 				};
 				if (isset($_SESSION['accountId'])) {

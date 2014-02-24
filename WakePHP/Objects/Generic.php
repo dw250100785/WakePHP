@@ -25,6 +25,8 @@ abstract class Generic implements \ArrayAccess {
 	protected $update = [];
 
 	protected $upsertMode = false;
+	
+	protected $setOnInsertMode = true;
 
 	protected $obj;
 
@@ -63,6 +65,17 @@ abstract class Generic implements \ArrayAccess {
 	protected $preventDefault = false;
 
 	protected $writeConcerns = null;
+
+	protected $attachedObjects = [];
+
+	public function attachObject($name, Generic $obj) {
+		$this->attachedObjects[$name] = $obj;
+		return $this;
+	}
+
+	public function getAttachedObject($name) {
+		return isset($this->attachedObjects[$name]) ? $this->attachedObjects[$name] : null;
+	}
 
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
@@ -266,6 +279,7 @@ abstract class Generic implements \ArrayAccess {
 		$msg .= "COND: ".Debug::dump($this->cond) . "\n";
 		$msg .= "OBJ: ".Debug::dump($this->obj) . "\n";
 		$msg .= "UPDATE: ".Debug::dump($this->update) . "\n";
+		$msg .= "lastError: ".Debug::dump($this->lastError) . "\n";
 		$msg .= "--------------------------";
 		Daemon::log($msg);
 		return $this;
@@ -293,6 +307,10 @@ abstract class Generic implements \ArrayAccess {
 		return $this->set($k, array_unique(array_filter($v, function($i) {return $i !== '';})));
 	}
 	
+	public function upserted() {
+	 	return isset($this->lastError['upserted']) ? $this->lastError['upserted'] : null;
+	}
+
 	public function lastError($bool = false) {
 		if ($bool) {
 			if (isset($this->lastError['updatedExisting'])) {
@@ -321,6 +339,9 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function set($k, $v) {
+		 if ($this->setOnInsertMode) {
+		 	return $this->setOnInsert($k, $v);
+		 }
 		if ($this->obj !== null) {
 			if (strpos($k, '.') !== false) {
 				$entry = &$this->_getObjEntry($k);
@@ -336,6 +357,26 @@ abstract class Generic implements \ArrayAccess {
 			$this->update['$set'] = [$k => $v];
 		} else {
 			$this->update['$set'][$k] = $v;
+		}
+		return $this;
+	}
+
+	protected function setOnInsert($k, $v) {
+		if ($this->obj !== null) {
+			if (strpos($k, '.') !== false) {
+				$entry = &$this->_getObjEntry($k);
+			} else {
+				$entry = &$this->obj[$k];
+			}
+			$entry = $v;
+		}
+		if ($this->new && !$this->upsertMode) {
+			return $this;
+		}
+		if (!isset($this->update['$setOnInsert'])) {
+			$this->update['$setOnInsert'] = [$k => $v];
+		} else {
+			$this->update['$setOnInsert'][$k] = $v;
 		}
 		return $this;
 	}
@@ -527,7 +568,7 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	protected function cond($cond = null) {
+	public function cond($cond = null) {
 		if (!func_num_args()) {
 			return $this->cond;
 		}
@@ -823,28 +864,36 @@ abstract class Generic implements \ArrayAccess {
 			}
 			return $this;
 		}
-		if (!sizeof($update)) {
-			if ($cb !== null) {
-				call_user_func($cb, $this);
+		if ($update !== null) {
+			if (!sizeof($update)) {
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+				return $this;
 			}
-			return $this;
+			$oldUpdate = $this->update;
+			$this->update = $update;
 		}
-		$oldUpdate = $this->update;
-		$this->update = $update;
 		$this->saveObject($cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
+			if (isset($lastError['upserted'])) {
+				$this->obj['_id'] = $lastError['upserted'];
+			}
 			if ($cb !== null) {
 				call_user_func($cb, $this);
 			}
 			$this->lastError = [];
 		});
-		$this->update = $oldUpdate;
+		if ($update !== null) {
+			$this->update = $oldUpdate;
+		}
 		$this->cond = $oldCond;
 		return $this;
 	}
 
 	protected function preventDefault() {
 		$this->preventDefault = true;
+		return $this;
 	}
 
 	public function save($cb = null, GenericBulk $bulk = null) {
@@ -852,22 +901,33 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->cond === null) {
 			$this->extractCondFrom($this->obj);
 		}
+		if ($this->onBeforeSave !== null) {
+			$this->onBeforeSave->executeAll($this);
+		}
 		if (!$this->new) {
 			if ($this->cond === null) {
+				if ($this->onSave !== null) {
+					$this->onSave->executeAll($this);
+				}
 				if ($cb !== null) {
 					call_user_func($cb, $this);
 				}
 				return $this;
 			}
 			if (!sizeof($this->update)) {
+				if ($this->onSave !== null) {
+					$this->onSave->executeAll($this);
+				}
 				if ($cb !== null) {
-					call_user_func($cb, $this);
+					if ($this->preventDefault) {
+						$this->onSave($cb);
+					}
+					else {
+						call_user_func($cb, $this);
+					}
 				}
 				return $this;
 			}
-		}
-		if ($this->onBeforeSave !== null) {
-			$this->onBeforeSave->executeAll($this);
 		}
 		if ($this->preventDefault) {
 			if ($cb !== null) {
@@ -878,11 +938,20 @@ abstract class Generic implements \ArrayAccess {
 		}
 		$w = $cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
-			if ($cb !== null) {
-				call_user_func($cb, $this);
-			}
 			if ($this->onSave !== null) {
 				$this->onSave->executeAll($this);
+			}
+			if ($cb !== null) {
+				if (!$this->preventDefault) {
+					call_user_func($cb, $this);
+				} else {
+					$this->onSave(function() use ($cb, $lastError) {
+						$old = $this->lastError;
+						$this->lastError = $lastError;
+						call_user_func($cb, $this);
+						$this->lastError = $old;
+					});
+				}
 			}
 			$this->lastError = [];
 		};

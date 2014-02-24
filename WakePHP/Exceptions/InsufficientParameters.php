@@ -10,6 +10,6 @@ use PHPDaemon\Core\ClassFinder;
  * @package WakePHP\Exceptions
  * @dynamic_fields
  */
-class InsufficientParameters extends \Exception {
-	protected $silent = false;
+class InsufficientParameters extends Generic {
+	protected $silent = true;
 }

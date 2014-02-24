@@ -29,6 +29,11 @@ class GenericIterator implements \Iterator {
 		return $this;
 	}
 
+	public function keep($bool = true) {
+		$this->cursor->keep($bool);
+		return $this;
+	}
+
 	public function _cursor($cursor, $all = true) {
 		if ($this->cursor === null) {
 			$this->cursor = $cursor;

@@ -263,13 +263,17 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				static::resultMap($v);
 			}
 		} else {
-			if ($m instanceof \MongoBinData) {
+			if ($m instanceof \WakePHP\Objects\Generic) {
+				$m = $m->toArray();
+				static::resultMap($m);
+			}
+			elseif ($m instanceof \MongoBinData) {
 				$m = base64_encode($m->bin);
 			}
-			if ($m instanceof \MongoId) {
+			elseif ($m instanceof \MongoId) {
 				$m = (string) MongoId::import($m, true);
 			}
-			if ($m instanceof MongoId) {
+			elseif ($m instanceof MongoId) {
 				$m = (string) $m;
 			}
 		}

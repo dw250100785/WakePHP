@@ -19,4 +19,7 @@ class Generic extends \Exception {
 			'msg' => $this->getMessage(),
 		];
 	}
+	public function isSilent() {
+		return $this->silent;
+	}
 }

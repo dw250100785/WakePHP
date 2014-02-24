@@ -10,6 +10,6 @@ use PHPDaemon\Core\ClassFinder;
  * @package WakePHP\Exceptions
  * @dynamic_fields
  */
-class NotFound extends \Exception {
-	protected $silent = false;
+class NotFound extends Generic {
+	protected $silent = true;
 }
