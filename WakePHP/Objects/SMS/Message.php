@@ -110,11 +110,7 @@ class Message extends Generic {
 	public function send($cb) {
 		$this->save(function() use ($cb) {
 			$this->orm->appInstance->components->SMS->send($this['phone'], $this['text'], function($res) use ($cb) {
-				if (isset($res['id'])) {
-					call_user_func($cb, $this, true);
-				} else {
-					call_user_func($cb, $this, false);
-				}
+				call_user_func($cb, $this, isset($res['id']));
 			}, $this['_id']);
 			return $this;
 		});

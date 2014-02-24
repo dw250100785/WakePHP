@@ -190,10 +190,10 @@ abstract class Generic implements \ArrayAccess {
 		if (isset($mixed[0])) {
 			foreach ($mixed as $i) {
 				$i = trim($i);
-				$order = 1;
+				$order = -1;
 				if (strncmp($i, '>', 1)) {
 					$i = substr($i, 1);
-					$order = -1;
+					$order = 1;
 				} elseif (strncmp($i, '<', 1)) {
 					$i = substr($i, 1);
 				}
@@ -699,22 +699,24 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->multi) {
 			$class = $this->iteratorClass;
 			$list = new $class($this, $cb, $this->orm); // @TODO: check class
-		}
-		$this->fetchObject($this->multi ? function($cursor) use ($list, $all) {
-			$list->_cursor($cursor, $all);
-		} : function($obj) use ($cb) {
-			$this->obj = $obj;
-			if ($obj === false) {
+			$this->fetchObject(function($cursor) use ($list, $all) {
+				$list->_cursor($cursor, $all);
+			});
+		} else {
+			$this->fetchObject(function($obj) use ($cb) {
+				$this->obj = $obj;
+				if ($obj === false) {
+					call_user_func($cb, $this);
+					return;
+				}
+				$this->new = false;
+				if (!$this->inited) {
+					$this->inited = true;
+					$this->init();
+				}
 				call_user_func($cb, $this);
-				return;
-			}
-			$this->new = false;
-			if (!$this->inited) {
-				$this->inited = true;
-				$this->init();
-			}
-			call_user_func($cb, $this);
-		});
+			});
+		}
 		return $this;
 	}
 

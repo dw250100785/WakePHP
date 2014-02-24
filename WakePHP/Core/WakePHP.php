@@ -88,7 +88,7 @@ class WakePHP extends AppInstance {
 		ini_set('display_errors', 'On');
 		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname     = $this->config->dbname->value;
-		$this->ipcId      = (string) new MongoId;
+		$this->ipcId      = new MongoId;
 		$this->JobManager = new JobManager($this);
 		$this->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {

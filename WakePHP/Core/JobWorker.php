@@ -3,6 +3,7 @@ namespace WakePHP\Core;
 
 use PHPDaemon\Clients\Mongo\Collection;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
+use PHPDaemon\Clients\Mongo\MongoId;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
@@ -52,8 +53,12 @@ class JobWorker extends AppInstance {
 	public $jobqueueCol;
 
 	public $jobs;
+
+	public $ipcId;
 	
 	protected $jobtypes = [];
+
+	protected $wtsEvent;
 
 	public $httpclient;
 	/**
@@ -63,22 +68,34 @@ class JobWorker extends AppInstance {
 	public $mycb;
 
 	protected function tryToAcquire() {
+		if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
+			return;
+		}
 		$this->jobs->findAndModify([
 			'query' => [
-				'status' => 'v',
+				'$or' => [
+					['status' => 'v'],
+					['status' => 'a', 'wts' => ['$lt' => microtime(true) - 5]],
+				],
 				//'type' => ['$in' => $types],
 				'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
 		   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
 			],
-			'update' => ['$set' => ['status' => 'a']],
+			'update' => [
+				'$set' => [
+					'status' => 'a',
+					'worker' => $this->ipcId,
+					'wts' => microtime(true),
+				],
+				'$inc' => ['tries' => 1],
+			],
 			'sort' => ['priority' => -1],
 			'new' => true,
 			], function ($ret) {
-				Daemon::log(Debug::dump($ret));
-				$job = isset($ret['value']) ? $ret['value']: false;
-				if (!$job) {
+				if (!isset($ret['value'])) {
 					return;
 				}
+				$job = $ret['value'];
 				Daemon::log('Acquired job: ' . json_encode($job));
 				$this->startJob($job);
 				$this->tryToAcquire();
@@ -104,15 +121,17 @@ class JobWorker extends AppInstance {
 		$this->components = new Components($this->fakeRequest());
 		$this->jobqueueCol = $this->db->{$this->config->dbname->value . '.jobqueue'};
 		$this->jobs = $this->db->{$this->config->dbname->value . '.jobs'};
+		$this->ipcId      = new MongoId;
+		$this->wtsEvent = Timer::add(function ($event) {
+			$this->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
+			$event->timeout();
+		}, 2.5e6);
 		$this->resultEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
 			$event->timeout(5e6);
-			if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
-				return;
-			}
+			$this->tryToAcquire();
 			if (!$this->resultCursor) {
 				$types = array_merge($this->jobtypes, [null]);
-				Daemon::log('find start: '.Debug::dump($types));
 				$this->jobqueueCol->find(function ($cursor) use ($event) {
 					if ($cursor->isDead()) {
 						Daemon::log('dead!');
@@ -168,6 +187,7 @@ class JobWorker extends AppInstance {
 
 	public function unlinkJob($id) {
 		unset($this->runningJobs[(string) $id]);
+		$this->tryToAcquire();
 	}
 
 	/**

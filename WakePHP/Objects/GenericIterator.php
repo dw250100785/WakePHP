@@ -37,7 +37,10 @@ class GenericIterator implements \Iterator {
 			$this->more();
 			return;
 		}
-		call_user_func($this->cb, $this);
+		$this->cb === null || call_user_func($this->cb, $this);
+		if ($this->finished()) {
+			$this->cb = null;		
+		}
 	}
 	
 	/**

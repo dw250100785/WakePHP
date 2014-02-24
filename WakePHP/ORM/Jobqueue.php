@@ -22,6 +22,7 @@ class Jobqueue extends Generic {
 		$this->jobs->ensureIndex(['status' => 1]);
 		$this->jobs->ensureIndex(['priority' => -1]);
 		$this->jobs->ensureIndex(['atmostonce' => 1]);
+		$this->jobs->ensureIndex(['worker' => 1]);
 		$this->jobqueue = $this->appInstance->db->{$this->appInstance->dbname . '.jobqueue'};
 	}
 	public function update($cond, $doc, $multi = false, $cb = null) {
@@ -81,6 +82,7 @@ class Jobqueue extends Generic {
 			return;
 		}
 		$doc['_id'] = $id = new MongoId;
+		$doc['instance'] = [$this->appInstance->ipcId];
 		$this->jobs->insert($doc, function ($lastError) use (&$id, $cb) {
 			$this->jobqueue->insert(['_id' => $id, 'ts' => microtime(true)]);
 			if ($cb !== null) {

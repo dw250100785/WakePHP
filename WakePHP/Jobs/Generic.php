@@ -47,13 +47,14 @@ abstract class Generic {
 			$set['atmostonce'] = new \MongoId; // @TODO: wait for mongodb fix
 		}
 		$this->parent->jobs->findAndModify([
-			'query' => ['_id' => $this->_id],
+			'query' => ['_id' => $this->_id, 'worker' => $this->parent->ipcId],
 			'update' => ['$set' => $set],
 			'new' => true,
 		], function ($ret) use ($result) {
-			if (isset($ret['value'])) {
-				$this->instance = $ret['value']['instance'];
+			if (!isset($ret['value'])) {
+				return;
 			}
+			$this->instance = $ret['value']['instance'];
 			$this->parent->jobresults->insert([
 				'_id'      => $this->_id,
 				'ts'       => microtime(true),

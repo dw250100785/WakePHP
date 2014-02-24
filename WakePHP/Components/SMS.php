@@ -106,7 +106,7 @@ class SMS extends Component {
 	}
 	public function send($phones, $text, $cb, $id = null) {
 		$cb = CallbackWrapper::wrap($cb);
-		$this->appInstance->httpclient->get($params = [
+		$this->appInstance->httpclient->get([
 			'http://smsc.ru/sys/send.php',
 			'login' => $this->config->login->value,
 			'psw' => $this->config->password->value,

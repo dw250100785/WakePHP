@@ -150,6 +150,7 @@ class GeoIP extends Generic {
 	 *
 	 */
 	public function init() {
+		$this->countries['RU'] = 'Russia';
 		$this->blocks = $this->appInstance->db->{$this->dbname . '.blocks'};
 		$this->locations = $this->appInstance->db->{$this->dbname . '.locations'};
 	}
