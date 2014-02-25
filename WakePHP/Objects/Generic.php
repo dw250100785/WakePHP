@@ -895,7 +895,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->preventDefault = true;
 		return $this;
 	}
-
+	protected $myDebug = false;
 	public function save($cb = null, GenericBulk $bulk = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
@@ -903,6 +903,11 @@ abstract class Generic implements \ArrayAccess {
 		}
 		if ($this->onBeforeSave !== null) {
 			$this->onBeforeSave->executeAll($this);
+		}
+		if ($this->preventDefault) {
+			$this->preventDefault = false;
+			$this->onSave($cb);
+			return;
 		}
 		if (!$this->new) {
 			if ($this->cond === null) {
@@ -936,7 +941,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->preventDefault = false;
 			return $this;
 		}
-		$w = $cb === null ? null : function($lastError) use ($cb) {
+		$w = ($cb === null && $this->onSave->isEmpty())? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if (isset($lastError['upserted'])) {
 				$this->obj['_id'] = $lastError['upserted'];
