@@ -338,8 +338,8 @@ abstract class Generic implements \ArrayAccess {
 		return $e;
 	}
 
-	protected function set($k, $v) {
-		 if ($this->setOnInsertMode) {
+	protected function set($k, $v, $real = false) {
+		 if ($this->new && $this->upsertMode && $this->setOnInsertMode && !$real) {
 		 	return $this->setOnInsert($k, $v);
 		 }
 		if ($this->obj !== null) {
@@ -938,6 +938,9 @@ abstract class Generic implements \ArrayAccess {
 		}
 		$w = $cb === null ? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
+			if (isset($lastError['upserted'])) {
+				$this->obj['_id'] = $lastError['upserted'];
+			}
 			if ($this->onSave !== null) {
 				$this->onSave->executeAll($this);
 			}
