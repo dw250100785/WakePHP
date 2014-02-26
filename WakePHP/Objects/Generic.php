@@ -68,6 +68,8 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $attachedObjects = [];
 
+	protected $logObjectId = false;
+
 	public function attachObject($name, Generic $obj) {
 		$this->attachedObjects[$name] = $obj;
 		return $this;
@@ -144,7 +146,11 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function log($m) {
-		Daemon::log(get_class($this).': ' . $m);
+		if ($this->logObjectId) {
+			Daemon::$process->log(get_class($this) . ' (' . spl_object_hash($this) . '): ' . $m);
+		} else {
+			Daemon::log(get_class($this).': ' . $m);
+		}
 	}
 
 	public function condSet($k, $v, $d = null) {
@@ -822,7 +828,7 @@ abstract class Generic implements \ArrayAccess {
 		}
 		if ($this->safeMode) {
 			if (!sizeof($this->cond)) {
-				$this->log('safe-mode: attempt to remove() with empty conditions');
+				$this->log('safe-mode: refused attempt to remove() with empty conditions');
 				call_user_func($cb, $this, false);	
 				return;
 			}
@@ -895,7 +901,6 @@ abstract class Generic implements \ArrayAccess {
 		$this->preventDefault = true;
 		return $this;
 	}
-	protected $myDebug = false;
 	public function save($cb = null, GenericBulk $bulk = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
@@ -953,6 +958,7 @@ abstract class Generic implements \ArrayAccess {
 				if (!$this->preventDefault) {
 					call_user_func($cb, $this);
 				} else {
+					$this->preventDefault = false;
 					$this->onSave(function() use ($cb, $lastError) {
 						$old = $this->lastError;
 						$this->lastError = $lastError;
