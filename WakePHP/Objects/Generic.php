@@ -345,7 +345,7 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function set($k, $v, $real = false) {
-		 if ($this->new && $this->upsertMode && $this->setOnInsertMode && !$real) {
+		 if ($this->new && $this->upsertMode && $this->setOnInsertMode && !$this->multi && !$real) {
 		 	return $this->setOnInsert($k, $v);
 		 }
 		if ($this->obj !== null) {
@@ -641,17 +641,7 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function setProperty($k, $v) {
-		if ($this->obj !== null) {
-			$this->obj[$k] = $v;
-		}
-		if ($this->new && !$this->upsertMode) {
-			return $this;
-		}
-		if (!isset($this->update['$set'])) {
-			$this->update['$set'] = [];
-		}
-		$this->update['$set'][$k] = $v;
-		return $this;
+		return $this->set($k, $v);
 	}
 
 	public function _clone() {
@@ -663,6 +653,7 @@ abstract class Generic implements \ArrayAccess {
 	public function _cloned() {
 		$this->new = true;
 		$this->obj['_id'] = new \MongoId;
+		$this->init();
 	}
 
 	/**
@@ -946,7 +937,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->preventDefault = false;
 			return $this;
 		}
-		$w = ($cb === null && $this->onSave->isEmpty())? null : function($lastError) use ($cb) {
+		$w = ($cb === null && ($this->onSave === null || $this->onSave->isEmpty()))? null : function($lastError) use ($cb) {
 			$this->lastError = $lastError;
 			if (isset($lastError['upserted'])) {
 				$this->obj['_id'] = $lastError['upserted'];

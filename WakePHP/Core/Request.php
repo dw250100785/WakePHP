@@ -135,6 +135,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public function handleException($e) {
 		if ($this->cmpName !== null) {
 			if ($this->triggerAndCount('exception', $e)) {
+				Daemon::log('handle exception trigger true');
 				return true;
 			}
 			$this->setResult(['exception' => is_callable([$e, 'toArray']) ? $e->toArray() : [
@@ -143,8 +144,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				'msg' => $e->getMessage()]
 			]);
 			$this->finish();
-			if (!isset($e->silent) || !$e->silent) {
-				Daemon::log('Debug: '.$e->getTraceAsString());
+			if (!$e instanceof \WakePHP\Exceptions\Generic || !$e->isSilent()) {
+				Daemon::log('Debug: '.$e.': '.$e->getTraceAsString());
 			}
 			return true;
 		}
