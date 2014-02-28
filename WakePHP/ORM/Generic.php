@@ -48,6 +48,12 @@ abstract class Generic {
 			$type = substr($method, 3);
 			$cond = sizeof($args) ? $args[0] : null;
 			$objOrCb = sizeof($args) > 1 ? $args[1] : null;
+			if (substr($type, -4) === 'ById') {
+				$type = substr($type, 0, -4);
+				if ($obj = $this->getObject($type)) {
+					return $obj->condSetId($cond)->fetch($objOrCb);
+				}
+			}
 			if ($obj = $this->getObject($type, $cond, $objOrCb)) {
 				return $obj;
 			}
