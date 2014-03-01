@@ -70,6 +70,11 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $logObjectId = false;
 
+	public function setOnInsertMode($bool) {
+		$this->setOnInsertMode = (bool) $bool;
+		return $this;
+	}
+
 	public function attachObject($name, Generic $obj) {
 		$this->attachedObjects[$name] = $obj;
 		return $this;
@@ -317,6 +322,10 @@ abstract class Generic implements \ArrayAccess {
 	 	return isset($this->lastError['upserted']) ? $this->lastError['upserted'] : null;
 	}
 
+	public function okay() {
+		return $this->lastError(true);
+	}
+	
 	public function lastError($bool = false) {
 		if ($bool) {
 			if (isset($this->lastError['updatedExisting'])) {
@@ -646,11 +655,11 @@ abstract class Generic implements \ArrayAccess {
 
 	public function _clone() {
 		$o = clone $this;
-		$o->_cloned();
+		$o->_cloned($this);
 		return $o;
 	}
 
-	public function _cloned() {
+	public function _cloned($from) {
 		$this->new = true;
 		$this->obj['_id'] = new \MongoId;
 		$this->init();
@@ -841,6 +850,26 @@ abstract class Generic implements \ArrayAccess {
 			return;
 		}
 		$this->col->remove($this->cond, $cb);
+	}
+	public function findAndModify($p, $cb) {
+		if (!isset($p['query'])) {
+			$p['query'] = $this->cond;
+		}
+		if (!isset($p['update'])) {
+			$p['update'] = $this->update;
+			$this->update = [];
+		}
+		if (!isset($p['sort']) and isset($this->sort)) {
+			$p['sort'] = $this->sort;
+		}
+		$this->col->findAndModify($p, function($lastError) use ($cb) {
+			$this->lastError = $lastError;
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
+			$this->lastError = [];
+		});
+		return $this;
 	}
 
 	public function updateWithCond($addCond, $update, $cb = null) {
