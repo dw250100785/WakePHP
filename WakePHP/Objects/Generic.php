@@ -28,6 +28,10 @@ abstract class Generic implements \ArrayAccess {
 	
 	protected $setOnInsertMode = true;
 
+	protected $findAndModifyMode = false;
+	
+	protected $findAndModifyNew = true;
+
 	protected $obj;
 
 	protected $cond;
@@ -70,8 +74,18 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $logObjectId = false;
 
-	public function setOnInsertMode($bool) {
+	public function setOnInsertMode($bool = true) {
 		$this->setOnInsertMode = (bool) $bool;
+		return $this;
+	}
+
+	public function findAndModifyMode($bool = true) {
+		$this->findAndModifyMode = (bool) $bool;
+		return $this;
+	}
+
+	public function upsertMode($bool = true) {
+		$this->upsertMode = (bool) $bool;
 		return $this;
 	}
 
@@ -124,6 +138,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->onSave = new StackCallbacks;
 		}
 		$this->onSave->push($cb);
+		return $this;
 	}
 
 	protected function onBeforeSave($cb) {
@@ -131,6 +146,7 @@ abstract class Generic implements \ArrayAccess {
 			$this->onBeforeSave = new StackCallbacks;
 		}
 		$this->onBeforeSave->push($cb);
+		return $this;
 	}
 
 	protected function safeMode($mode) {
@@ -654,14 +670,21 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function _clone() {
-		$o = clone $this;
-		$o->_cloned($this);
+		$class = get_class($this);
+		$obj = $this->obj;
+		unset($obj['_id']);
+		$o = new $class($this->cond, null, $this->orm);
+		$o->_cloned($obj);
 		return $o;
 	}
 
-	public function _cloned($from) {
+	public function _cloned($obj) {
 		$this->new = true;
-		$this->obj['_id'] = new \MongoId;
+		$this->obj = [];
+		$this->attr($obj);
+		if (!$this->upsertMode) {
+			$this->obj['_id'] = new \MongoId;
+		}
 		$this->init();
 	}
 
@@ -672,7 +695,7 @@ abstract class Generic implements \ArrayAccess {
 	 */
 	public function __call($method, $args) {
 		if ($method === 'clone') {
-			return $this->_clone();
+			return call_user_func_array([$this, '_clone'], $args);
 		}
 		if (strncmp($method, 'get', 3) === 0) {
 			return $this->getProperty(lcfirst(substr($method, 3)));
@@ -819,7 +842,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->col->count($cb, ['where' => $this->cond]);
 	}
 
-	public function remove($cb) {
+	public function remove($cb = null) {
 		if ($this->cond === null) {
 			if ($cb !== null) {
 				call_user_func($cb, false);
@@ -850,26 +873,6 @@ abstract class Generic implements \ArrayAccess {
 			return;
 		}
 		$this->col->remove($this->cond, $cb);
-	}
-	public function findAndModify($p, $cb) {
-		if (!isset($p['query'])) {
-			$p['query'] = $this->cond;
-		}
-		if (!isset($p['update'])) {
-			$p['update'] = $this->update;
-			$this->update = [];
-		}
-		if (!isset($p['sort']) and isset($this->sort)) {
-			$p['sort'] = $this->sort;
-		}
-		$this->col->findAndModify($p, function($lastError) use ($cb) {
-			$this->lastError = $lastError;
-			if ($cb !== null) {
-				call_user_func($cb, $this);
-			}
-			$this->lastError = [];
-		});
-		return $this;
 	}
 
 	public function updateWithCond($addCond, $update, $cb = null) {
@@ -971,6 +974,9 @@ abstract class Generic implements \ArrayAccess {
 			if (isset($lastError['upserted'])) {
 				$this->obj['_id'] = $lastError['upserted'];
 			}
+			if (isset($lastError['value'])) {
+				$this->obj = $lastError['value'];
+			}
 			if ($this->onSave !== null) {
 				$this->onSave->executeAll($this);
 			}
@@ -1009,7 +1015,18 @@ abstract class Generic implements \ArrayAccess {
 			if ($this->multi) {
 				$this->col->updateMulti($this->cond, $this->update, $cb, $this->writeConcerns);
 			} else {
-				if ($this->upsertMode) {
+				if ($this->findAndModifyMode) {
+					$p = [
+						'new' => $this->findAndModifyNew,
+						'update' => $this->update,
+						'query' => $this->cond,
+					];
+					if ($this->sort !== null) {
+						$p['sort'] = $this->sort;
+					}
+					$this->col->findAndModify($p, $cb);
+				}
+				elseif ($this->upsertMode) {
 					$this->col->upsertOne($this->cond, $this->update, $cb, $this->writeConcerns);
 				} else {
 					$this->col->updateOne($this->cond, $this->update, $cb, $this->writeConcerns);

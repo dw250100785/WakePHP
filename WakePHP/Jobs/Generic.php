@@ -12,9 +12,11 @@ use PHPDaemon\Core\Debug;
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
 
+	protected $running = false;
 	protected $instance;
 	protected $parent;
 	protected $progress;
+	protected $exception;
 	protected $status = 'a';
 	protected $_id;
 	public function __construct($job, $parent) {
@@ -22,6 +24,38 @@ abstract class Generic {
 			$this->{$k} = $v;
 		}
 		$this->parent = $parent;
+	}
+
+
+	/**
+	 * Called when the request wakes up
+	 * @return void
+	 */
+	public function onWakeup() {
+		$this->running   = true;
+		Daemon::$context = $this;
+		Daemon::$process->setState(Daemon::WSTATE_BUSY);
+	}
+
+	/**
+	 * Called when the request starts sleep
+	 * @return void
+	 */
+	public function onSleep() {
+		Daemon::$context = null;
+		$this->running   = false;
+		Daemon::$process->setState(Daemon::WSTATE_IDLE);
+	}
+
+	/**
+	 * Uncaught exception handler
+	 * @param $e
+	 * @return boolean Handled?
+	 */
+	public function handleException($e) {
+		$this->exception = $e;
+		$this->setResult(false);
+		return true;
 	}
 
 	abstract function run();
@@ -55,13 +89,17 @@ abstract class Generic {
 				return;
 			}
 			$this->instance = $ret['value']['instance'];
-			$this->parent->jobresults->insert([
+			$doc = [
 				'_id'      => $this->_id,
 				'ts'       => microtime(true),
 				'instance' => $this->instance,
 				'status'   => $this->status,
-				'result'   => $result
-			]);
+				'result'   => $result,
+			];
+			if ($this->exception instanceof \WakePHP\Exceptions\Generic) {
+				$doc['exception'] = $this->exception->toArray();
+			}
+			$this->parent->jobresults->insert($doc);
 		});
 		$this->parent->unlinkJob($this->_id);
 	}
