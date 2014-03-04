@@ -14,6 +14,9 @@ class GenericIterator implements \Iterator {
 	protected $cursor;
 	protected $cb;
 	protected $orm;
+	protected $modeAll = false;
+	protected $limit = null;
+	protected $finished = false;
 	
 	public function __construct($obj, $cb, $orm) {
 		$this->cb = $cb;
@@ -29,16 +32,26 @@ class GenericIterator implements \Iterator {
 		return $this;
 	}
 
+	public function setModeAll($bool = true) {
+		$this->modeAll = $bool;
+		return $this;
+	}
+
+	public function setLimit($n) {
+		$this->limit = $n;
+		return $this;
+	}
+
 	public function keep($bool = true) {
 		$this->cursor->keep($bool);
 		return $this;
 	}
 
-	public function _cursor($cursor, $all = true) {
+	public function __invoke($cursor) {
 		if ($this->cursor === null) {
 			$this->cursor = $cursor;
 		}
-		if ($all && !$this->finished()) {
+		if ($this->modeAll && !$this->finished()) {
 			$this->more();
 			return;
 		}
@@ -57,8 +70,15 @@ class GenericIterator implements \Iterator {
 		return call_user_func_array([$this->obj, $method], $args);
 	}
 
-	public function more() {
-		$this->cursor->getMore();
+	public function more($n = 0) {
+		if ($this->limit !== null) {
+			if ($this->cursor->counter <= $this->limit) {
+				$this->cursor->getMore($this->limit - $this->cursor->counter);
+			}
+		} else {
+			$this->cursor->getMore($n);
+		}
+		return $this;
 	}
 	
 	public function current() {
@@ -72,6 +92,11 @@ class GenericIterator implements \Iterator {
 	}
 
 	public function finished() {
+		if ($this->limit !== null) {
+			if ($this->cursor->counter >= $this->limit) {
+				return true;
+			}
+		}
 		return $this->cursor->isFinished();
 	}
 

@@ -175,7 +175,12 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function condSet($k, $v, $d = null) {
-		$this->cond[$k] = $v;
+		if (strpos($k, '.') !== false) {
+			$entry = &$this->_getCondEntry($k);
+		} else {
+			$entry = &$this->cond[$k];
+		}
+		$entry = $v;
 		if ($d !== null) {
 			$this->describe[$k] = $d;
 		}
@@ -360,6 +365,17 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function &_getObjEntry($k) {
 		$e =& $this->obj;
+		foreach (explode('.', $k) as &$kk) {
+			if ($kk === '$' || $k === '') {
+				return null;
+			}
+			$e =& $e[$kk];
+		}
+		return $e;
+	}
+
+	protected function &_getCondEntry($k) {
+		$e =& $this->cond;
 		foreach (explode('.', $k) as &$kk) {
 			if ($kk === '$' || $k === '') {
 				return null;
@@ -769,9 +785,9 @@ abstract class Generic implements \ArrayAccess {
 		if ($this->multi) {
 			$class = $this->iteratorClass;
 			$list = new $class($this, $cb, $this->orm); // @TODO: check class
-			$this->fetchObject(function($cursor) use ($list, $all) {
-				$list->_cursor($cursor, $all);
-			});
+			$list->setModeAll($all);
+			$list->setLimit($this->limit);
+			$this->fetchObject($list);
 		} else {
 			$this->fetchObject(function($obj) use ($cb) {
 				$this->obj = $obj;
