@@ -61,6 +61,8 @@ class JobWorker extends AppInstance {
 	protected $wtsEvent;
 
 	public $httpclient;
+
+	public $JobManager;
 	/**
 	 *
 	 */
@@ -117,6 +119,7 @@ class JobWorker extends AppInstance {
 			unset($a);
 			$this->{$prop} = new $class($this);
 		}
+		$this->JobManager = new JobManager($this);
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 		$this->components = new Components($this->fakeRequest());
 		$this->jobqueueCol = $this->db->{$this->config->dbname->value . '.jobqueue'};

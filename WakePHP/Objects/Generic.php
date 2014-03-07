@@ -18,6 +18,8 @@ abstract class Generic implements \ArrayAccess {
 	
 	protected $orm;
 
+	protected $type;
+
 	protected $iteratorClass = '\WakePHP\Objects\GenericIterator';
 
 	protected static $ormName;
@@ -66,6 +68,10 @@ abstract class Generic implements \ArrayAccess {
 
 	protected $onBeforeSave;
 
+	protected $onFetch;
+
+	protected $onBeforeFetch;
+
 	protected $preventDefault = false;
 
 	protected $writeConcerns = null;
@@ -76,6 +82,15 @@ abstract class Generic implements \ArrayAccess {
 
 	public function setOnInsertMode($bool = true) {
 		$this->setOnInsertMode = (bool) $bool;
+		return $this;
+	}
+
+	public function autoincrement($cb = null) {
+		$this->col->autoincrement(function ($seq) use ($cb) {
+			if ($cb !== null) {
+				call_user_func($cb, $this, $seq);
+			}
+		}, true);
 		return $this;
 	}
 
@@ -102,6 +117,7 @@ abstract class Generic implements \ArrayAccess {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
 		$this->cond = $cond instanceof \MongoId ? ['_id' => $cond] : $cond;
+		$this->type = ClassFinder::getClassBasename($this);
 		$this->construct();
 		if (is_array($objOrCb) && !isset($objOrCb[0])) {
 			$this->create($objOrCb);
@@ -146,6 +162,22 @@ abstract class Generic implements \ArrayAccess {
 			$this->onBeforeSave = new StackCallbacks;
 		}
 		$this->onBeforeSave->push($cb);
+		return $this;
+	}
+
+	public function onFetch($cb) {
+		if ($this->onFetch === null) {
+			$this->onFetch = new StackCallbacks;
+		}
+		$this->onFetch->push($cb);
+		return $this;
+	}
+
+	protected function onBeforeFetch($cb) {
+		if ($this->onBeforeFetch === null) {
+			$this->onBeforeFetch = new StackCallbacks;
+		}
+		$this->onBeforeFetch->push($cb);
 		return $this;
 	}
 
@@ -227,8 +259,8 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	public function sortMixed($mixed, $fields = null, $multi = true) {
-		$this->sort = [];
+	public function sortMixed($mixed, $fields = null, $default = 1) {
+		$sort = [];
 		if (!is_array($mixed)) {
 			$mixed = explode(',', $mixed);
 		}
@@ -247,7 +279,10 @@ abstract class Generic implements \ArrayAccess {
 						continue;
 					}
 				}
-				$this->sort[$i] = $order;
+				$sort[$i] = $order;
+			}
+			if (!sizeof($sort) && sizeof($fields)) {
+				$sort[$fields[0]] = $default;
 			}
 		} else {
 			foreach ($mixed as $i => $order) {
@@ -257,10 +292,10 @@ abstract class Generic implements \ArrayAccess {
 						continue;
 					}
 				}
-				$this->sort[$i] = $order;
+				$sort[$i] = $order;
 			}
 		}
-		return $this;
+		return $this->sort($sort);
 	}
 
     public function toJSON($flags = null) {
@@ -341,6 +376,10 @@ abstract class Generic implements \ArrayAccess {
 	
 	public function upserted() {
 	 	return isset($this->lastError['upserted']) ? $this->lastError['upserted'] : null;
+	}
+
+	public function updatedExisting() {
+	 	return isset($this->lastError['updatedExisting']) ? $this->lastError['updatedExisting'] : null;
 	}
 
 	public function okay() {
@@ -691,6 +730,7 @@ abstract class Generic implements \ArrayAccess {
 		unset($obj['_id']);
 		$o = new $class($this->cond, null, $this->orm);
 		$o->_cloned($obj);
+		$o->attachObject('parentObj', $this);
 		return $o;
 	}
 
@@ -779,28 +819,57 @@ abstract class Generic implements \ArrayAccess {
 		return new $class($this, $cb, $this->orm); // @TODO: check class
 	}
 	public function fetch($cb, $all = true) {
-		if ($cb === null) {
-			return $this;
+		if ($this->onBeforeFetch !== null) {
+			$this->onBeforeFetch->executeAll($this);
+		}
+		if ($this->preventDefault) {
+			$this->preventDefault = false;
+			$this->onFetch($cb);
+			return;
 		}
 		if ($this->multi) {
 			$class = $this->iteratorClass;
-			$list = new $class($this, $cb, $this->orm); // @TODO: check class
+			$list = new $class($this, function ($list) use ($cb, &$cbs) {
+				if ($cbs === null) {
+					if ($this->onFetch !== null) {
+						$cbs = $this->onFetch->toArray();
+						$cbs[] = $cb;
+					} elseif ($cb !== null) {
+						$cbs = [$cb];
+					} else {
+						$cbs = [];
+					}
+				}
+				foreach ($cbs as $i) {
+					call_user_func($i, $list);
+				}
+			}, $this->orm); // @TODO: check class
 			$list->setModeAll($all);
 			$list->setLimit($this->limit);
 			$this->fetchObject($list);
 		} else {
 			$this->fetchObject(function($obj) use ($cb) {
 				$this->obj = $obj;
-				if ($obj === false) {
+				if ($obj !== false) {
+					$this->new = false;
+					if (!$this->inited) {
+						$this->inited = true;
+						$this->init();
+					}
+				}
+				if ($this->onFetch !== null) {
+					$this->onFetch->executeAll($this);
+				}
+				if ($this->preventDefault) {
+					$this->preventDefault = false;
+					if ($cb !== null) {
+						$this->onFetch($cb);
+						$cb = null;
+					}
+				}
+				if ($cb !== null) {
 					call_user_func($cb, $this);
-					return;
 				}
-				$this->new = false;
-				if (!$this->inited) {
-					$this->inited = true;
-					$this->init();
-				}
-				call_user_func($cb, $this);
 			});
 		}
 		return $this;
@@ -967,13 +1036,15 @@ abstract class Generic implements \ArrayAccess {
 				if ($this->onSave !== null) {
 					$this->onSave->executeAll($this);
 				}
-				if ($cb !== null) {
-					if ($this->preventDefault) {
+				if ($this->preventDefault) {
+					$this->preventDefault = false;
+					if ($cb !== null) {
 						$this->onSave($cb);
+						$cb = null;
 					}
-					else {
-						call_user_func($cb, $this);
-					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb, $this);
 				}
 				return $this;
 			}
@@ -1036,6 +1107,7 @@ abstract class Generic implements \ArrayAccess {
 						'new' => $this->findAndModifyNew,
 						'update' => $this->update,
 						'query' => $this->cond,
+						'upsert' => $this->upsertMode,
 					];
 					if ($this->sort !== null) {
 						$p['sort'] = $this->sort;
