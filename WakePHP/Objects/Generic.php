@@ -104,7 +104,7 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	public function attachObject($name, Generic $obj) {
+	public function attachObject($name, Generic $obj = null) {
 		$this->attachedObjects[$name] = $obj;
 		return $this;
 	}
@@ -383,7 +383,13 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	public function okay() {
-		return $this->lastError(true);
+		if (isset($this->lastError['ok'])) {
+			return (bool) $this->lastError['ok'];
+		}
+		if (isset($this->lastError['$ok'])) {
+			return (bool) $this->lastError['$ok'];
+		}
+		return false;
 	}
 	
 	public function lastError($bool = false) {
@@ -802,7 +808,7 @@ abstract class Generic implements \ArrayAccess {
 		}
 		return $this->set($k, $val);
 	}
-	public function fetchMulti($cb, $all = true) {
+	public function fetchMulti($cb = null, $all = true) {
 		return $this->multi()->fetch($cb, $all);
 	}
 	public function fetchOnce($cb, $all = true) {
@@ -818,13 +824,19 @@ abstract class Generic implements \ArrayAccess {
 		$class = $this->iteratorClass;
 		return new $class($this, $cb, $this->orm); // @TODO: check class
 	}
-	public function fetch($cb, $all = true) {
+	public function fetch($cb = null, $all = true) {
+		if ($cb === null && ($this->onBeforeFetch === null || $this->onBeforeFetch->isEmpty())
+						 && ($this->onFetch === null || $this->onFetch->isEmpty())) {
+			return $this;
+		}
 		if ($this->onBeforeFetch !== null) {
 			$this->onBeforeFetch->executeAll($this);
 		}
 		if ($this->preventDefault) {
 			$this->preventDefault = false;
-			$this->onFetch($cb);
+			if ($cb !== null) {
+				$this->onFetch($cb);
+			}
 			return;
 		}
 		if ($this->multi) {
@@ -833,7 +845,9 @@ abstract class Generic implements \ArrayAccess {
 				if ($cbs === null) {
 					if ($this->onFetch !== null) {
 						$cbs = $this->onFetch->toArray();
-						$cbs[] = $cb;
+						if ($cb !== null) {
+							$cbs[] = $cb;
+						}
 					} elseif ($cb !== null) {
 						$cbs = [$cb];
 					} else {
@@ -960,6 +974,9 @@ abstract class Generic implements \ArrayAccess {
 		$this->col->remove($this->cond, $cb);
 	}
 
+	public function onSaveSuccess() {
+	}
+
 	public function updateWithCond($addCond, $update, $cb = null) {
 		$this->lastError = [];
 		if ($this->cond === null) {
@@ -1057,12 +1074,17 @@ abstract class Generic implements \ArrayAccess {
 			return $this;
 		}
 		$w = ($cb === null && ($this->onSave === null || $this->onSave->isEmpty()))? null : function($lastError) use ($cb) {
-			$this->lastError = $lastError;
-			if (isset($lastError['upserted'])) {
-				$this->obj['_id'] = $lastError['upserted'];
-			}
 			if (isset($lastError['value'])) {
 				$this->obj = $lastError['value'];
+			}
+			if (isset($lastError['lastErrorObject'])) {
+				$this->lastError = $lastError['lastErrorObject'];
+				$this->lastError['ok'] = $lastError['ok'];
+			} else {
+				$this->lastError = $lastError;
+			}
+			if (isset($lastError['upserted'])) {
+				$this->obj['_id'] = $lastError['upserted'];
 			}
 			if ($this->onSave !== null) {
 				$this->onSave->executeAll($this);
@@ -1079,6 +1101,9 @@ abstract class Generic implements \ArrayAccess {
 						$this->lastError = $old;
 					});
 				}
+			}
+			if ($this->okay()) {
+				$this->onSaveSuccess();
 			}
 			$this->lastError = [];
 		};

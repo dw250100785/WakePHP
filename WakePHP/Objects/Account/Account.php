@@ -27,8 +27,12 @@ class Account extends Generic {
 		$this->col = $this->orm->accounts;
 	}
 
-	public function setLogged() {
-		return $this;
+	public function isGuest() {
+		return $this['username'] === 'Guest';
+	}
+
+	public function getLogged() {
+		return $this['username'] !== 'Guest';
 	}
 
 	public function delete() {

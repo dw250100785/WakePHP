@@ -326,6 +326,10 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->finish();
 		}
 	}
+	public function addMultiResultObj($result, $finish = false) {
+		static::resultMap($result);
+		$this->addMultiResult($result, $finish);
+	}
 
 	public function addMultiResult($result, $finish = false) {
 		if ($this->dataType === 'json') {
