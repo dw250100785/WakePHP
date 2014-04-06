@@ -143,7 +143,7 @@ class JobWorker extends AppInstance {
 						return;
 					}
 					//Daemon::log('cursor: '.Debug::dump($cursor->items));
-					$event->timeout(1e6 * 0.05);
+					$event->timeout(1e6 * 0.2);
 					$this->resultCursor = $cursor;
 					$f = false;
 					foreach ($cursor as $item) {
@@ -164,7 +164,7 @@ class JobWorker extends AppInstance {
 			} else {
 				$this->resultCursor->getMore(1);
 			}
-		}, 1);
+		}, 1e6 * 0.2);
 	}
 
 	protected function fakeRequest() {
