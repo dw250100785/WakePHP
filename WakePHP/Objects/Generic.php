@@ -410,7 +410,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function &_getObjEntry($k) {
 		$e =& $this->obj;
-		foreach (explode('.', $k) as &$kk) {
+		foreach (explode('.', $k) as $kk) {
 			if ($kk === '$' || $k === '') {
 				return null;
 			}
@@ -421,7 +421,7 @@ abstract class Generic implements \ArrayAccess {
 
 	protected function &_getCondEntry($k) {
 		$e =& $this->cond;
-		foreach (explode('.', $k) as &$kk) {
+		foreach (explode('.', $k) as $kk) {
 			if ($kk === '$' || $k === '') {
 				return null;
 			}
