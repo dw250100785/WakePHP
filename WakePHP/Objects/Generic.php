@@ -1118,7 +1118,19 @@ abstract class Generic implements \ArrayAccess {
 	}
 	protected function saveObject($cb) {
 		if ($this->new) {
-			if ($this->upsertMode) {
+			if ($this->findAndModifyMode) {
+				$p = [
+					'new' => $this->findAndModifyNew,
+					'update' => $this->update,
+					'query' => $this->cond,
+					'upsert' => $this->upsertMode,
+				];
+				if ($this->sort !== null) {
+					$p['sort'] = $this->sort;
+				}
+				$this->col->findAndModify($p, $cb);
+			}
+			elseif ($this->upsertMode) {
 				$this->obj['_id'] = $this->col->upsertOne($this->cond, $this->update, $cb, $this->writeConcerns);
 			} else {
 				$this->obj['_id'] = $this->col->insertOne($this->obj, $cb, $this->writeConcerns);

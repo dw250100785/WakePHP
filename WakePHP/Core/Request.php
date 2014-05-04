@@ -193,7 +193,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$e = explode('/', substr($_SERVER['DOCUMENT_URI'], 1), 5);
 			++$this->jobTotal;
 			$this->cmpName    = $e[1];
-			$this->controller = isset($e[2]) ? $e[2] : '';
+			$this->controller = isset($e[2]) ? ucfirst($e[2]) : '';
 			$this->dataType   = isset($e[3]) ? $e[3] : 'json';
 			$this->extra   = isset($e[4]) ? $e[4] : null;
 			if ($cmp = $this->components->{$this->cmpName}) {

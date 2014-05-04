@@ -72,7 +72,7 @@ class Account extends Component {
 	 * @param string $email
 	 * @return string
 	 */
-	protected function getConfirmationCode($email) {
+	public function getConfirmationCode($email) {
 		return substr(md5($email . "\x00"
 						  . $this->req->appInstance->config->cryptsalt->value . "\x00"
 						  . microtime(true) . "\x00"
@@ -142,7 +142,6 @@ class Account extends Component {
 	public function acceptUserAuthentication($ns, $id, $add, $cb) {
 		$this->req->onSessionStart(function () use ($ns, $id, $add, $cb) {
 			$crd = ['ns' => $ns, 'id' => $id];
-			Daemon::log(Debug::dump($crd));
 			$this->appInstance->accounts->getAccount(['credentials' => ['$elemMatch' => $crd]],
 				function ($account) use ($ns, $id, $cb, $crd, $add) {
 					if ($account->exists()) {
@@ -153,7 +152,7 @@ class Account extends Component {
 						$_SESSION['extAuth']       = $crd;
 						$_SESSION['extAuthAdd']    = $add;
 						$this->req->updatedSession = true;
-						$this->req->redirectTo($this->req->getBaseUrl() . '/' . $this->req->locale . '/account/finishSignup');
+						$this->req->redirectTo($this->req->getBaseUrl() . '/' . $this->req->locale . '/account/completeSignup');
 						return;
 					}
 					$this->appInstance->accounts->getAccountByEmail($add['email'], function ($account) use ($crd, $add, $cb) {

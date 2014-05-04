@@ -4,7 +4,7 @@ include __DIR__.'/../generic.php';
 
 /* accounts */ 
 $accounts = $db->selectCollection('accounts');
-//$accounts->drop();
+$accounts->drop();
 $app->saveAccount(array(
 				'username' => 'Guest',
 				'email' => 'guest@guest.tld',

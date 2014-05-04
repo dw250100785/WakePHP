@@ -88,7 +88,7 @@ class WakePHP extends AppInstance {
 		ini_set('display_errors', 'On');
 		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname     = $this->config->dbname->value;
-		$this->ipcId      = new MongoId;
+		$this->ipcId      = new MongoId();
 		$this->JobManager = new JobManager($this);
 		$this->Sendmail   = new Sendmail($this);
 		if (isset($this->config->BackendServer)) {
@@ -154,6 +154,10 @@ class WakePHP extends AppInstance {
 	public function renderBlock($blockname, $variables, $cb) {
 		$appInstance = $this;
 		$this->blocks->getBlock(['name' => $blockname], function ($block) use ($variables, $cb, $appInstance) {
+			if (!$block) {
+				$cb(false);
+				return;
+			}
 			$tpl = $appInstance->getQuickyInstance();
 			$tpl->assign($variables);
 			$tpl->assign('block', $block);

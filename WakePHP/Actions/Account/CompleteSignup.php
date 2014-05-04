@@ -36,9 +36,10 @@ class CompleteSignup extends Generic {
 			$this->appInstance->externalSignupRequests->getRequestByCredentials($credentials, function ($request) use ($email, $credentials) {
 				if (!$request || !isset($request['code'])) {
 					$code = $this->cmp->getConfirmationCode($email);
-					$this->appInstance->externalSignupRequests->save(['email'       => Encoding::toUTF8($email),
-					                                                  'code'        => Encoding::toUTF8($code),
-					                                                  'credentials' => Encoding::toUTF8($credentials)],
+					$this->appInstance->externalSignupRequests->save(['email'       => $email,
+					                                                  'code'        => $code,
+					                                                  'credentials' => $credentials,
+					                                                  'add' 		=> Request::getArray($_SESSION['extAuthAdd'])],
 						function ($lastError) use ($email, $code) {
 							if (isset($lastError['err']) || isset($lastError['$err'])) {
 								$this->req->setResult(['success' => false,
@@ -68,6 +69,7 @@ class CompleteSignup extends Generic {
 						$account                = $this->appInstance->accounts->getAccountBase($this->req);
 						$account['email']       = $email;
 						$account['credentials'] = [$credentials];
+						$account = $_SESSION['extAuthAdd'] + $account;
 						$this->appInstance->accounts->saveAccount($account, function ($lastError) use ($email, $request) {
 							if (isset($lastError['err']) || isset($lastError['$err'])) {
 								$this->req->setResult(['success' => false,
