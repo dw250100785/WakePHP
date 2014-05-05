@@ -79,6 +79,7 @@ class JobWorker extends AppInstance {
 					['status' => 'v'],
 					['status' => 'a', 'wts' => ['$lt' => microtime(true) - 5]],
 				],
+				'notbefore' => ['$lte' => time()],
 				//'type' => ['$in' => $types],
 				'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
 		   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],

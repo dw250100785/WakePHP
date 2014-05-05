@@ -381,8 +381,22 @@ abstract class Generic implements \ArrayAccess {
 	public function updatedExisting() {
 	 	return isset($this->lastError['updatedExisting']) ? $this->lastError['updatedExisting'] : null;
 	}
-
+	public function errCode() {
+		if (!isset($this->lastError['code'])) {
+			return false;
+		}
+		return $this->lastError['code'];
+	}
+	public function errmsg() {
+		if (!isset($this->lastError['err'])) {
+			return false;
+		}
+		return $this->lastError['err'];
+	}
 	public function okay() {
+		if (isset($this->lastError['err'])) {
+			return false;
+		}
 		if (isset($this->lastError['ok'])) {
 			return (bool) $this->lastError['ok'];
 		}
@@ -398,10 +412,10 @@ abstract class Generic implements \ArrayAccess {
 				return $this->lastError['updatedExisting'];
 			}
 			if (isset($this->lastError['ok'])) {
-				return $this->lastError['ok'];
+				return (bool) $this->lastError['ok'];
 			}
 			if (isset($this->lastError['$ok'])) {
-				return $this->lastError['$ok'];
+				return (bool) $this->lastError['$ok'];
 			}
 			return false;
 		}
@@ -955,7 +969,7 @@ abstract class Generic implements \ArrayAccess {
 				return;
 			}
 		}
-		$this->removeObject($cb === null ? null : function($lastError) use ($cb) {
+		$this->removeObject($cb === null ? null : function($frror) use ($cb) {
 			$this->lastError = $lastError;
 			if ($cb !== null) {
 				call_user_func($cb, $this);

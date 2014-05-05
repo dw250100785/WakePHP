@@ -54,6 +54,9 @@ class Jobqueue extends Generic {
 			'ts'       => $ts,
 			'progress' => (float) 0,
 		] + $add;
+		if (!isset($doc['notbefore'])) {
+			$doc['notbefore'] = 0;
+		}
 		if (isset($add['atmostonce'])) {
 			$this->jobs->upsertOne(
 				['atmostonce' => $add['atmostonce']],
