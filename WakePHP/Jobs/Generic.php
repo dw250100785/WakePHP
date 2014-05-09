@@ -101,6 +101,6 @@ abstract class Generic {
 			}
 			$this->parent->jobresults->insert($doc);
 		});
-		$this->parent->unlinkJob($this->_id);
+		$this->parent->unlinkJob($this->_id, isset($this->perworker) ? $this->perworker : null);
 	}
 }

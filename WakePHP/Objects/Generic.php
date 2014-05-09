@@ -388,13 +388,19 @@ abstract class Generic implements \ArrayAccess {
 		return $this->lastError['code'];
 	}
 	public function errmsg() {
-		if (!isset($this->lastError['err'])) {
-			return false;
+		if (isset($this->lastError['err'])) {
+			return $this->lastError['err'];
 		}
-		return $this->lastError['err'];
+		if (isset($this->lastError['$err'])) {
+			return $this->lastError['$err'];
+		}
+		return false;
 	}
 	public function okay() {
 		if (isset($this->lastError['err'])) {
+			return false;
+		}
+		if (isset($this->lastError['$err'])) {
 			return false;
 		}
 		if (isset($this->lastError['ok'])) {
@@ -427,6 +433,9 @@ abstract class Generic implements \ArrayAccess {
 		foreach (explode('.', $k) as $kk) {
 			if ($kk === '$' || $k === '') {
 				return null;
+			}
+			if ($e === null) {
+				$e = [];
 			}
 			$e =& $e[$kk];
 		}
@@ -563,6 +572,10 @@ abstract class Generic implements \ArrayAccess {
 			}
 		}
 		if ($this->new && !$this->upsertMode) {
+			return $this;
+		}
+		if (isset($this->update['$set'][$k])) {
+			$this->update['$set'][$k] = $entry;
 			return $this;
 		}
 		if (!isset($this->update['$push'][$k]['$each'])) {

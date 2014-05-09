@@ -20,6 +20,7 @@ class JobWorker extends AppInstance {
 	public $jobqueue;
 	public $jobresults;
 	protected $resultEvent;
+	protected $perworker = [];
 
 	/**
 	 * @var Sessions[]
@@ -73,17 +74,21 @@ class JobWorker extends AppInstance {
 		if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
 			return;
 		}
+		$q = [
+			'$and' => [['$or' => [
+				['status' => 'v'],
+				['status' => 'a', 'wts' => ['$lt' => microtime(true) - 5]],
+			]]],
+			'notbefore' => ['$lte' => time()],
+			//'type' => ['$in' => $types],
+			'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
+	   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
+		];
+		foreach ($this->perworker as $k => $v) {
+			$q['$and'][] = ['$or' => [['perworker.'.$k => ['$lt' => $v]]], ['perworker.'.$k => null]];
+		}
 		$this->jobs->findAndModify([
-			'query' => [
-				'$or' => [
-					['status' => 'v'],
-					['status' => 'a', 'wts' => ['$lt' => microtime(true) - 5]],
-				],
-				'notbefore' => ['$lte' => time()],
-				//'type' => ['$in' => $types],
-				'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
-		   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
-			],
+			'query' => $q,
 			'update' => [
 				'$set' => [
 					'status' => 'a',
@@ -186,10 +191,29 @@ class JobWorker extends AppInstance {
 		Daemon::log('startJob(' . $class . ')');
 		$obj                       = new $class($job, $this);
 		$this->runningJobs[$jobId] = $obj;
+		if (isset($job['perworker']) && $job['perworker']) {
+			foreach ($job['perworker'] as $k => $v) {
+				if (!isset($this->perworker[$k])) {
+					$this->perworker[$k] = 1;
+				} else {
+					++$this->perworker[$k];
+				}
+			}
+		}
 		$obj->run();
 	}
 
-	public function unlinkJob($id) {
+	public function unlinkJob($id, $perworker = null) {
+		if ($perworker) {
+			foreach ($perworker as $k => $v) {
+				if (isset($this->perworker[$k])) {
+					--$this->perworker[$k];
+					if ($this->perworker[$k] <= 0) {
+						unset($this->perworker[$k]);
+					}
+				}
+			}
+		}
 		unset($this->runningJobs[(string) $id]);
 		$this->tryToAcquire();
 	}
