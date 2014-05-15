@@ -33,6 +33,10 @@ class JobWorker extends AppInstance {
 	/**
 	 * @var
 	 */
+	public $redis;
+	/**
+	 * @var
+	 */
 	public $dbname;
 	/**
 	 * @var
@@ -51,7 +55,6 @@ class JobWorker extends AppInstance {
 	 */
 	protected $maxRunningJobs = 100;
 
-	public $jobqueueCol;
 
 	public $jobs;
 
@@ -85,9 +88,13 @@ class JobWorker extends AppInstance {
 	   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
 		];
 		foreach ($this->perworker as $k => $v) {
-			$q['$and'][] = ['$or' => [['perworker.'.$k => ['$lt' => $v]]], ['perworker.'.$k => null]];
+			$q['$and'][] = [
+				'$or' => [
+					['perworker.'.$k => ['$lt' => $v]],
+					['perworker.'.$k => null]
+			]];
 		}
-		$this->jobs->findAndModify([
+		$this->jobqueue->jobs->findAndModify([
 			'query' => $q,
 			'update' => [
 				'$set' => [
@@ -97,7 +104,7 @@ class JobWorker extends AppInstance {
 				],
 				'$inc' => ['tries' => 1],
 			],
-			'sort' => ['priority' => -1],
+			'sort' => ['priority' => 1],
 			'new' => true,
 			], function ($ret) {
 				if (!isset($ret['value'])) {
@@ -112,6 +119,7 @@ class JobWorker extends AppInstance {
 	}
 
 	public function onReady() {
+		$this->redis         = \PHPDaemon\Clients\Redis\Pool::getInstance($this->config->redisname->value);
 		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
 		$this->dbname      = $this->config->dbname->value;
 		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
@@ -128,11 +136,9 @@ class JobWorker extends AppInstance {
 		$this->JobManager = new JobManager($this);
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 		$this->components = new Components($this->fakeRequest());
-		$this->jobqueueCol = $this->db->{$this->config->dbname->value . '.jobqueue'};
-		$this->jobs = $this->db->{$this->config->dbname->value . '.jobs'};
 		$this->ipcId      = new MongoId;
 		$this->wtsEvent = Timer::add(function ($event) {
-			$this->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
+			$this->jobqueue->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
 			$event->timeout();
 		}, 2.5e6);
 		$this->resultEvent = Timer::add(function ($event) {
@@ -141,7 +147,7 @@ class JobWorker extends AppInstance {
 			$this->tryToAcquire();
 			if (!$this->resultCursor) {
 				$types = array_merge($this->jobtypes, [null]);
-				$this->jobqueueCol->find(function ($cursor) use ($event) {
+				$this->jobqueue->jobqueue->find(function ($cursor) use ($event) {
 					if ($cursor->isDead()) {
 						Daemon::log('dead!');
 						$cursor->destroy();
@@ -189,7 +195,7 @@ class JobWorker extends AppInstance {
 			$class = '\\WakePHP\\Jobs\\JobNotFound';
 		}
 		Daemon::log('startJob(' . $class . ')');
-		$obj                       = new $class($job, $this);
+		$obj = new $class(null, $job, $this->jobqueue);
 		$this->runningJobs[$jobId] = $obj;
 		if (isset($job['perworker']) && $job['perworker']) {
 			foreach ($job['perworker'] as $k => $v) {
@@ -203,9 +209,9 @@ class JobWorker extends AppInstance {
 		$obj->run();
 	}
 
-	public function unlinkJob($id, $perworker = null) {
-		if ($perworker) {
-			foreach ($perworker as $k => $v) {
+	public function unlinkJob($job) {
+		if ($job['perworker']) {
+			foreach ($job['perworker'] as $k => $v) {
 				if (isset($this->perworker[$k])) {
 					--$this->perworker[$k];
 					if ($this->perworker[$k] <= 0) {
@@ -214,7 +220,7 @@ class JobWorker extends AppInstance {
 				}
 			}
 		}
-		unset($this->runningJobs[(string) $id]);
+		unset($this->runningJobs[(string) $job['id']]);
 		$this->tryToAcquire();
 	}
 
@@ -243,6 +249,7 @@ class JobWorker extends AppInstance {
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
 			'mongoname' 	=> '',
+			'redisname' 	=> '',
 		);
 	}
 

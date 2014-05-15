@@ -70,6 +70,14 @@ abstract class Generic {
 				return $obj;
 			}
 		}
+		elseif (strncmp($method, 'wrap', 4) === 0) {
+			$type = substr($method, 4);
+			$attrs = sizeof($args) ? $args[0] : null;
+			if ($obj = $this->getObject($type)) {
+				$obj->wrap($attrs);
+				return $obj;
+			}
+		}
 		elseif (strncmp($method, 'save', 4) === 0) {
 			$type = substr($method, 4);
 			if (!sizeof($args)) {

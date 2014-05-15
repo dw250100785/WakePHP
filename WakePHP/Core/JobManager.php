@@ -31,7 +31,7 @@ class JobManager {
 	 */
 	public $callbacks = array();
 
-	protected $lastTs;
+	protected $lastId;
 
 	protected $jobresults;
 
@@ -41,6 +41,9 @@ class JobManager {
 	public function __construct($appInstance) {
 		$this->appInstance = $appInstance;
 		$this->init();
+		$this->appInstance->redis->subscribe('jobFinished:'.$this->appInstance->ipcId, function($redis) {
+			Daemon::log(Debug::dump($redis->result));
+		});
 		$this->jobresults = $this->appInstance->db->{$this->appInstance->config->dbname->value . '.jobresults'};
 	}
 
@@ -51,6 +54,12 @@ class JobManager {
 		$this->resultEvent = Timer::add(function ($event) {
 //Daemon::log('timer called');
 			if (!$this->resultCursor) {
+				$where = [
+					'instance' => $this->appInstance->ipcId,
+				];
+				if ($this->lastId !== null) {
+					$where['_id'] = ['$gt' => $this->lastId];
+				}
 				$this->jobresults->find(function ($cursor)  {
 					$this->resultCursor = $cursor;
 					if (sizeof($cursor->items)) {
@@ -72,12 +81,9 @@ class JobManager {
 					   'tailable' => true,
 					   'sort'     => array('$natural' => 1),
 					   'fields'   => 'status,result',
-					   'where'    => array(
-					   		'instance' => $this->appInstance->ipcId,
-					   		'ts' => array('$gt' => $this->lastTs)
-					   	)
+					   'where'    => $where,
 				   ));
-				$this->lastTs = null;
+				$this->lastId = null;
 				Daemon::log('[JobManager] inited cursor - ' . $this->appInstance->ipcId);
 			}
 			elseif (!$this->resultCursor->isBusyConn()) {
@@ -105,12 +111,9 @@ class JobManager {
 	 */
 	public function enqueue($cb, $type, $args, $add = []) {
 		$ts = microtime(true);
-		if ($this->lastTs === null) {
-			$this->lastTs = $ts;
-		}
-		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($jobId) use ($cb) {
+		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($job) use ($cb) {
 			if ($cb !== NULL) {
-				$this->callbacks[(string)$jobId] = $cb;
+				$this->callbacks[$job->getId()] = $cb;
 				Daemon::log('setTimeout!');
 				\PHPDaemon\Core\Timer::setTimeout($this->resultEvent, 0.02e6);
 			}

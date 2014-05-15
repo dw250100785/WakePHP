@@ -428,7 +428,7 @@ abstract class Generic implements \ArrayAccess {
 		return $this->lastError;
 	}
 
-	protected function &_getObjEntry($k) {
+	protected function &_getObjEntry($k, $create = true) {
 		$e =& $this->obj;
 		foreach (explode('.', $k) as $kk) {
 			if ($kk === '$' || $k === '') {
@@ -436,6 +436,10 @@ abstract class Generic implements \ArrayAccess {
 			}
 			if ($e === null) {
 				$e = [];
+			}
+			if (!$create && !isset($e[$kk])) {
+				$a = null;
+				return $a;
 			}
 			$e =& $e[$kk];
 		}
@@ -451,6 +455,22 @@ abstract class Generic implements \ArrayAccess {
 			$e =& $e[$kk];
 		}
 		return $e;
+	}
+
+	protected function defaultSet($k, $v, $real = false) {
+		if ($this->obj === null) {
+			return $this;
+		}
+		if (strpos($k, '.') !== false) {
+			$entry = &$this->_getObjEntry($k, false);
+		} else {
+			$entry = &$this->obj[$k];
+		}
+		$entry = $v;
+		if ($entry !== null) {
+			return $this;
+		}
+		return $this->set($k, $v, $real);
 	}
 
 	protected function set($k, $v, $real = false) {

@@ -22,6 +22,10 @@ class WakePHP extends AppInstance {
 	/**
 	 * @var
 	 */
+	public $redis;
+	/**
+	 * @var
+	 */
 	public $statistics;
 	/** @var \WakePHP\ORM\Blocks */
 	public $blocks;
@@ -86,7 +90,9 @@ class WakePHP extends AppInstance {
 	public function init() {
 		Daemon::log(get_class($this) . ' up.');
 		ini_set('display_errors', 'On');
-		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
+		$this->redis         = \PHPDaemon\Clients\Redis\Pool::getInstance($this->config->redisname->value);
+
+		$this->db         = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);	
 		$this->dbname     = $this->config->dbname->value;
 		$this->ipcId      = new MongoId();
 		$this->JobManager = new JobManager($this);
@@ -258,6 +264,7 @@ class WakePHP extends AppInstance {
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
 			'mongoname'		=> '',
+			'redisname'		=> '',
 		);
 	}
 
