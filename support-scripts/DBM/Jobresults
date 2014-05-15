@@ -1,9 +1,0 @@
-#!/usr/bin/env php
-<?php
-include __DIR__.'/../generic.php';
-
-/* jobresults */ 
-$jobresults = $db->selectCollection($name = 'jobresults');
-$jobresults->drop();
-$db->command(['create' => $name, 'capped' => true, 'size' => 1024*1024*10, 'max' => 1024 * 10]);
-$jobresults->ensureIndex(array('instance' => 1, 'ts' => 1));

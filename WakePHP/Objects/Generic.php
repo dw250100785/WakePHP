@@ -466,7 +466,6 @@ abstract class Generic implements \ArrayAccess {
 		} else {
 			$entry = &$this->obj[$k];
 		}
-		$entry = $v;
 		if ($entry !== null) {
 			return $this;
 		}

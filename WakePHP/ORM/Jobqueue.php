@@ -12,7 +12,6 @@ use WakePHP\Objects\Jobqueue as Objects;
 class Jobqueue extends Generic {
 
 	public $jobqueue;
-	public $jobresults;
 	public $jobs;
 
 	public function getCollection() {

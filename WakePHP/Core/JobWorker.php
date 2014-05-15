@@ -19,9 +19,8 @@ class JobWorker extends AppInstance {
 	/** @var  Collection */
 	public $jobqueue;
 	public $jobresults;
-	protected $resultEvent;
+	protected $tryEvent;
 	protected $perworker = [];
-
 	/**
 	 * @var Sessions[]
 	 */
@@ -42,37 +41,14 @@ class JobWorker extends AppInstance {
 	 * @var
 	 */
 	public $components;
-	/**
-	 * @var
-	 */
-	protected $resultCursor;
-	/**
-	 * @var array
-	 */
 	protected $runningJobs = [];
-	/**
-	 * @var int
-	 */
 	protected $maxRunningJobs = 100;
-
-
 	public $jobs;
-
 	public $ipcId;
-	
 	protected $jobtypes = [];
-
 	protected $wtsEvent;
-
 	public $httpclient;
-
 	public $JobManager;
-	/**
-	 *
-	 */
-
-	public $mycb;
-
 	protected function tryToAcquire() {
 		if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
 			return;
@@ -106,7 +82,7 @@ class JobWorker extends AppInstance {
 			],
 			'sort' => ['priority' => 1],
 			'new' => true,
-			], function ($ret) {
+			], function ($ret) use ($q) {
 				if (!isset($ret['value'])) {
 					return;
 				}
@@ -133,50 +109,25 @@ class JobWorker extends AppInstance {
 			unset($a);
 			$this->{$prop} = new $class($this);
 		}
-		$this->JobManager = new JobManager($this);
-		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
-		$this->components = new Components($this->fakeRequest());
 		$this->ipcId      = new MongoId;
+		$this->JobManager = new JobManager($this);
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance(['timeout' => 1]);
+		$this->components = new Components($this->fakeRequest());
 		$this->wtsEvent = Timer::add(function ($event) {
 			$this->jobqueue->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
 			$event->timeout();
 		}, 2.5e6);
-		$this->resultEvent = Timer::add(function ($event) {
-			/** @var Timer $event */
-			$event->timeout(5e6);
+		$this->redis->subscribe('jobEnqueuedSig', function($redis) {
+			Daemon::log('jobEnqueuedSig got');
 			$this->tryToAcquire();
-			if (!$this->resultCursor) {
-				$types = array_merge($this->jobtypes, [null]);
-				$this->jobqueue->jobqueue->find(function ($cursor) use ($event) {
-					if ($cursor->isDead()) {
-						Daemon::log('dead!');
-						$cursor->destroy();
-						$this->resultCursor = null;
-						return;
-					}
-					//Daemon::log('cursor: '.Debug::dump($cursor->items));
-					$event->timeout(1e6 * 0.2);
-					$this->resultCursor = $cursor;
-					$f = false;
-					foreach ($cursor as $item) {
-						$f = true;
-					}
-					if ($f) {
-						$this->tryToAcquire();
-					}
-				}, [
-					   'tailable' => true,
-					   'sort'     => ['$natural' => 1],
-					   'where'    => [
-					   		'ts' => ['$gt' => microtime(true)]
-					   ]
-				   ]);
-				$event->timeout(1e6);
-				return;
-			} else {
-				$this->resultCursor->getMore(1);
-			}
-		}, 1e6 * 0.2);
+		}, function() {
+			$this->tryToAcquire();
+		});
+		$this->tryEvent = Timer::add(function ($event) {
+			/** @var Timer $event */
+			$this->tryToAcquire();
+			$event->timeout(1e6);
+		}, 1e6);
 	}
 
 	protected function fakeRequest() {
@@ -195,7 +146,8 @@ class JobWorker extends AppInstance {
 			$class = '\\WakePHP\\Jobs\\JobNotFound';
 		}
 		Daemon::log('startJob(' . $class . ')');
-		$obj = new $class(null, $job, $this->jobqueue);
+		$obj = new $class(null, null, $this->jobqueue);
+		$obj->wrap($job);
 		$this->runningJobs[$jobId] = $obj;
 		if (isset($job['perworker']) && $job['perworker']) {
 			foreach ($job['perworker'] as $k => $v) {

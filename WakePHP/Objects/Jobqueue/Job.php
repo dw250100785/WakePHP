@@ -3,6 +3,7 @@ namespace WakePHP\Objects\Jobqueue;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Clients\Mongo\MongoId;
 
 /**
  * Class Generic
@@ -10,7 +11,6 @@ use PHPDaemon\Core\Debug;
  * @dynamic_fields
  */
 class Job extends \WakePHP\Objects\Generic {
-	protected $exception;
 	protected $findAndModifyMode = true;
 	protected $upsertMode = true;
 	protected $progress = 0;
@@ -24,7 +24,11 @@ class Job extends \WakePHP\Objects\Generic {
 			$this->defaultSet('notbefore', 0)->set('status', 'v');
 			$this->onBeforeSave(function() {
 				if ($this['atmostonce'] !== null) {
-					$this->cond = ['atmostonce' => $this['atmostonce'], 'status' => ['$in' => ['a', 'v']]];
+					$this->cond = [
+						'atmostonce' => $this['atmostonce'],
+						'status' => ['$in' => ['a', 'v']],
+						'notbefore' => ['$lte' => $this['notbefore']],
+					];
 					$this->findAndModifyMode = true;
 					$this->upsertMode = true;
 				} else {
@@ -43,8 +47,6 @@ class Job extends \WakePHP\Objects\Generic {
 
 	public static function ormInit($orm) {
 		parent::ormInit($orm);
-		$orm->jobresults  = $orm->appInstance->db->{$orm->appInstance->dbname . '.jobresults'};
-		$orm->jobqueue  = $orm->appInstance->db->{$orm->appInstance->dbname . '.jobqueue'};
 		$orm->jobs  = $orm->appInstance->db->{$orm->appInstance->dbname . '.jobs'};
 		$orm->jobs->ensureIndex(['status' => 1]);
 		$orm->jobs->ensureIndex(['priority' => -1]);
@@ -99,28 +101,16 @@ class Job extends \WakePHP\Objects\Generic {
 
 	}
 	public function sendResult($result) {
-		Daemon::log(get_class($this) . '->sendResult()');
 		$this['status'] = $result !== false ? 's' : 'f';
 		if ($this['status'] === 's') {
 			$this->progress = 1;
 		}
 		$this['result'] = $result;
 		$this->cond = ['_id' => $this->getId(), 'worker' => $this->orm->appInstance->ipcId];
-			if ($this->exception instanceof \WakePHP\Exceptions\Generic) {
-				$doc['exception'] = $this->exception->toArray();
-			}
 		$this->save(function() {
-			$doc = [
-				'_id'      => $this->getId(),
-				'ts'       => microtime(true),
-				'instance' => $this['instance'],
-				'status'   => $this['status'],
-				'result'   => $this['result'],
-			];
-
-			$this->orm->jobresults->insert($doc);
+			$id = (string) MongoId::import($this->getId());
 			foreach ($this['instance'] as $i) {
-				$this->orm->appInstance->redis->publish('jobFinished:'.$i, 1);
+				$this->orm->appInstance->redis->publish('jobFinished:'.MongoId::import($i), $id);
 			}
 		});
 		$this->orm->appInstance->unlinkJob($this);
