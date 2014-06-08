@@ -20,6 +20,8 @@ abstract class Generic {
 
 	protected $name;
 
+	protected $ns = 'WakePHP\\Objects';
+
 	/**
 	 * @param WakePHP $appInstance
 	 */
@@ -30,7 +32,7 @@ abstract class Generic {
 	}
 
 	public function getObject($type, $cond = null, $objOrCb = null) {
-		$class = ClassFinder::find($type, $this->name, 'WakePHP\\Objects');
+		$class = ClassFinder::find($type, $this->name, $this->ns);
 		if (!class_exists($class)) {
 			Daemon::log(get_class($this) . ': undefined class: ' . $class);
 			return false;

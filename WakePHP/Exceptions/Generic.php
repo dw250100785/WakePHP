@@ -12,14 +12,19 @@ use PHPDaemon\Core\ClassFinder;
  */
 class Generic extends \Exception {
 	protected $silent = false;
+	protected $critical = false;
 	public function toArray() {
 		return [
 			'type' => ClassFinder::getClassBasename($this),
 			'code' => $this->getCode(),
 			'msg' => $this->getMessage(),
+			'critical' => $this->critical,
 		];
 	}
 	public function isSilent() {
 		return $this->silent;
+	}
+	public function isCritical() {
+		return $this->critical;
 	}
 }

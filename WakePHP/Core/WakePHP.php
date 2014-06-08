@@ -104,17 +104,7 @@ class WakePHP extends AppInstance {
 			$this->backendClient = BackendClient::getInstance($this->config->BackendClient, true, $this);
 		}
 
-		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
-			$class         = strstr(basename($file), '.', true);
-			if ($class === 'Generic') {
-				continue;
-			}
-			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
-			$class         = '\\WakePHP\\ORM\\' . $class;
-			$this->{$prop} = &$a; // trick ;-)
-			unset($a);
-			$this->{$prop} = new $class($this);
-		}
+		$this->discoverOrm($this->config->ormdir->value . '*.php');
 
 		$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 		$this->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) {
@@ -140,6 +130,24 @@ class WakePHP extends AppInstance {
 		$this->serializer = 'igbinary';
 		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
+
+	protected function discoverOrm($path, $prefix = '\\WakePHP\\ORM\\') {
+		foreach (Daemon::glob($path) as $file) {
+			$class         = strstr(basename($file), '.', true);
+			if ($class === 'Generic') {
+				continue;
+			}
+			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
+			$class         = $prefix. $class;
+			if (!class_exists($class)) {
+				continue;
+			}
+			$this->{$prop} = &$a; // trick ;-)
+			unset($a);
+			$this->{$prop} = new $class($this);
+		}
+	}
+
 
 	/**
 	 * @param $lc
@@ -265,6 +273,7 @@ class WakePHP extends AppInstance {
 			'cookiedomain'  => 'host.tld',
 			'mongoname'		=> '',
 			'redisname'		=> '',
+			'redisprefix'		=> ':',
 		);
 	}
 
