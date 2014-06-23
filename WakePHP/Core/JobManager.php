@@ -6,6 +6,7 @@ use PHPDaemon\Clients\Mongo\MongoId;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
+use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * JobManager class.
@@ -36,14 +37,18 @@ class JobManager {
 	 *
 	 */
 	public function init() {
-		$this->appInstance->redis->subscribe('jobFinished:'.$this->appInstance->ipcId, function($redis) {
+		$this->appInstance->redis->subscribe($this->appInstance->config->redisprefix->value . 'jobFinished:'.$this->appInstance->ipcId, function($redis) {
 			$jobId = $redis->result[2];
-			if (isset($this->callbacks[$jobId])) {
-				$this->appInstance->jobqueue->getJobById($jobId, function($job) use ($jobId) {
-					call_user_func($this->callbacks[$jobId], $job);
-					unset($this->callbacks[$jobId]);
-				});
+			if (!isset($this->callbacks[$jobId])) {
+				return;
 			}
+			$this->appInstance->jobqueue->getJobById($jobId, function($job) use ($jobId) {
+				if (!isset($this->callbacks[$jobId])) {
+					return;
+				}
+				call_user_func($this->callbacks[$jobId], $job);
+				unset($this->callbacks[$jobId]);
+			});
 		});
 	}
 
@@ -56,7 +61,7 @@ class JobManager {
 		$ts = microtime(true);
 		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($job) use ($cb) {
 			if ($cb !== NULL) {
-				$this->callbacks[(string) MongoId::import($job->getId())] = $cb;
+				$this->callbacks[(string) MongoId::import($job->getId())] = CallbackWrapper::wrap($cb);
 			}
 		});
 	}

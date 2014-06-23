@@ -116,7 +116,7 @@ abstract class Generic implements \ArrayAccess {
 	public function __construct($cond, $objOrCb, $orm) {
 		$this->orm = $orm;
 		$this->appInstance = $orm->appInstance;
-		$this->cond = $cond instanceof \MongoId ? ['_id' => $cond] : $cond;
+		$this->cond($cond instanceof \MongoId ? ['_id' => $cond] : $cond);
 		$this->type = ClassFinder::getClassBasename($this);
 		$this->construct();
 		if (is_array($objOrCb) && !isset($objOrCb[0])) {
@@ -691,6 +691,7 @@ abstract class Generic implements \ArrayAccess {
 		}
 		$this->inited = true;
 		$this->init();
+		return $this;
 	}
 
 	public function wrap($obj) {
@@ -706,7 +707,7 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
-	public function cond($cond = null) {
+	public function cond($cond) {
 		if (!func_num_args()) {
 			return $this->cond;
 		}
@@ -940,9 +941,6 @@ abstract class Generic implements \ArrayAccess {
 	}
 
 	protected function fetchObject($cb) {
-		if ($this->col === null) {
-			Daemon::log(get_class($this). Debug::backtrace());
-		}
 		if ($this->multi) {
 			$params = [
 				'where' => $this->cond,

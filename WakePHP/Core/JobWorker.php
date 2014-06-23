@@ -15,40 +15,27 @@ use WakePHP\ORM\Sessions;
  * Job worker
  * @dynamic_fields
  */
-class JobWorker extends AppInstance {
+class JobWorker extends WakePHP {
 	/** @var  Collection */
 	public $jobqueue;
 	public $jobresults;
 	protected $tryEvent;
 	protected $perworker = [];
-	/**
-	 * @var Sessions[]
-	 */
-	public $sessions;
-	/**
-	 * @var
-	 */
-	public $db;
-	/**
-	 * @var
-	 */
-	public $redis;
-	/**
-	 * @var
-	 */
-	public $dbname;
-	/**
-	 * @var
-	 */
 	public $components;
 	protected $runningJobs = [];
 	protected $maxRunningJobs = 100;
 	public $jobs;
-	public $ipcId;
 	protected $jobtypes = [];
 	protected $wtsEvent;
-	public $httpclient;
-	public $JobManager;
+
+	/**
+	 *
+	 */
+	public function init() {
+		parent::init();
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance(['timeout' => 1]);
+		$this->components = new Components($this->fakeRequest());
+	}
 	protected function tryToAcquire() {
 		if (sizeof($this->runningJobs) >= $this->maxRunningJobs) {
 			return;
@@ -95,29 +82,12 @@ class JobWorker extends AppInstance {
 	}
 
 	public function onReady() {
-		$this->redis         = \PHPDaemon\Clients\Redis\Pool::getInstance($this->config->redisname->value);
-		$this->db          = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoname->value);
-		$this->dbname      = $this->config->dbname->value;
-		foreach (Daemon::glob($this->config->ormdir->value . '*.php') as $file) {
-			$class         = strstr(basename($file), '.', true);
-			if ($class === 'Generic') {
-				continue;
-			}
-			$prop          = preg_replace_callback('~^[A-Z]+~', function ($m) {return strtolower($m[0]);}, $class);
-			$class         = '\\WakePHP\\ORM\\' . $class;
-			$this->{$prop} = &$a; // trick ;-)
-			unset($a);
-			$this->{$prop} = new $class($this);
-		}
-		$this->ipcId      = new MongoId;
-		$this->JobManager = new JobManager($this);
-		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance(['timeout' => 1]);
-		$this->components = new Components($this->fakeRequest());
+		parent::onReady();
 		$this->wtsEvent = Timer::add(function ($event) {
 			$this->jobqueue->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
 			$event->timeout();
 		}, 2.5e6);
-		$this->redis->subscribe('jobEnqueuedSig', function($redis) {
+		$this->redis->subscribe($this->config->redisprefix->value . 'jobEnqueuedSig', function($redis) {
 			Daemon::log('jobEnqueuedSig got');
 			$this->tryToAcquire();
 		}, function() {
@@ -128,6 +98,7 @@ class JobWorker extends AppInstance {
 			$this->tryToAcquire();
 			$event->timeout(1e6);
 		}, 1e6);
+		
 	}
 
 	protected function fakeRequest() {
@@ -175,34 +146,4 @@ class JobWorker extends AppInstance {
 		unset($this->runningJobs[(string) $job['id']]);
 		$this->tryToAcquire();
 	}
-
-	/**
-	 *
-	 */
-	public function init() {
-		Daemon::log(get_class($this) . ' up.');
-		ini_set('display_errors', 'On');
-	}
-
-	/**
-	 * @return array
-	 */
-
-	protected function getConfigDefaults() {
-		return array(
-			'themesdir'     => 'themes/',
-			'utilsdir'      => 'WakePHP/Utils/',
-			'localedir'     => 'locale/',
-			'storagedir'    => '/storage/',
-			'ormdir'        => 'WakePHP/ORM/',
-			'dbname'        => 'WakePHP',
-			'defaultlocale' => 'en',
-			'defaulttheme'  => 'simple',
-			'domain'        => 'host.tld',
-			'cookiedomain'  => 'host.tld',
-			'mongoname' 	=> '',
-			'redisname' 	=> '',
-		);
-	}
-
 }

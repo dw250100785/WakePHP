@@ -38,7 +38,7 @@ class Job extends \WakePHP\Objects\Generic {
 				$this->onSave(function() {
 					$this->findAndModifyMode = true;
 					$this->upsertMode = true;
-					$this->orm->appInstance->redis->publish('jobEnqueuedSig', 1);
+					$this->orm->appInstance->redis->publish($this->orm->appInstance->config->redisprefix->value  . 'jobEnqueuedSig', 1);
 				});
 				$this->addToSet('instance', $this->orm->appInstance->ipcId);
 			});
@@ -110,7 +110,7 @@ class Job extends \WakePHP\Objects\Generic {
 		$this->save(function() {
 			$id = (string) MongoId::import($this->getId());
 			foreach ($this['instance'] as $i) {
-				$this->orm->appInstance->redis->publish('jobFinished:'.MongoId::import($i), $id);
+				$this->orm->appInstance->redis->publish($this->orm->appInstance->config->redisprefix->value . 'jobFinished:'.MongoId::import($i), $id);
 			}
 		});
 		$this->orm->appInstance->unlinkJob($this);
