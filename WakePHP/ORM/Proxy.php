@@ -13,16 +13,16 @@ use WakePHP\Objects\Proxy as Objects;
  */
 class Proxy extends Generic {
 	/** @var  Collection */
-	public $proxyServers;
+	public $servers;
 
 	/** @var  Collection */
-	public $proxySources;
+	public $sources;
 
 	/**
 	 *
 	 */
 	public function init() {
-		Objects\ProxyServer::ormInit($this);
-		Objects\ProxySource::ormInit($this);
+		Objects\Server::ormInit($this);
+		Objects\Source::ormInit($this);
 	}
 }

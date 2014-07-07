@@ -1,22 +1,22 @@
 <?php
-namespace WakePHP\Objects\Vocabious;
+namespace WakePHP\Objects\Proxy;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use WakePHP\Objects\Generic;
 
 /**
- * Class ProxyServer
+ * Class Server
  * @package WakePHP\Objects
  */
-class ProxyServer extends Generic {
+class Server extends Generic {
 	protected $withAtomicCounter = false;
 	protected $action = null;
 	protected $upsertMode = true;
 
 	public static function ormInit($orm) {
-		$orm->proxyServers = $orm->appInstance->db->{$orm->appInstance->dbname . '.proxyServers'};
-		$orm->proxyServers->ensureIndex(['addr' => 1,], ['unique' => true]);
+		$orm->servers = $orm->appInstance->db->{$orm->appInstance->dbname . '.proxyServers'};
+		$orm->servers->ensureIndex(['addr' => 1,], ['unique' => true]);
 	}
 
 	public function getUserAgent() {
@@ -24,7 +24,7 @@ class ProxyServer extends Generic {
 	}
 
 	protected function construct() {
-		$this->col = $this->orm->proxyServers;
+		$this->col = $this->orm->servers;
 	}
 
 

@@ -1,22 +1,22 @@
 <?php
-namespace WakePHP\Objects\Vocabious;
+namespace WakePHP\Objects\Proxy;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use WakePHP\Objects\Generic;
 
 /**
- * Class ProxySource
+ * Class Source
  * @package WakePHP\Objects
  */
-class ProxySource extends Generic {
+class Source extends Generic {
 	public static function ormInit($orm) {
-		$orm->proxyServers = $orm->appInstance->db->{$orm->appInstance->dbname . '.proxySources'};
-		$orm->proxySources->ensureIndex(['service' => 1, 'username' => 1], ['unique' => true]);
+		$orm->sources = $orm->appInstance->db->{$orm->appInstance->dbname . '.proxySources'};
+		$orm->sources->ensureIndex(['service' => 1, 'username' => 1], ['unique' => true]);
 	}
 
 	protected function construct() {
-		$this->col = $this->orm->proxySources;
+		$this->col = $this->orm->sources;
 	}
 
 	protected function init() {
