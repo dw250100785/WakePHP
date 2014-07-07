@@ -181,6 +181,14 @@ abstract class Generic implements \ArrayAccess {
 		return $this;
 	}
 
+	public function free() {
+		$this->onBeforeSave = null;
+		$this->onBeforeFetch = null;
+		$this->onFetch = null;
+		$this->attachedObjects = null;
+		$this->obj = null;
+	}
+
 	protected function safeMode($mode) {
 		$this->safeMode = (bool) $mode;
 		return $this;
