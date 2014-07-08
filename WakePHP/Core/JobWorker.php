@@ -43,7 +43,7 @@ class JobWorker extends WakePHP {
 		$q = [
 			'$and' => [['$or' => [
 				['status' => 'v'],
-				['status' => 'a', 'wts' => ['$lt' => microtime(true) - 5]],
+				['status' => 'a', 'wts' => ['$lt' => microtime(true) - $this->config->jobtimeout->value]],
 			]]],
 			'notbefore' => ['$lte' => time()],
 			//'type' => ['$in' => $types],
