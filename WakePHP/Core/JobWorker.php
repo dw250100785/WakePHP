@@ -74,7 +74,7 @@ class JobWorker extends WakePHP {
 					return;
 				}
 				$job = $ret['value'];
-				Daemon::log('Acquired job: ' . json_encode($job));
+				Daemon::log('Acquired job: ' . json_encode($job, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 				$this->startJob($job);
 				$this->tryToAcquire();
 			}
