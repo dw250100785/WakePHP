@@ -57,11 +57,14 @@ class JobManager {
 	 * @param $type
 	 * @param $args
 	 */
-	public function enqueue($cb, $type, $args, $add = []) {
+	public function enqueue($cb, $type, $args, $add = [], $pushcb = null) {
 		$ts = microtime(true);
-		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($job) use ($cb) {
+		return $this->appInstance->jobqueue->push($type, $args, $ts, $add, function ($job) use ($cb, $pushcb) {
 			if ($cb !== NULL) {
 				$this->callbacks[(string) MongoId::import($job->getId())] = CallbackWrapper::wrap($cb);
+			}
+			if ($pushcb !== null) {
+				call_user_func($pushcb);
 			}
 		});
 	}
