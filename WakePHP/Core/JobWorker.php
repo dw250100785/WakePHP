@@ -41,21 +41,39 @@ class JobWorker extends WakePHP {
 			return;
 		}
 		$q = [
-			'$and' => [['$or' => [
-				['status' => 'v'],
-				['status' => 'a', 'wts' => ['$lt' => microtime(true) - $this->config->jobtimeout->value]],
-			]]],
+			'$and' => [],
 			'notbefore' => ['$lte' => time()],
-			//'type' => ['$in' => $types],
 			'shardId' => ['$in' => isset($this->config->shardid->value) ? [null, $this->config->shardid->value] : [null]],
 	   		'serverId' => ['$in' => isset($this->config->serverid->value) ? [null, $this->config->serverid->value] : [null]],
 		];
+		if ($t = $this->config->jobtypes->value) {
+			if (is_string($t)) {
+				$t = preg_split('~\s*,\s*', $t);
+			}
+			if (sizeof($t)) {
+				$q['types'] = ['$in' => $t];
+			}			
+		}
+		if ($this->config->jobtimeout->value > 0) {
+			$q['$and'][] = [
+				'$or' => [
+					['status' => 'v'],
+					['status' => 'a', 'wts' => ['$lt' => microtime(true) - $this->config->jobtimeout->value]],
+				],
+			];
+		} else {
+			$q['status'] = 'v';
+		}
 		foreach ($this->perworker as $k => $v) {
 			$q['$and'][] = [
 				'$or' => [
 					['perworker.'.$k => ['$lt' => $v]],
 					['perworker.'.$k => null]
 			]];
+		}
+		if (sizeof($q['$and']) === 1) {
+			$q[key($q['$and'])] = current($q['$and']));
+			unset($q['$and']);
 		}
 		$this->jobqueue->jobs->findAndModify([
 			'query' => $q,
@@ -88,7 +106,7 @@ class JobWorker extends WakePHP {
 			$event->timeout();
 		}, 2.5e6);
 		$this->redis->subscribe($this->config->redisprefix->value . 'jobEnqueuedSig', function($redis) {
-			Daemon::log('jobEnqueuedSig got');
+			//Daemon::log('jobEnqueuedSig got');
 			$this->tryToAcquire();
 		}, function() {
 			$this->tryToAcquire();
