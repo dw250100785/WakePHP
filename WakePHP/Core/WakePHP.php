@@ -272,6 +272,7 @@ class WakePHP extends AppInstance {
 			'domain'        => 'host.tld',
 			'cookiedomain'  => 'host.tld',
 			'jobtimeout'		=> 5,
+			'jobtypes'		=> '',
 			'mongoname'		=> '',
 			'redisname'		=> '',
 			'redisprefix'		=> ':',

@@ -72,7 +72,7 @@ class JobWorker extends WakePHP {
 			]];
 		}
 		if (sizeof($q['$and']) === 1) {
-			$q[key($q['$and'])] = current($q['$and']));
+			$q[key($q['$and'])] = current($q['$and']);
 			unset($q['$and']);
 		}
 		$this->jobqueue->jobs->findAndModify([
