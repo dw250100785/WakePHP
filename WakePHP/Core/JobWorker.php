@@ -48,7 +48,7 @@ class JobWorker extends WakePHP {
 		];
 		if ($t = $this->config->jobtypes->value) {
 			if (is_string($t)) {
-				$t = preg_split('~\s*,\s*', $t);
+				$t = preg_split('~\s*,\s*~', $t);
 			}
 			if (sizeof($t)) {
 				$q['types'] = ['$in' => $t];
