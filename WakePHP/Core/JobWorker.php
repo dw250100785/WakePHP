@@ -51,7 +51,7 @@ class JobWorker extends WakePHP {
 				$t = preg_split('~\s*,\s*~', $t);
 			}
 			if (sizeof($t)) {
-				$q['types'] = ['$in' => $t];
+				$q['type'] = ['$in' => $t];
 			}			
 		}
 		if ($this->config->jobtimeout->value > 0) {
@@ -73,6 +73,8 @@ class JobWorker extends WakePHP {
 		}
 		if (sizeof($q['$and']) === 1) {
 			$q[key($q['$and'])] = current($q['$and']);
+		}
+		if (sizeof($q['$and']) < 2) {
 			unset($q['$and']);
 		}
 		$this->jobqueue->jobs->findAndModify([

@@ -38,6 +38,9 @@ class JobManager {
 	 */
 	public function init() {
 		$this->appInstance->redis->subscribe($this->appInstance->config->redisprefix->value . 'jobFinished:'.$this->appInstance->ipcId, function($redis) {
+			if (!$redis) {
+				return;
+			}
 			$jobId = $redis->result[2];
 			if (!isset($this->callbacks[$jobId])) {
 				return;
