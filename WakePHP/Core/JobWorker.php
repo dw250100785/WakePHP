@@ -103,16 +103,20 @@ class JobWorker extends WakePHP {
 
 	public function onReady() {
 		parent::onReady();
-		$this->wtsEvent = Timer::add(function ($event) {
-			$this->jobqueue->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
-			$event->timeout();
-		}, 2.5e6);
-		$this->redis->subscribe($this->config->redisprefix->value . 'jobEnqueuedSig', function($redis) {
-			//Daemon::log('jobEnqueuedSig got');
-			$this->tryToAcquire();
-		}, function() {
-			$this->tryToAcquire();
-		});
+		if ($this->config->jobtimeout->value) {
+			$this->wtsEvent = Timer::add(function ($event) {
+				$this->jobqueue->jobs->updateMulti(['worker' => $this->ipcId, 'status' => 'a'], ['$set' => ['wts' => microtime(true)]]);
+				$event->timeout();
+			}, $this->config->jobtimeout->value * 1e6 / 2);
+		}
+		if ($this->config->jobsignals->value) {
+			$this->redis->subscribe($this->config->redisprefix->value . 'jobEnqueuedSig', function($redis) {
+				//Daemon::log('jobEnqueuedSig got');
+				$this->tryToAcquire();
+			}, function() {
+				$this->tryToAcquire();
+			});
+		}
 		$this->tryEvent = Timer::add(function ($event) {
 			/** @var Timer $event */
 			$this->tryToAcquire();
