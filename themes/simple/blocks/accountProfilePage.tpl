@@ -8,11 +8,9 @@
 <div class="fieldname"><span class="i18n">Your city</span>:</div><div class="fieldcontrols">
 <input type="text" name="location" size="50"{if isset($req->account.location)} value="{$req->account.location|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
-<div class="fieldname"><span class="i18n">First name</span>:</div><div class="fieldcontrols">
-<input type="text" name="firstname" size="50"{if isset($req->account.firstname)} value="{$req->account.firstname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
+<div class="fieldname"><span class="i18n">Name</span>:</div><div class="fieldcontrols">
+<input type="text" name="name" size="50"{if isset($req->account.name)} value="{$req->account.name|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
-<div class="fieldname"><span class="i18n">Last name</span>:</div><div class="fieldcontrols">
-<input type="text" name="lastname" size="50"{if isset($req->account.lastname)} value="{$req->account.lastname|escape}"{/if} /></div><br class="clearfloat" /><br /><br />
 
 <div class="fieldname"><span class="i18n">Gender</span>:</div><div class="fieldcontrols">
 

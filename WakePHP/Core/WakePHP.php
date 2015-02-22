@@ -41,10 +41,7 @@ class WakePHP extends AppInstance {
 	 * @var
 	 */
 	public $dbname;
-	/**
-	 * @var
-	 */
-	public $LockClient;
+	
 	/**
 	 * @var
 	 */
@@ -106,12 +103,13 @@ class WakePHP extends AppInstance {
 
 		$this->discoverOrm($this->config->ormdir->value . '*.php');
 
-		$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
+	/*	$this->LockClient = \PHPDaemon\Clients\Lock\Pool::getInstance();
 		$this->LockClient->job(get_class($this) . '-' . $this->name, true, function ($jobname, $command, $client) {
-			foreach (glob($this->config->themesdir->value . '*/blocks/*') as $file) {
+			foreach (glob($this->config->themesdir->value . '*'.'/blocks/*') as $file) {
 				Daemon::$process->fileWatcher->addWatch($file, array($this, 'onBlockFileChanged'));
 			}
-		});
+		});*/
+				
 		$this->locales = array_map('basename', glob($this->config->localedir->value . '*', GLOB_ONLYDIR));
 		if (!in_array($this->config->defaultlocale->value, $this->locales, true)) {
 			$this->locales[] = $this->config->defaultlocale->value;

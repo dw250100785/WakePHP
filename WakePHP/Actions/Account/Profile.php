@@ -39,8 +39,8 @@ class Profile extends Generic {
 
 					if (isset($_REQUEST['location'])) {
 						$this->req->account['location'] = trim(Request::getString($_REQUEST['location']));
-						if ($update['location'] === '') {
-							$update['locationCoords'] = null;
+						if ($this->req->account['location'] === '') {
+							$_REQUEST['locationCoords'] = null;
 						}
 					}
 					foreach ($_REQUEST as $k => $v) {

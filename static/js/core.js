@@ -1,3 +1,4 @@
+lang = $('html').attr('lang'),
 $(function() {
 	$.ongt(function() {
 		var delim = ' - ';
@@ -44,6 +45,8 @@ jQuery.fn.ajaxFormController = function(options) {
 	}
 	return this.each(function() {
 		var resultOptions = $.queryOptions($(this).attr('action'),null);
+		delete resultOptions.contentType;
+		delete resultOptions.data;
 		for (var k in options) {
 			resultOptions[k] = options[k];
 		}
@@ -54,23 +57,28 @@ jQuery.fn.ajaxFormController = function(options) {
 jQuery.queryController = function(method, success, data, dataType) {
 	$.ajax($.queryOptions(method, success, data, dataType));
 };
-jQuery.queryOptions = function(method, success, data, dataType) {
+$.queryOptions = function(method, success, data, dataType) {
 	if (dataType == null) {
 		dataType = 'json';
 	}
 	if (data == null) {data = {};}
-	data.LC = $('html').attr('lang');
+
 	var options = {
 		type: "POST",
 		url: "/component/"+method+"/"+dataType,
 		dataType: dataType,
-		data: $.toJSON(data),
-		success: success,
-		contentType: 'application/json'
+		success: success
 	};
+	if (typeof data === 'array' || typeof data[0] != 'undefined') {
+		data.push({'name': 'LC', 'value': lang});
+		options.data = data;
+	} else if (typeof data === 'object') {
+		options.contentType = 'application/json';
+		data.LC = lang;
+		options.data = $.toJSON(data);
+	}
 	return options;
 };
-
 
 jQuery.urlParam = function(name){
 	var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);

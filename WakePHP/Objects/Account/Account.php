@@ -195,7 +195,7 @@ class Account extends Generic {
 	}
 
 	public function setPublicProperty($k, $v) {
-		if (!in_array($k, ['name', 'birthdate', 'gender', 'subscription', 'language', 'autoclose', 'password'])) {
+		if (!in_array($k, ['name', 'birthdate', 'gender', 'subscription', 'language', 'autoclose', 'password'], true)) {
 			return;
 		}
 		$this[$k] = $v;

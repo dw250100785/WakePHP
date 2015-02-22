@@ -224,11 +224,6 @@ class Block implements \ArrayAccess {
 	 *
 	 */
 	public function runTemplate() {
-		if ($this->req->backendServerConn) {
-			++$this->parentNode->readyBlocks;
-			$this->req->backendServerConn->onReadyBlock($this);
-			return;
-		}
 		$this->req->onWakeup();
 		if (isset($this->template)) {
 			$this->executeTemplate();

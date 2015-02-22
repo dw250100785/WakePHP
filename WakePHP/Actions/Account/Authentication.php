@@ -15,8 +15,8 @@ class Authentication extends Generic {
 
 	public function perform() {
 		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-			$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
-			return;
+			//$this->req->setResult(['success' => false, 'err' => 'POST_METHOD_REQUIRED']);
+			//return;
 		}
 		$this->req->onSessionStart(function ($sessionEvent) {
 			$username = Request::getString($_REQUEST['username']);

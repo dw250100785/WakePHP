@@ -42,12 +42,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	public $dispatched = false;
 	public $updatedSession = false;
 	public $xmlRootName = 'response';
-	/** @var  BackendClientConnection */
-	public $backendClientConn;
-	public $backendClientCbs;
-	public $backendClientInited = false;
-	/** @var  BackendServerConnection */
-	public $backendServerConn;
 	/** @var Block[] */
 	public $queries = [];
 	public $queriesCnt = 0;
@@ -118,9 +112,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 * @param $prop
 	 */
 	public function propertyUpdated($prop) {
-		if ($this->backendServerConn) {
-			$this->backendServerConn->propertyUpdated($this, $prop, $this->{$prop});
-		}
 	}
 
 	/**
@@ -242,9 +233,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			return '/%' . $type;
 		}, $this->path);
 
-		if ($this->backendServerConn) {
-			return;
-		}
 
 		++$this->jobTotal;
 		$this->appInstance->blocks->getBlock(array(
@@ -353,10 +341,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	public function onFinish() {
-		if ($this->backendClientConn) {
-			$this->backendClientConn->endRequest($this);
-			unset($this->backendClientConn);
-		}
 
 		if ($this->components !== null) {
 			$this->components->cleanup();
